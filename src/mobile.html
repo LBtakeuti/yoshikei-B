@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;}
+  a{color:#E50012;text-decoration:none;}
+  a:hover{color:#B10010;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;padding:0;margin:0;}
+  .hs::-webkit-scrollbar{display:none;}
+  @keyframes rk-up{from{transform:translateY(100%);}to{transform:translateY(0);}}
+  @keyframes rk-fade{from{opacity:0;}to{opacity:1;}}
+  @keyframes rk-pop{from{opacity:0;transform:scale(.94);}to{opacity:1;transform:scale(1);}}
+  @keyframes rk-slide{from{opacity:0;transform:translateX(16px);}to{opacity:1;transform:translateX(0);}}
+</style>
+<script src="image-slot.js"></script>
+</helmet>
+
+<div style="min-height:100vh;background:#ECECEC;display:flex;justify-content:center;align-items:flex-start;padding:24px 12px;font-family:'Zen Kaku Gothic New',sans-serif;">
+ <div style="{{ bezelStyle }}">
+  <div style="position:relative;width:390px;height:844px;background:#fff;border-radius:26px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.18);">
+
+    <div style="height:4px;background:#E50012;position:absolute;top:0;left:0;right:0;z-index:30;"></div>
+
+    <div class="hs" style="position:absolute;top:4px;left:0;right:0;bottom:0;overflow-y:auto;overflow-x:hidden;padding-bottom:80px;scrollbar-width:none;">
+
+      <!-- LOGO HEADER -->
+      <div style="position:sticky;top:0;z-index:20;background:#fff;padding:10px 14px 8px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 0 rgba(0,0,0,.05);">
+        <img src="assets/logo.svg" alt="ヨシケイ楽楽web" style="height:27px;width:auto;display:block;">
+        <div style="display:flex;gap:15px;">
+          <button onClick="{{ openHelp }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6f6f6f;">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"></circle><path d="M9.3 9.3a2.7 2.7 0 1 1 3.9 2.5c-.8.4-1.3 1-1.3 1.9" stroke-linecap="round"></path><circle cx="12" cy="17" r="1.1" fill="currentColor" stroke="none"></circle></svg>
+            <span style="font-size:8.5px;line-height:1;">ヘルプ</span>
+          </button>
+          <button onClick="{{ openNews }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6f6f6f;position:relative;">
+            <span style="position:absolute;top:-5px;right:0;min-width:15px;height:15px;padding:0 3px;background:#E50012;color:#fff;border-radius:8px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1;">5</span>
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 9.5v5a1 1 0 0 0 1 1h1.5l3.6 3.5v-14L6.5 8.5H5a1 1 0 0 0-1 1z"></path><path d="M14 8.4c1.3.9 2.1 2.2 2.1 3.6s-.8 2.7-2.1 3.6"></path></svg>
+            <span style="font-size:8.5px;line-height:1;">お知らせ</span>
+          </button>
+          <button onClick="{{ openContact }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6f6f6f;">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="1.6"></rect><path d="M3.6 7l8.4 6 8.4-6"></path></svg>
+            <span style="font-size:8.5px;line-height:1;">お問合せ</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- TOGGLE ROW -->
+      <div style="display:flex;gap:8px;padding:12px 14px 6px;">
+        <div style="flex:1;display:flex;border-radius:11px;overflow:hidden;box-shadow:0 0 0 1.5px #E2E2E2 inset;">
+          <button onClick="{{ goSeries }}" style="{{ serSeg }}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v7M4.5 3v4a2.5 2.5 0 0 0 5 0V3M7 10v11"></path><path d="M17 3c-1.6 0-2.5 2-2.5 5s.9 4 2.5 4v9"></path></svg>
+            <span>シリーズから<br>商品を選択</span>
+          </button>
+          <button onClick="{{ goDelivery }}" style="{{ delSeg }}">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="1.5" y="6" width="12" height="10" rx="1"></rect><path d="M13.5 9h4l3 3v4h-7z"></path><circle cx="6" cy="18" r="1.6"></circle><circle cx="17" cy="18" r="1.6"></circle></svg>
+            <span>配達日から<br>商品を選択</span>
+          </button>
+        </div>
+        <button style="width:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:11px;box-shadow:0 0 0 1.5px #E2E2E2 inset;color:#5a5a5a;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 7h18M3 12h18M3 17h18"></path><circle cx="8" cy="7" r="2.4" fill="#fff"></circle><circle cx="15" cy="12" r="2.4" fill="#fff"></circle><circle cx="10" cy="17" r="2.4" fill="#fff"></circle></svg>
+          <span style="font-size:10px;">絞り込み</span>
+        </button>
+      </div>
+
+      <!-- DATE LINE -->
+      <div style="display:flex;align-items:center;gap:7px;padding:8px 15px 8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3a3a3a" stroke-width="1.6" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"></rect><path d="M3.5 9.5h17M8 3v4M16 3v4"></path></svg>
+        <span style="font-size:14px;color:#2c2c2c;"><b style="font-size:16.5px;">5/11</b> 週のご注文 <span style="font-size:12px;color:#5a5a5a;">（締切日は5/1です）</span></span>
+      </div>
+
+      <!-- ===== SERIES VIEW ===== -->
+      <sc-if value="{{ isSeries }}" hint-placeholder-val="{{ true }}">
+        <div class="hs" style="display:flex;gap:20px;padding:0 15px;overflow-x:auto;border-bottom:1px solid #EDEDED;scrollbar-width:none;">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+            <button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.name }}</button>
+          </sc-for>
+        </div>
+
+        <div style="padding:12px 14px 4px;">
+          <button onClick="{{ openBulk }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:9px;background:#fff;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.10);padding:13px;font-size:14px;font-weight:700;color:#2c2c2c;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="#333"><rect x="3" y="3" width="8" height="8" rx="1.5"></rect><rect x="13" y="3" width="8" height="8" rx="1.5"></rect><rect x="3" y="13" width="8" height="8" rx="1.5"></rect><rect x="13" y="13" width="8" height="8" rx="1.5"></rect></svg>
+            まとめて購入セット
+          </button>
+        </div>
+
+        <div style="padding:6px 14px 16px;display:flex;flex-direction:column;gap:13px;">
+          <sc-for list="{{ serList }}" as="m" hint-placeholder-count="4">
+            <button onClick="{{ m.onOpen }}" style="display:flex;text-align:left;background:#fff;border-radius:14px;box-shadow:0 1px 7px rgba(0,0,0,.09);overflow:hidden;">
+              <div style="{{ m.dateStyle }}">
+                <span style="font-size:14px;font-weight:700;">{{ m.date }}</span>
+                <span style="font-size:11px;">（{{ m.dow }}）</span>
+              </div>
+              <div style="flex:1;min-width:0;padding:11px 13px 13px;">
+                <div style="height:145px;border-radius:10px;overflow:hidden;">
+                  <image-slot id="{{ m.slotId }}" shape="rect" placeholder="{{ m.title }}" style="width:100%;height:100%;"></image-slot>
+                </div>
+                <div style="font-size:14.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:10px;">{{ m.title }}</div>
+                <div style="font-size:14px;font-weight:700;color:#2b2b2b;margin-top:7px;">{{ m.priceLabel }}</div>
+              </div>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- ===== DELIVERY VIEW ===== -->
+      <sc-if value="{{ isDelivery }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:10px 14px 6px;">
+          <div class="hs" style="display:flex;overflow-x:auto;scrollbar-width:none;">
+            <button onClick="{{ openBulk }}" style="flex-shrink:0;width:54px;display:flex;flex-direction:column;align-items:center;gap:5px;padding:0 7px 0 2px;border-right:1px solid #E4E4E4;">
+              <span style="font-size:11px;color:#8a8a8a;">セット</span>
+              <span style="width:38px;height:38px;border-radius:9px;background:#F0F0F0;display:flex;align-items:center;justify-content:center;color:#9c9c9c;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="1.5"></rect><rect x="13" y="3" width="8" height="8" rx="1.5"></rect><rect x="3" y="13" width="8" height="8" rx="1.5"></rect><rect x="13" y="13" width="8" height="8" rx="1.5"></rect></svg>
+              </span>
+            </button>
+            <sc-for list="{{ dayCells }}" as="d" hint-placeholder-count="6">
+              <button onClick="{{ d.onClick }}" style="flex-shrink:0;width:50px;display:flex;flex-direction:column;align-items:center;gap:5px;padding:0 5px;">
+                <span style="{{ d.dowStyle }}">{{ d.dow }}</span>
+                <span style="{{ d.numStyle }}">{{ d.n }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- Smile & table -->
+        <div style="padding:10px 14px 0;">
+          <div style="display:flex;align-items:center;gap:8px;border-bottom:2px solid #333;padding-bottom:7px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v7M4.5 3v4a2.5 2.5 0 0 0 5 0V3M7 10v11"></path><path d="M17 3c-1.6 0-2.5 2-2.5 5s.9 4 2.5 4v9"></path></svg>
+            <span style="font-size:17px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif;color:#2b2b2b;">Smile &amp; table</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;padding:14px 0 8px;">
+            <sc-for list="{{ smileCards }}" as="c" hint-placeholder-count="4">
+              <button onClick="{{ c.onOpen }}" style="text-align:left;display:flex;flex-direction:column;">
+                <div style="height:116px;border-radius:6px;overflow:hidden;">
+                  <image-slot id="{{ c.slotId }}" shape="rect" placeholder="{{ c.title }}" style="width:100%;height:100%;"></image-slot>
+                </div>
+                <span style="{{ c.tagStyle }}">{{ c.series }}</span>
+                <div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:6px;">{{ c.title }}</div>
+                <div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:6px;">{{ c.priceLabel }}</div>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- &more -->
+        <div style="padding:6px 14px 0;">
+          <div style="display:flex;align-items:center;gap:8px;border-bottom:2px solid #333;padding-bottom:7px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v7M4.5 3v4a2.5 2.5 0 0 0 5 0V3M7 10v11"></path><path d="M17 3c-1.6 0-2.5 2-2.5 5s.9 4 2.5 4v9"></path></svg>
+            <span style="font-size:17px;font-weight:700;font-family:'Zen Maru Gothic',sans-serif;color:#2b2b2b;">&amp;more</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;padding:14px 0 8px;">
+            <sc-for list="{{ moreCards }}" as="c" hint-placeholder-count="2">
+              <button onClick="{{ c.onOpen }}" style="text-align:left;display:flex;flex-direction:column;">
+                <div style="height:116px;border-radius:6px;overflow:hidden;">
+                  <image-slot id="{{ c.slotId }}" shape="rect" placeholder="{{ c.title }}" style="width:100%;height:100%;"></image-slot>
+                </div>
+                <span style="{{ c.tagStyle }}">{{ c.series }}</span>
+                <div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:6px;">{{ c.title }}</div>
+                <div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:6px;">{{ c.priceLabel }}</div>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <nav style="position:absolute;left:0;right:0;bottom:0;height:66px;background:#E50012;display:flex;align-items:stretch;z-index:35;">
+      <button onClick="{{ goHome }}" style="{{ navHome }}">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 11.5L12 4l8.5 7.5"></path><path d="M5.5 10v9.5h13V10"></path></svg>
+        <span style="font-size:11px;">注文TOP</span>
+      </button>
+      <div style="align-self:center;height:34px;border-left:2px dotted rgba(255,255,255,.6);"></div>
+      <button onClick="{{ openMypage }}" style="{{ navMy }}">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.6"></circle><path d="M5 20c0-3.9 3.1-6.6 7-6.6s7 2.7 7 6.6"></path></svg>
+        <span style="font-size:11px;">マイページ</span>
+      </button>
+      <div style="align-self:center;height:34px;border-left:2px dotted rgba(255,255,255,.6);"></div>
+      <button onClick="{{ openCart }}" style="{{ navCart }}">
+        <div style="display:flex;align-items:center;gap:7px;">
+          <sc-if value="{{ cartBadge }}" hint-placeholder-val="{{ false }}"><span style="min-width:22px;height:22px;background:#fff;color:#E50012;border-radius:11px;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;">{{ cart }}</span></sc-if>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle><path d="M2.5 3h2.3l2.3 12.1a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.2L21 7H6.2"></path></svg>
+        </div>
+        <span style="font-size:11px;">カート (5/11週)</span>
+      </button>
+    </nav>
+
+    <!-- ===== HELP PAGE ===== -->
+    <sc-if value="{{ pageHelp }}" hint-placeholder-val="{{ false }}">
+      <div class="hs" style="position:absolute;top:4px;left:0;right:0;bottom:0;z-index:28;background:#F4F4F4;overflow-y:auto;overflow-x:hidden;padding-bottom:82px;scrollbar-width:none;animation:rk-slide .2s ease;">
+        <div style="position:sticky;top:0;z-index:5;background:#fff;display:flex;align-items:center;padding:13px 12px;box-shadow:0 1px 0 rgba(0,0,0,.06);">
+          <button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:1px;color:#E50012;font-size:13px;font-weight:700;position:relative;z-index:2;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>戻る</button>
+          <span style="position:absolute;left:0;right:0;text-align:center;font-size:16px;font-weight:700;color:#2b2b2b;">ヘルプ</span>
+        </div>
+        <div style="padding:16px 16px 0;">
+          <div style="display:flex;align-items:center;gap:9px;background:#fff;border-radius:11px;padding:12px 14px;box-shadow:0 1px 5px rgba(0,0,0,.08);">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#9a9a9a" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+            <span style="font-size:13.5px;color:#b3b3b3;">キーワードで検索　xxxxxxxx</span>
+          </div>
+        </div>
+        <div style="padding:20px 16px 0;">
+          <div style="font-size:15px;font-weight:700;color:#2b2b2b;margin-bottom:12px;">カテゴリから探す</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;">
+            <button style="background:#fff;border-radius:11px;box-shadow:0 1px 5px rgba(0,0,0,.08);padding:15px 6px;display:flex;flex-direction:column;align-items:center;gap:8px;"><span style="width:36px;height:36px;border-radius:50%;background:#FCEBEC;color:#E50012;display:flex;align-items:center;justify-content:center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><circle cx="9" cy="20" r="1.4"></circle><circle cx="18" cy="20" r="1.4"></circle><path d="M3 4h2.2l2 11h10l2-8H6.5"></path></svg></span><span style="font-size:11.5px;font-weight:700;color:#444;">ご注文について</span></button>
+            <button style="background:#fff;border-radius:11px;box-shadow:0 1px 5px rgba(0,0,0,.08);padding:15px 6px;display:flex;flex-direction:column;align-items:center;gap:8px;"><span style="width:36px;height:36px;border-radius:50%;background:#FCEBEC;color:#E50012;display:flex;align-items:center;justify-content:center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="1.5" y="6" width="12" height="10" rx="1"></rect><path d="M13.5 9h4l3 3v4h-7z"></path><circle cx="6" cy="18" r="1.6"></circle><circle cx="17" cy="18" r="1.6"></circle></svg></span><span style="font-size:11.5px;font-weight:700;color:#444;">お届けについて</span></button>
+            <button style="background:#fff;border-radius:11px;box-shadow:0 1px 5px rgba(0,0,0,.08);padding:15px 6px;display:flex;flex-direction:column;align-items:center;gap:8px;"><span style="width:36px;height:36px;border-radius:50%;background:#FCEBEC;color:#E50012;display:flex;align-items:center;justify-content:center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"></rect><path d="M3 10h18"></path></svg></span><span style="font-size:11.5px;font-weight:700;color:#444;">お支払い</span></button>
+            <button style="background:#fff;border-radius:11px;box-shadow:0 1px 5px rgba(0,0,0,.08);padding:15px 6px;display:flex;flex-direction:column;align-items:center;gap:8px;"><span style="width:36px;height:36px;border-radius:50%;background:#FCEBEC;color:#E50012;display:flex;align-items:center;justify-content:center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><circle cx="12" cy="9" r="3.2"></circle><path d="M6 19c0-3 2.7-5 6-5s6 2 6 5"></path></svg></span><span style="font-size:11.5px;font-weight:700;color:#444;">会員情報</span></button>
+            <button style="background:#fff;border-radius:11px;box-shadow:0 1px 5px rgba(0,0,0,.08);padding:15px 6px;display:flex;flex-direction:column;align-items:center;gap:8px;"><span style="width:36px;height:36px;border-radius:50%;background:#FCEBEC;color:#E50012;display:flex;align-items:center;justify-content:center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13-6M20 12a8 8 0 0 1-13 6"></path><path d="M17 3v3h-3M7 21v-3h3"></path></svg></span><span style="font-size:11.5px;font-weight:700;color:#444;">定期便</span></button>
+            <button style="background:#fff;border-radius:11px;box-shadow:0 1px 5px rgba(0,0,0,.08);padding:15px 6px;display:flex;flex-direction:column;align-items:center;gap:8px;"><span style="width:36px;height:36px;border-radius:50%;background:#FCEBEC;color:#E50012;display:flex;align-items:center;justify-content:center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="19" cy="12" r="1.8"></circle></svg></span><span style="font-size:11.5px;font-weight:700;color:#444;">その他</span></button>
+          </div>
+        </div>
+        <div style="padding:22px 16px 0;">
+          <div style="font-size:15px;font-weight:700;color:#2b2b2b;margin-bottom:10px;">よくある質問</div>
+          <div style="background:#fff;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.08);overflow:hidden;">
+            <sc-for list="{{ faqList }}" as="f" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:11px;padding:15px 14px;border-top:1px solid #F1F1F1;">
+                <span style="width:22px;height:22px;flex-shrink:0;border-radius:50%;background:#FCEBEC;color:#E50012;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;">Q</span>
+                <span style="flex:1;font-size:13.5px;color:#333;line-height:1.4;">{{ f.q }}</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c4c4c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="padding:22px 16px 20px;">
+          <div style="background:#fff;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.08);padding:18px 16px;text-align:center;">
+            <div style="font-size:13.5px;color:#444;line-height:1.6;">お困りごとが解決しない場合は<br>お気軽にお問い合わせください。</div>
+            <button onClick="{{ openContact }}" style="margin-top:14px;width:100%;background:#E50012;color:#fff;font-size:15px;font-weight:700;padding:13px;border-radius:10px;">お問い合わせへ</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===== NEWS PAGE ===== -->
+    <sc-if value="{{ pageNews }}" hint-placeholder-val="{{ false }}">
+      <div class="hs" style="position:absolute;top:4px;left:0;right:0;bottom:0;z-index:28;background:#F4F4F4;overflow-y:auto;overflow-x:hidden;padding-bottom:82px;scrollbar-width:none;animation:rk-slide .2s ease;">
+        <div style="position:sticky;top:0;z-index:5;background:#fff;display:flex;align-items:center;padding:13px 12px;box-shadow:0 1px 0 rgba(0,0,0,.06);">
+          <button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:1px;color:#E50012;font-size:13px;font-weight:700;position:relative;z-index:2;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>戻る</button>
+          <span style="position:absolute;left:0;right:0;text-align:center;font-size:16px;font-weight:700;color:#2b2b2b;">お知らせ</span>
+        </div>
+        <div class="hs" style="display:flex;gap:8px;padding:14px 16px 4px;overflow-x:auto;scrollbar-width:none;">
+          <span style="flex-shrink:0;background:#E50012;color:#fff;font-size:12px;font-weight:700;padding:6px 15px;border-radius:16px;">すべて</span>
+          <span style="flex-shrink:0;background:#fff;color:#666;font-size:12px;font-weight:600;padding:6px 15px;border-radius:16px;box-shadow:0 0 0 1.5px #E0E0E0 inset;">お知らせ</span>
+          <span style="flex-shrink:0;background:#fff;color:#666;font-size:12px;font-weight:600;padding:6px 15px;border-radius:16px;box-shadow:0 0 0 1.5px #E0E0E0 inset;">メンテナンス</span>
+          <span style="flex-shrink:0;background:#fff;color:#666;font-size:12px;font-weight:600;padding:6px 15px;border-radius:16px;box-shadow:0 0 0 1.5px #E0E0E0 inset;">キャンペーン</span>
+        </div>
+        <div style="padding:12px 16px 20px;display:flex;flex-direction:column;gap:11px;">
+          <sc-for list="{{ newsList }}" as="n" hint-placeholder-count="5">
+            <div style="background:#fff;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.08);padding:14px 15px;position:relative;">
+              <sc-if value="{{ n.unread }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:15px;right:15px;width:8px;height:8px;border-radius:50%;background:#E50012;"></span></sc-if>
+              <div style="display:flex;align-items:center;gap:9px;">
+                <span style="{{ n.tagStyle }}">{{ n.tag }}</span>
+                <span style="font-size:11.5px;color:#9a9a9a;">{{ n.date }}</span>
+              </div>
+              <div style="font-size:13.5px;font-weight:700;color:#2b2b2b;margin-top:9px;line-height:1.55;padding-right:14px;">{{ n.title }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===== CONTACT PAGE ===== -->
+    <sc-if value="{{ pageContact }}" hint-placeholder-val="{{ false }}">
+      <div class="hs" style="position:absolute;top:4px;left:0;right:0;bottom:0;z-index:28;background:#F4F4F4;overflow-y:auto;overflow-x:hidden;padding-bottom:82px;scrollbar-width:none;animation:rk-slide .2s ease;">
+        <div style="position:sticky;top:0;z-index:5;background:#fff;display:flex;align-items:center;padding:13px 12px;box-shadow:0 1px 0 rgba(0,0,0,.06);">
+          <button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:1px;color:#E50012;font-size:13px;font-weight:700;position:relative;z-index:2;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>戻る</button>
+          <span style="position:absolute;left:0;right:0;text-align:center;font-size:16px;font-weight:700;color:#2b2b2b;">お問い合わせ</span>
+        </div>
+        <div style="padding:16px 16px 0;">
+          <div style="font-size:13px;color:#555;line-height:1.7;">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<br>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</div>
+        </div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:16px;">
+          <div>
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;"><span style="font-size:13px;font-weight:700;color:#333;">お名前</span><span style="background:#E50012;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;">必須</span></div>
+            <div style="background:#fff;border-radius:9px;box-shadow:0 0 0 1.5px #E0E0E0 inset;padding:13px;font-size:13.5px;color:#b3b3b3;">xxxxxxxxxxxx</div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;"><span style="font-size:13px;font-weight:700;color:#333;">メールアドレス</span><span style="background:#E50012;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;">必須</span></div>
+            <div style="background:#fff;border-radius:9px;box-shadow:0 0 0 1.5px #E0E0E0 inset;padding:13px;font-size:13.5px;color:#b3b3b3;">xxxxxxxx@xxxxx.xx</div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;"><span style="font-size:13px;font-weight:700;color:#333;">お問い合わせ種別</span><span style="background:#E50012;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;">必須</span></div>
+            <div style="background:#fff;border-radius:9px;box-shadow:0 0 0 1.5px #E0E0E0 inset;padding:13px;font-size:13.5px;color:#b3b3b3;display:flex;align-items:center;justify-content:space-between;">xxxxxxxxを選択<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b3b3b3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;"><span style="font-size:13px;font-weight:700;color:#333;">お問い合わせ内容</span><span style="background:#E50012;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;">必須</span></div>
+            <div style="background:#fff;border-radius:9px;box-shadow:0 0 0 1.5px #E0E0E0 inset;padding:13px;font-size:13.5px;color:#b3b3b3;line-height:1.6;min-height:110px;">xxxxxxxxxxxxxxxxxxxxxxxxxxxx<br>xxxxxxxxxxxxxxxxxx</div>
+          </div>
+          <button style="margin-top:4px;width:100%;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:10px;">送信する</button>
+          <div style="font-size:11px;color:#9a9a9a;text-align:center;line-height:1.6;">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===== MY PAGE ===== -->
+    <sc-if value="{{ pageMypage }}" hint-placeholder-val="{{ false }}">
+      <div class="hs" style="position:absolute;top:4px;left:0;right:0;bottom:0;z-index:28;background:#F4F4F4;overflow-y:auto;overflow-x:hidden;padding-bottom:82px;scrollbar-width:none;animation:rk-slide .2s ease;">
+        <div style="position:sticky;top:0;z-index:5;background:#fff;display:flex;align-items:center;padding:13px 12px;box-shadow:0 1px 0 rgba(0,0,0,.06);">
+          <button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:1px;color:#E50012;font-size:13px;font-weight:700;position:relative;z-index:2;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>戻る</button>
+          <span style="position:absolute;left:0;right:0;text-align:center;font-size:16px;font-weight:700;color:#2b2b2b;">マイページ</span>
+        </div>
+        <div style="padding:16px 16px 0;">
+          <div style="background:#fff;border-radius:14px;box-shadow:0 1px 7px rgba(0,0,0,.09);padding:18px 16px;display:flex;align-items:center;gap:14px;">
+            <div style="width:58px;height:58px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#F0F0F0;"><image-slot id="mypage-avatar" shape="circle" placeholder="顔写真" style="width:100%;height:100%;"></image-slot></div>
+            <div style="min-width:0;">
+              <div style="font-size:16px;font-weight:700;color:#2b2b2b;">xxxxxxx 様</div>
+              <div style="font-size:11.5px;color:#8a8a8a;margin-top:3px;">お客様番号：xxxx-xxxx-xxxx</div>
+              <span style="display:inline-block;margin-top:8px;background:#FCEBEC;color:#E50012;font-size:10.5px;font-weight:700;padding:2px 11px;border-radius:11px;">ゴールド会員</span>
+            </div>
+          </div>
+        </div>
+        <div style="padding:14px 16px 0;">
+          <div style="background:#fff;border-radius:14px;box-shadow:0 1px 7px rgba(0,0,0,.09);padding:16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:13px;font-weight:700;color:#2b2b2b;">次回のお届け</span>
+              <span style="font-size:11px;color:#E50012;font-weight:700;background:#FCEBEC;padding:3px 10px;border-radius:10px;">配送予定</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:10px;margin-top:11px;">
+              <span style="font-size:24px;font-weight:800;color:#E50012;">5/11</span><span style="font-size:13px;color:#555;">（月）xx:xx 頃</span>
+            </div>
+            <div style="font-size:12px;color:#777;margin-top:9px;">お届け商品：xx 点 ／ お支払い：¥xx,xxx</div>
+          </div>
+        </div>
+        <div style="padding:18px 16px 0;">
+          <div style="background:#fff;border-radius:14px;box-shadow:0 1px 7px rgba(0,0,0,.09);overflow:hidden;">
+            
+            
+            
+            
+            <button style="width:100%;display:flex;align-items:center;gap:13px;padding:15px 16px;text-align:left;"><span style="width:30px;height:30px;border-radius:8px;background:#FCEBEC;color:#E50012;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13-6M20 12a8 8 0 0 1-13 6"></path><path d="M17 3v3h-3M7 21v-3h3"></path></svg></span><span style="flex:1;font-size:13.5px;font-weight:600;color:#333;">定期便の設定</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c4c4c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
+            <button onClick="{{ openHelp }}" style="width:100%;display:flex;align-items:center;gap:13px;padding:15px 16px;border-top:1px solid #F1F1F1;text-align:left;"><span style="width:30px;height:30px;border-radius:8px;background:#FCEBEC;color:#E50012;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"></circle><path d="M9.3 9.3a2.7 2.7 0 1 1 3.9 2.5c-.8.4-1.3 1-1.3 1.9" stroke-linecap="round"></path><circle cx="12" cy="17" r="1" fill="currentColor" stroke="none"></circle></svg></span><span style="flex:1;font-size:13.5px;font-weight:600;color:#333;">よくある質問・ヘルプ</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c4c4c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
+          </div>
+        </div>
+        <div style="padding:16px 16px 20px;">
+          <button onClick="{{ goHome }}" style="width:100%;background:#fff;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.08);padding:15px;font-size:14px;font-weight:700;color:#E50012;">ログアウト</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===== CART PAGE ===== -->
+    <sc-if value="{{ pageCart }}" hint-placeholder-val="{{ false }}">
+      <div class="hs" style="position:absolute;top:4px;left:0;right:0;bottom:0;z-index:28;background:#F4F4F4;overflow-y:auto;overflow-x:hidden;padding-bottom:82px;scrollbar-width:none;animation:rk-slide .2s ease;">
+        <div style="position:sticky;top:0;z-index:5;background:#fff;display:flex;align-items:center;padding:13px 12px;box-shadow:0 1px 0 rgba(0,0,0,.06);">
+          <button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:1px;color:#E50012;font-size:13px;font-weight:700;position:relative;z-index:2;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>戻る</button>
+          <span style="position:absolute;left:0;right:0;text-align:center;font-size:16px;font-weight:700;color:#2b2b2b;">カート</span>
+        </div>
+
+        <sc-if value="{{ cartHasItems }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:14px 16px 2px;">
+            <span style="font-size:13px;color:#555;">5/11週のご注文　・　全 {{ cartCountLabel }}</span>
+          </div>
+          <div style="padding:8px 16px 0;display:flex;flex-direction:column;gap:12px;">
+            <sc-for list="{{ cartView }}" as="c" hint-placeholder-count="3">
+              <div style="background:#fff;border-radius:14px;box-shadow:0 1px 7px rgba(0,0,0,.09);padding:13px;display:flex;gap:12px;">
+                <div style="width:86px;height:76px;border-radius:8px;overflow:hidden;flex-shrink:0;"><image-slot id="{{ c.slotId }}" shape="rect" placeholder="{{ c.title }}" style="width:100%;height:100%;"></image-slot></div>
+                <div style="flex:1;min-width:0;">
+                  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+                    <span style="{{ c.tagStyle }}">{{ c.tag }}</span>
+                    <button onClick="{{ c.remove }}" style="color:#b8b8b8;flex-shrink:0;padding:2px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+                  </div>
+                  <div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:6px;line-height:1.4;">{{ c.title }}</div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;">
+                    <span style="font-size:14px;font-weight:700;color:#2b2b2b;">{{ c.unit }} {{ c.priceLabel }}</span>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <button onClick="{{ c.dec }}" style="{{ c.minusStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 12h12"></path></svg></button>
+                      <span style="min-width:14px;text-align:center;font-weight:700;color:#2b2b2b;">{{ c.qty }}</span>
+                      <button onClick="{{ c.inc }}" style="width:29px;height:29px;border-radius:7px;background:#2b2b2b;color:#fff;display:flex;align-items:center;justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 6v12M6 12h12"></path></svg></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="padding:16px 16px 0;">
+            <div style="background:#fff;border-radius:14px;box-shadow:0 1px 7px rgba(0,0,0,.09);padding:16px;">
+              <div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;"><span>小計</span><span style="font-weight:700;">{{ cartSubtotal }}</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;margin-top:11px;"><span>送料</span><span style="font-weight:700;">{{ cartShip }}</span></div>
+              <div style="border-top:1px solid #EEE;margin:13px 0;"></div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:14px;font-weight:700;color:#2b2b2b;">合計</span><span style="font-size:22px;font-weight:800;color:#E50012;">{{ cartTotal }}</span></div>
+            </div>
+          </div>
+          <div style="padding:16px;">
+            <button style="width:100%;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:16px;border-radius:11px;display:flex;align-items:center;justify-content:center;gap:8px;">注文を確定する<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:70px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#cfcfcf" stroke-width="1.4" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle><path d="M2.5 3h2.3l2.3 12.1a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.2L21 7H6.2"></path></svg>
+            <div style="font-size:14px;color:#888;margin-top:16px;">カートに商品がありません</div>
+            <button onClick="{{ goHome }}" style="margin-top:20px;background:#fff;color:#E50012;font-size:14px;font-weight:700;padding:12px 28px;border-radius:10px;box-shadow:0 0 0 1.5px #E50012 inset;">商品を探す</button>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <!-- ===== BULK MODAL ===== -->
+    <sc-if value="{{ bulkOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeBulk }}" style="position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:64px 16px 20px;overflow-y:auto;animation:rk-fade .18s ease;">
+        <div onClick="{{ stop }}" style="width:100%;max-width:344px;background:#fff;border-radius:16px;padding:22px 18px 20px;animation:rk-pop .2s ease;box-shadow:0 22px 54px rgba(0,0,0,.32);">
+          <div style="display:flex;gap:14px;align-items:flex-start;">
+            <div style="position:relative;flex-shrink:0;">
+              <div style="width:54px;height:54px;background:#E50012;border-radius:50%;color:#fff;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;">お得!</div>
+              <div style="position:absolute;left:16px;bottom:-7px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:11px solid #E50012;"></div>
+            </div>
+            <div style="padding-top:2px;">
+              <div style="font-size:17px;font-weight:700;line-height:1.45;color:#2b2b2b;">スマイリーミール<br>5日間分（月〜金）</div>
+              <div style="font-size:16px;font-weight:700;margin-top:8px;color:#2b2b2b;">2人用 6,880円〜</div>
+            </div>
+          </div>
+          <div style="margin-top:16px;">
+            <sc-for list="{{ bulkList }}" as="b" hint-placeholder-count="5">
+              <div style="display:flex;gap:11px;align-items:center;padding:9px 0;border-top:1px solid #F0F0F0;">
+                <div style="{{ b.dateStyle2 }}">{{ b.date }}<br><span style="font-size:10px;">（{{ b.dow }}）</span></div>
+                <div style="width:54px;height:46px;border-radius:6px;overflow:hidden;flex-shrink:0;">
+                  <image-slot id="{{ b.bulkSlot }}" shape="rect" placeholder="{{ b.dow }}" style="width:100%;height:100%;"></image-slot>
+                </div>
+                <div style="font-size:12.5px;line-height:1.4;color:#333;min-width:0;">{{ b.title }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <button onClick="{{ confirmBulk }}" style="margin-top:18px;width:100%;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:10px;">確認する</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===== PRODUCT MODAL ===== -->
+    <sc-if value="{{ productOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;z-index:45;background:#fff;display:flex;flex-direction:column;animation:rk-up .22s ease;">
+        <div style="height:4px;background:#E50012;"></div>
+        <div style="background:#fff;padding:10px 14px 6px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 0 rgba(0,0,0,.05);">
+          <img src="assets/logo.svg" alt="ヨシケイ楽楽web" style="height:26px;width:auto;display:block;">
+          <div style="display:flex;gap:15px;">
+            <span style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6f6f6f;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"></circle><path d="M9.3 9.3a2.7 2.7 0 1 1 3.9 2.5c-.8.4-1.3 1-1.3 1.9" stroke-linecap="round"></path><circle cx="12" cy="17" r="1.1" fill="currentColor" stroke="none"></circle></svg><span style="font-size:8px;">ヘルプ</span></span>
+            <span style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6f6f6f;position:relative;"><span style="position:absolute;top:-5px;right:0;min-width:14px;height:14px;padding:0 3px;background:#E50012;color:#fff;border-radius:7px;font-size:8.5px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1;">5</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 9.5v5a1 1 0 0 0 1 1h1.5l3.6 3.5v-14L6.5 8.5H5a1 1 0 0 0-1 1z"></path><path d="M14 8.4c1.3.9 2.1 2.2 2.1 3.6s-.8 2.7-2.1 3.6"></path></svg><span style="font-size:8px;">お知らせ</span></span>
+            <span style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6f6f6f;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="1.6"></rect><path d="M3.6 7l8.4 6 8.4-6"></path></svg><span style="font-size:8px;">お問合せ</span></span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 14px 8px;">
+          <span style="border:1px solid #E3A8C0;color:#C4708F;border-radius:13px;padding:3px 11px;font-size:11px;font-weight:700;white-space:nowrap;">{{ product.dateLabel }}</span>
+          <span style="{{ product.tagStyle }}">{{ product.seriesName }}</span>
+          <button onClick="{{ closeProduct }}" style="margin-left:auto;display:flex;flex-direction:column;align-items:center;gap:2px;color:#555;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+            <span style="font-size:8.5px;">閉じる</span>
+          </button>
+        </div>
+        <div class="hs" style="flex:1;overflow-y:auto;scrollbar-width:none;">
+          <div style="height:236px;">
+            <image-slot id="{{ product.detailSlot }}" shape="rect" placeholder="{{ product.title }}" style="width:100%;height:100%;"></image-slot>
+          </div>
+          <div style="padding:15px 16px 8px;">
+            <div style="font-size:16px;font-weight:700;color:#2b2b2b;line-height:1.4;">{{ product.title }}</div>
+            <button onClick="{{ toggleNoCut }}" style="display:flex;gap:9px;align-items:flex-start;margin-top:14px;text-align:left;">
+              <span style="{{ noCutBox }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"></path></svg></span>
+              <span style="font-size:13px;font-weight:700;color:#E50012;line-height:1.45;">野菜のカットが不要な方はチェックを<br>つけてください。</span>
+            </button>
+            <div style="margin-top:16px;">
+              <sc-for list="{{ sizeRows }}" as="s" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 2px;border-top:1px solid #F0F0F0;">
+                  <span style="font-size:14.5px;color:#333;"><b>{{ s.label }}</b>　{{ s.price }}円</span>
+                  <div style="display:flex;align-items:center;gap:11px;">
+                    <button onClick="{{ s.dec }}" style="{{ s.minusStyle }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 12h12"></path></svg></button>
+                    <span style="min-width:16px;text-align:center;font-size:16px;font-weight:700;color:#2b2b2b;">{{ s.qty }}</span>
+                    <button onClick="{{ s.inc }}" style="width:31px;height:31px;border-radius:7px;background:#2b2b2b;color:#fff;display:flex;align-items:center;justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 6v12M6 12h12"></path></svg></button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:11px;padding:12px 16px;border-top:1px solid #EEE;background:#fff;">
+          <button style="width:118px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:10px;box-shadow:0 0 0 1.5px #D8D8D8 inset;padding:9px;color:#333;">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 6c-1.6-1.2-3.6-1.8-5.5-1.8L4 4.4v13l2.5-.2c1.9 0 3.9.6 5.5 1.8 1.6-1.2 3.6-1.8 5.5-1.8l2.5.2v-13l-2.5-.2C15.6 4.2 13.6 4.8 12 6z"></path><path d="M12 6v13"></path></svg>
+            <span style="font-size:12px;">レシピページ</span>
+          </button>
+          <button onClick="{{ addToCart }}" style="flex:1;background:#E50012;color:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:9px;font-size:15px;font-weight:700;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle><path d="M2.5 3h2.3l2.3 12.1a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.2L21 7H6.2"></path></svg>
+            カートに反映
+          </button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===== CART ADDED MODAL ===== -->
+    <sc-if value="{{ cartAddedOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ skipRec }}" style="position:absolute;inset:0;z-index:50;background:rgba(0,0,0,.42);display:flex;flex-direction:column;justify-content:flex-end;animation:rk-fade .18s ease;">
+        <div onClick="{{ stop }}" style="background:#fff;border-radius:18px 18px 0 0;max-height:84%;display:flex;flex-direction:column;animation:rk-up .24s ease;">
+          <div style="padding:18px 18px 10px;">
+            <div style="display:flex;align-items:center;gap:9px;">
+              <span style="width:23px;height:23px;border-radius:50%;background:#E50012;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"></path></svg></span>
+              <span style="font-size:16px;font-weight:700;color:#E50012;">カートに追加しました。</span>
+            </div>
+            <div style="font-size:13px;color:#333;margin-top:13px;line-height:1.55;">ご一緒にいかがですか？<br>よく一緒に購入されている商品です。</div>
+          </div>
+          <div class="hs" style="flex:1;overflow-y:auto;padding:0 18px;scrollbar-width:none;">
+            <sc-for list="{{ recItems }}" as="r" hint-placeholder-count="3">
+              <div style="display:flex;gap:12px;padding:13px 0;border-top:1px solid #F0F0F0;">
+                <div style="width:78px;height:68px;border-radius:8px;overflow:hidden;flex-shrink:0;">
+                  <image-slot id="{{ r.slotId }}" shape="rect" placeholder="{{ r.short }}" style="width:100%;height:100%;"></image-slot>
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                    <span style="border:1px solid #E3A8C0;color:#C4708F;border-radius:11px;padding:1px 8px;font-size:9.5px;font-weight:700;white-space:nowrap;">{{ r.date }}</span>
+                    <span style="{{ r.tagStyle }}">{{ r.tag }}</span>
+                  </div>
+                  <div style="font-size:12.5px;font-weight:700;color:#2b2b2b;margin-top:6px;line-height:1.4;">{{ r.title }}</div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:7px;">
+                    <span style="font-size:14px;font-weight:700;color:#2b2b2b;">{{ r.priceLabel }}</span>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <button onClick="{{ r.dec }}" style="{{ r.minusStyle }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 12h12"></path></svg></button>
+                      <span style="min-width:14px;text-align:center;font-weight:700;color:#2b2b2b;">{{ r.qty }}</span>
+                      <button onClick="{{ r.inc }}" style="width:29px;height:29px;border-radius:7px;background:#2b2b2b;color:#fff;display:flex;align-items:center;justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 6v12M6 12h12"></path></svg></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="padding:13px 18px 18px;display:flex;flex-direction:column;gap:9px;border-top:1px solid #EEE;">
+            <button onClick="{{ addRec }}" style="width:100%;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:10px;">カートに反映</button>
+            <button onClick="{{ skipRec }}" style="width:100%;background:#fff;color:#333;font-size:15px;font-weight:600;padding:13px;border-radius:10px;box-shadow:0 0 0 1.5px #DADADA inset;">追加しない</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+ </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startMode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;series&quot;,&quot;delivery&quot;],&quot;default&quot;:&quot;series&quot;,&quot;tsType&quot;:&quot;'series'|'delivery'&quot;,&quot;section&quot;:&quot;初期表示&quot;},&quot;startTab&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:0,&quot;min&quot;:0,&quot;max&quot;:4,&quot;unit&quot;:&quot;番目&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;初期表示&quot;},&quot;cartStart&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:0,&quot;min&quot;:0,&quot;max&quot;:9,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;カート&quot;},&quot;deviceFrame&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;表示&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    const modes=['series','delivery'];
+    this.state={
+      topMode: modes.includes(props.startMode)?props.startMode:'series',
+      seriesTab: Number.isInteger(props.startTab)?Math.min(4,Math.max(0,props.startTab)):0,
+      activeDay:0,
+      page:null,
+      bulkOpen:false, productOpen:false, cartAddedOpen:false,
+      product:null, qty:{s2:1,s3:0,s4:0}, noCut:false,
+      recQty:[0,0,0],
+      cart: Number.isInteger(props.cartStart)?props.cartStart:0,
+      cartItems:[
+        {id:'c1',title:'てりやき親子丼 お揚げと野菜のおかず汁',tag:'スマイリーミール',accent:'#DB84AC',unit:'2人用',price:1350,qty:1,slotId:'cart-c1'},
+        {id:'c2',title:'チキンソテー〜トマトガーリックソース〜 ウインナーとキャベツ',tag:'スタンダードミール',accent:'#6FA8D6',unit:'2人用',price:1350,qty:1,slotId:'cart-c2'},
+        {id:'c3',title:'神戸ドーナツ プレーン・夏みかん＋キャラメル',tag:'食料雑貨',accent:'#8FC24A',unit:'',price:1490,qty:1,slotId:'cart-c3'},
+      ],
+    };
+  }
+
+  SERIES=[
+    {key:'smile',    name:'スマイリーミール',   accent:'#DB84AC', dark:'#B85688', tint:'#FBEEF3'},
+    {key:'standard', name:'スタンダードミール', accent:'#6FA8D6', dark:'#3E7CB1', tint:'#EBF3FA'},
+    {key:'balance',  name:'バランスミール',     accent:'#7FBB8C', dark:'#4E9265', tint:'#EEF6F0'},
+    {key:'fun',      name:'ファンミール',       accent:'#DDA92C', dark:'#B2851A', tint:'#FBF3DE'},
+    {key:'timely',   name:'タイムリーミール',   accent:'#A98BC7', dark:'#8663AC', tint:'#F2ECF8'},
+  ];
+  WEEK=[
+    {id:'d11',date:'5/11',dow:'月',title:'てりやき親子丼 お揚げと野菜のおかず汁',price:'1,350'},
+    {id:'d12',date:'5/12',dow:'火',title:'豚肉のすりおろし生姜焼き かぼちゃサラダ',price:'1,290'},
+    {id:'d13',date:'5/13',dow:'水',title:'バターじょうゆで食べる骨取あじのムニエル ウインナーと野菜のミルクスープ',price:'1,580'},
+    {id:'d14',date:'5/14',dow:'木',title:'揚げない黒酢酢豚 レンチン蒸し鶏の棒々鶏',price:'1,420'},
+    {id:'d15',date:'5/15',dow:'金',title:'おろしチキン竜田 ツナとわかめのあえもの',price:'1,380'},
+  ];
+  DAYS=[{n:'11',dow:'月'},{n:'12',dow:'火'},{n:'13',dow:'水'},{n:'14',dow:'木'},{n:'15',dow:'金'},{n:'16',dow:'土'}];
+  SMILE=[{id:'a',si:0},{id:'b',si:1},{id:'c',si:3},{id:'d',si:4}];
+  MORE=[
+    {id:'m1',tag:'プレミアムディッシュ',accent:'#CE4A3E',title:'ハンバーグ〜オニオンバターソース〜',price:'1,350'},
+    {id:'m2',tag:'カジュアルディッシュ',accent:'#4FA98C',title:'鶏肉とポテトの塩レモン',price:'1,350'},
+  ];
+  SIZES=[{k:'s2',label:'2人用',price:'1,350'},{k:'s3',label:'3人用',price:'1,690'},{k:'s4',label:'4人用',price:'2,150'}];
+  REC=[
+    {id:'r1',tag:'食料雑貨',tagColor:'#8FC24A',date:'5/11（月）お届け',title:'神戸ドーナツ プレーン・夏みかん＋キャラメル',short:'ドーナツ',price:'1,490'},
+    {id:'r2',tag:'食料雑貨',tagColor:'#8FC24A',date:'5/11（月）お届け',title:'大地の恵みナッツ＆フルーツ',short:'ナッツ',price:'1,060'},
+    {id:'r3',tag:'お米',tagColor:'#7B6FC2',date:'5/11（月）お届け',title:'レトルトご飯',short:'ご飯',price:'650'},
+  ];
+  NEWS=[
+    {tag:'重要',color:'#E50012',date:'xxxx.xx.xx',title:'xxxxxxxxxxxxxxxxxxxxxxxxxxxx',unread:true},
+    {tag:'メンテナンス',color:'#6F86C2',date:'xxxx.xx.xx',title:'xxxxxxxxxxxxxxxxxxxx',unread:true},
+    {tag:'キャンペーン',color:'#E0912C',date:'xxxx.xx.xx',title:'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',unread:true},
+    {tag:'お知らせ',color:'#7BA86A',date:'xxxx.xx.xx',title:'xxxxxxxxxxxxxxxx',unread:false},
+    {tag:'お知らせ',color:'#7BA86A',date:'xxxx.xx.xx',title:'xxxxxxxxxxxxxxxxxxxxxx',unread:false},
+  ];
+  FAQ=[
+    {q:'xxxxxxxxxxxxxxxxxxxxxx？'},
+    {q:'xxxxxxxxxxxxxx？'},
+    {q:'xxxxxxxxxxxxxxxxxxxxxxxxxx？'},
+    {q:'xxxxxxxxxxxx？'},
+    {q:'xxxxxxxxxxxxxxxxxx？'},
+  ];
+
+  mkProduct(o,s){
+    return {
+      title:o.title, seriesName:s.name, dateLabel:'5/11（月）お届け',
+      tagStyle:{background:s.accent,color:'#fff',borderRadius:'13px',padding:'3px 12px',fontSize:'11px',fontWeight:700,whiteSpace:'nowrap'},
+      detailSlot:'prod-'+(o.id||'x'),
+    };
+  }
+
+  goSeries=()=>this.setState({topMode:'series'});
+  goDelivery=()=>this.setState({topMode:'delivery'});
+  setTab=(i)=>this.setState({seriesTab:i});
+  setDay=(i)=>this.setState({activeDay:i});
+  openBulk=()=>this.setState({bulkOpen:true});
+  closeBulk=()=>this.setState({bulkOpen:false});
+  confirmBulk=()=>this.setState(s=>({bulkOpen:false,cart:s.cart+5}));
+  openProduct=(p)=>this.setState({product:p,productOpen:true,qty:{s2:1,s3:0,s4:0},noCut:false});
+  closeProduct=()=>this.setState({productOpen:false});
+  changeQty=(k,d)=>this.setState(s=>{const q={...s.qty};q[k]=Math.max(0,q[k]+d);return{qty:q};});
+  toggleNoCut=()=>this.setState(s=>({noCut:!s.noCut}));
+  addToCart=()=>this.setState(s=>{const t=s.qty;const n=t.s2+t.s3+t.s4;return{cart:s.cart+n,productOpen:false,cartAddedOpen:true};});
+  recChange=(i,d)=>this.setState(s=>{const r=[...s.recQty];r[i]=Math.max(0,r[i]+d);return{recQty:r};});
+  addRec=()=>this.setState(s=>{const n=s.recQty.reduce((a,b)=>a+b,0);return{cart:s.cart+n,cartAddedOpen:false,recQty:[0,0,0]};});
+  skipRec=()=>this.setState({cartAddedOpen:false,recQty:[0,0,0]});
+  stop=(e)=>e.stopPropagation();
+
+  goHome=()=>this.setState({page:null});
+  openHelp=()=>this.setState({page:'help'});
+  openNews=()=>this.setState({page:'news'});
+  openContact=()=>this.setState({page:'contact'});
+  openMypage=()=>this.setState({page:'mypage'});
+  openCart=()=>this.setState({page:'cart'});
+  cartQty=(id,d)=>this.setState(s=>({cartItems:s.cartItems.map(c=>c.id===id?{...c,qty:Math.max(1,c.qty+d)}:c)}));
+  removeCart=(id)=>this.setState(s=>({cartItems:s.cartItems.filter(c=>c.id!==id)}));
+
+  renderVals(){
+    const st=this.state;
+    const cs=this.SERIES[st.seriesTab]||this.SERIES[0];
+
+    const tabs=this.SERIES.map((s,i)=>({
+      name:s.name,
+      onClick:()=>this.setTab(i),
+      style:{padding:'11px 2px',whiteSpace:'nowrap',fontSize:'14px',background:'none',
+        color:i===st.seriesTab?s.dark:'#9a9a9a',
+        fontWeight:i===st.seriesTab?700:500,
+        borderBottom:i===st.seriesTab?('3px solid '+s.dark):'3px solid transparent'},
+    }));
+
+    const serList=this.WEEK.map(m=>({
+      date:m.date,dow:m.dow,title:m.title,priceLabel:'2人用 '+m.price+'円〜',
+      slotId:'ser-'+cs.key+'-'+m.id,
+      dateStyle:{width:'62px',flexShrink:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'2px',background:cs.tint,color:cs.dark},
+      onOpen:()=>this.openProduct(this.mkProduct({title:m.title,id:'ser-'+cs.key+'-'+m.id},cs)),
+    }));
+
+    const smileCards=this.SMILE.map(c=>{
+      const s=this.SERIES[c.si];
+      return {
+        series:s.name,title:'てりやき親子丼 お揚げと野菜のおかず汁',priceLabel:'2人用 1,350円〜',
+        slotId:'del-'+c.id,
+        tagStyle:{alignSelf:'flex-start',margin:'9px 0 0',padding:'3px 11px',borderRadius:'12px',fontSize:'11px',fontWeight:700,color:'#fff',background:s.accent},
+        onOpen:()=>this.openProduct(this.mkProduct({title:'てりやき親子丼 お揚げと野菜のおかず汁',id:'del-'+c.id},s)),
+      };
+    });
+
+    const moreCards=this.MORE.map(c=>({
+      series:c.tag,title:c.title,priceLabel:'2人用 '+c.price+'円〜',
+      slotId:'more-'+c.id,
+      tagStyle:{alignSelf:'flex-start',margin:'9px 0 0',padding:'3px 11px',borderRadius:'12px',fontSize:'11px',fontWeight:700,color:'#fff',background:c.accent},
+      onOpen:()=>this.openProduct({title:c.title,seriesName:c.tag,dateLabel:'5/11（月）お届け',tagStyle:{background:c.accent,color:'#fff',borderRadius:'13px',padding:'3px 12px',fontSize:'11px',fontWeight:700,whiteSpace:'nowrap'},detailSlot:'more-'+c.id}),
+    }));
+
+    const dayCells=this.DAYS.map((d,i)=>{
+      const a=i===st.activeDay;
+      return {n:d.n,dow:d.dow,onClick:()=>this.setDay(i),
+        dowStyle:{fontSize:'12px',color:a?'#333':'#a8a8a8',fontWeight:a?700:400},
+        numStyle:{width:'38px',height:'38px',borderRadius:'9px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'17px',fontWeight:700,
+          border:a?'2px solid #E50012':'2px solid transparent',color:a?'#E50012':'#c6c6c6'},
+      };
+    });
+
+    const bulkList=this.WEEK.map(m=>({
+      date:m.date,dow:m.dow,title:m.title,bulkSlot:'bulk-'+m.id,
+      dateStyle2:{width:'44px',flexShrink:0,textAlign:'center',padding:'8px 0',borderRadius:'7px',background:'#FBEDF3',color:'#CE6A97',fontSize:'12px',fontWeight:700,lineHeight:'1.2'},
+    }));
+
+    const sizeRows=this.SIZES.map(s=>{
+      const q=st.qty[s.k]||0;
+      return {label:s.label,price:s.price,qty:q,
+        inc:()=>this.changeQty(s.k,1),dec:()=>this.changeQty(s.k,-1),
+        minusStyle:{width:'31px',height:'31px',borderRadius:'7px',display:'flex',alignItems:'center',justifyContent:'center',background:'#fff',
+          border:q>0?'1.6px solid #333':'1.6px solid #E4E4E4',color:q>0?'#333':'#DDDDDD'},
+      };
+    });
+
+    const noCutBox={width:'23px',height:'23px',borderRadius:'5px',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',
+      border:'none',background:st.noCut?'#E50012':'#EDEDED',color:st.noCut?'#fff':'#C6C6C6'};
+
+    const recItems=this.REC.map((r,i)=>{
+      const q=st.recQty[i]||0;
+      return {title:r.title,short:r.short,date:r.date,tag:r.tag,priceLabel:r.price+'円',qty:q,
+        slotId:'rec-'+r.id,
+        tagStyle:{padding:'1px 9px',borderRadius:'11px',fontSize:'9.5px',fontWeight:700,color:'#fff',background:r.tagColor,whiteSpace:'nowrap'},
+        inc:()=>this.recChange(i,1),dec:()=>this.recChange(i,-1),
+        minusStyle:{width:'29px',height:'29px',borderRadius:'7px',display:'flex',alignItems:'center',justifyContent:'center',background:'#fff',
+          border:q>0?'1.6px solid #333':'1.6px solid #E4E4E4',color:q>0?'#333':'#DDDDDD'},
+      };
+    });
+
+    const segBase={flex:1,display:'flex',alignItems:'center',gap:'7px',justifyContent:'center',padding:'9px 5px',fontSize:'12.5px',fontWeight:700,lineHeight:'1.25',textAlign:'left'};
+    const serSeg={...segBase,borderRight:'1px solid #E2E2E2',background:st.topMode==='series'?'#FCEBEC':'#fff',color:st.topMode==='series'?'#E50012':'#333'};
+    const delSeg={...segBase,background:st.topMode==='delivery'?'#FCEBEC':'#fff',color:st.topMode==='delivery'?'#E50012':'#333'};
+
+    const bezelStyle=this.props.deviceFrame?{padding:'14px',background:'#1b1b1b',borderRadius:'46px',boxShadow:'0 22px 60px rgba(0,0,0,.4)'}:{};
+
+    const yen=(n)=>'¥'+Number(n).toLocaleString('ja-JP');
+    const cartView=st.cartItems.map(c=>({
+      title:c.title,unit:c.unit,priceLabel:yen(c.price),qty:c.qty,slotId:c.slotId,
+      tagStyle:{alignSelf:'flex-start',padding:'2px 10px',borderRadius:'11px',fontSize:'10px',fontWeight:700,color:'#fff',background:c.accent,whiteSpace:'nowrap'},
+      inc:()=>this.cartQty(c.id,1),dec:()=>this.cartQty(c.id,-1),remove:()=>this.removeCart(c.id),
+      minusStyle:{width:'29px',height:'29px',borderRadius:'7px',display:'flex',alignItems:'center',justifyContent:'center',background:'#fff',
+        border:c.qty>1?'1.6px solid #333':'1.6px solid #E4E4E4',color:c.qty>1?'#333':'#DDDDDD'},
+    }));
+    const subtotalN=st.cartItems.reduce((a,c)=>a+c.price*c.qty,0);
+    const shipN=st.cartItems.length?330:0;
+    const cartCount=st.cartItems.reduce((a,c)=>a+c.qty,0);
+
+    const newsList=this.NEWS.map(n=>({
+      title:n.title,date:n.date,tag:n.tag,unread:n.unread,
+      tagStyle:{padding:'2px 10px',borderRadius:'4px',fontSize:'10.5px',fontWeight:700,color:'#fff',background:n.color,whiteSpace:'nowrap'},
+    }));
+
+    const navStyle=(active)=>({flex:1,alignSelf:'stretch',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'3px',color:'#fff',opacity:active?1:0.6,margin:'7px 8px',borderRadius:'14px',background:active?'rgba(255,255,255,0.22)':'transparent',transition:'background .15s ease,opacity .15s ease'});
+    const pg=st.page;
+
+    return {
+      isSeries:st.topMode==='series', isDelivery:st.topMode==='delivery',
+      tabs, serList, smileCards, moreCards, dayCells, bulkList, sizeRows, recItems,
+      noCutBox, serSeg, delSeg, bezelStyle,
+      cart:st.cart, cartBadge:st.cart>0,
+      bulkOpen:st.bulkOpen, productOpen:st.productOpen, cartAddedOpen:st.cartAddedOpen,
+      product:st.product||{},
+      pageHelp:pg==='help', pageNews:pg==='news', pageContact:pg==='contact', pageMypage:pg==='mypage', pageCart:pg==='cart',
+      newsList, faqList:this.FAQ,
+      cartView, cartSubtotal:yen(subtotalN), cartShip:yen(shipN), cartTotal:yen(subtotalN+shipN),
+      cartCountLabel:cartCount+'点', cartHasItems:st.cartItems.length>0, cartEmpty:st.cartItems.length===0,
+      navHome:navStyle(pg===null), navMy:navStyle(pg==='mypage'), navCart:navStyle(pg==='cart'),
+      goSeries:this.goSeries, goDelivery:this.goDelivery,
+      openBulk:this.openBulk, closeBulk:this.closeBulk, confirmBulk:this.confirmBulk,
+      closeProduct:this.closeProduct, toggleNoCut:this.toggleNoCut, addToCart:this.addToCart,
+      addRec:this.addRec, skipRec:this.skipRec, stop:this.stop,
+      goHome:this.goHome, openHelp:this.openHelp, openNews:this.openNews, openContact:this.openContact, openMypage:this.openMypage, openCart:this.openCart,
+    };
+  }
+}
+</script>
+</body>
+</html>
