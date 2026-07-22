@@ -235,7 +235,7 @@ const A={
   },
   profileSavedClose(){S.profileSaved=false;render();},
   openLogin(){Login.open();},
-  logout(){S.loggedIn=false;S.userName=null;S.page=null;render();},
+  logout(){S.loggedIn=false;S.userName=null;S.page=null;location.href='lp.html';},
 
   /* 週の切り替え（複数週にわたり同一画面で注文可能） */
   setWeek(i){S.week=i;render();},
@@ -1775,6 +1775,7 @@ const Login=(function(){
   // ログイン成立 → サイト本体へ（PC/SP共通の状態を更新。表示中ページは維持）
   function completeLogin(name){
     S.loggedIn=true;S.userName=name;render();
+    try{history.replaceState(null,'',location.pathname);}catch(e){}
     try{console.log('[login_flow] taste_profile =',taste_profile);}catch(e){}
   }
 
@@ -1911,6 +1912,13 @@ setInterval(()=>{
 },3000);
 
 render();
+
+/* LP（lp.html）からの遷移：?login=1 でログインモーダルを自動表示 */
+try{
+  if(new URLSearchParams(location.search).has('login')&&!S.loggedIn){
+    setTimeout(function(){Login.open();},450);
+  }
+}catch(e){}
 </script>
 </body>
 </html>

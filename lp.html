@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ヨシケイLP | 流用可能・単体HTML</title>
+<!--
+==============================================================================
+  ヨシケイ ログイン前LP 単体HTML（他プロジェクト流用可能・自己完結）
+  抽出元: tsuklio.html のログイン前・営業用紹介ページ部分のみ
+------------------------------------------------------------------------------
+  ■ このファイルでできること
+    ウェルカムスプラッシュ(ロゴ落下) → ヒーロー(背景プレースホルダ)
+    → ブランド紹介・メニュー・サービス・使い方・ニュース・CTA・フッターまで
+    のスクロール型LP。ログイン/注文/カート等の機構は含まない。
+
+  ■ 画像について（流用テンプレ）
+    画像は全てプレースホルダ枠（薄グレー地＋破線ボーダー＋ラベル）。実画像・base64は
+    一切含まず、外部依存は Google Fonts のCDNのみ。各枠のラベルの場所に自前の画像を
+    入れれば完成（枠を画像タグに置換するか、枠に background:url() を指定）。
+
+  ■ 差し替えポイント（流用先で編集）
+    ・営業コピー: 各 <section> 内のテキスト
+    ・画像: 各プレースホルダ枠（class="ph-box"）を自前画像に置換
+    ・CTA/ボタン: 「ログイン」「無料ではじめる」等は現在すべて no-op。
+                  流用先で href / onclick を付けて遷移先を差し替える
+==============================================================================
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&amp;family=Figtree:wght@500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<style>
+.ph-box{background:#ebe9e4;border:1px dashed #c7c3ba;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#8a8578;font-size:12px;font-weight:700;text-align:center;line-height:1.4;overflow:hidden;box-sizing:border-box;padding:6px}.ph-box svg{width:26px;height:26px;opacity:.65;flex:none}.ph-box span{padding:0 6px;max-width:100%}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:'Noto Sans JP','Hiragino Sans',sans-serif;font-weight:500;background:#fff;color:#222;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;padding-bottom:0}
+img{display:block;max-width:100%}
+button{font-family:inherit;cursor:pointer}
+a{color:inherit;text-decoration:none}
+:root{--ease-bounce:cubic-bezier(.37,-.47,.91,.65);--ease-fade:cubic-bezier(.25,.46,.45,.94)}
+@keyframes ttl-in{0%{opacity:0;color:#509146;transform:translateY(10px)}45%{opacity:1;color:#509146;transform:none}55%,100%{opacity:1;color:#E11620;transform:none}}
+@keyframes scroll-down{0%{transform:translateY(0) rotate(90deg)}25%{transform:translateY(25%) rotate(90deg)}75%{transform:translateY(-25%) rotate(90deg)}100%{transform:translateY(0) rotate(90deg)}}
+@keyframes service-bubble{0%{transform:translateY(0)}25%{transform:translateY(-10%)}75%{transform:translateY(10%)}100%{transform:translateY(0)}}
+@keyframes link-card-in-arrow{0%{transform:translate(0)}100%{transform:translate(150%)}}
+@keyframes tk-marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.onboard-illust{display:block;margin:6px auto 22px;height:110px;max-width:70vw;width:auto}
+.onboard-q-title{font-size:22px;font-weight:700;color:#3a3a3a;line-height:1.5;margin-bottom:8px;min-height:66px;display:flex;align-items:flex-start}
+.tk-btn{position:relative;overflow:hidden;transition:color .3s ease}
+.tk-btn>span{position:relative;z-index:1}
+.tk-btn::before{content:'';position:absolute;inset:0;background:#E11620;transform:scale(.97);opacity:0;transition:transform .3s ease,opacity .3s ease;z-index:0}
+.tk-btn:hover::before{transform:scale(1);opacity:1}
+.tk-btn:hover>span{color:#fff}
+.tk-arrowclip{position:relative;display:inline-block;overflow:hidden;vertical-align:middle}
+.tk-arrowclip .tk-arrow{position:absolute;top:0;left:0;transition:transform .35s cubic-bezier(.37,-.47,.91,.65)}
+.tk-arrowclip .a1{transform:translateX(0)}
+.tk-arrowclip .a2{transform:translateX(-135%)}
+.tk-btn:hover .tk-arrowclip .a1,.tk-lk:hover .tk-arrowclip .a1{transform:translateX(135%)}
+.tk-btn:hover .tk-arrowclip .a2,.tk-lk:hover .tk-arrowclip .a2{transform:translateX(0)}
+.tk-lk{transition:box-shadow .3s ease}
+.tk-lk:hover{box-shadow:0 14px 30px rgba(0,0,0,.12)}
+.tk-ph:hover{transform:scale(1.03)}
+[data-nav-links] a,[data-mobile-menu] a{transition:color .3s ease}
+[data-nav-links] a:hover{color:#ffd9dc}
+[data-mobile-menu] a:hover{color:#E11620}
+[data-section="nav"]{transition:background .3s ease,box-shadow .3s ease,backdrop-filter .3s ease}
+[data-burger] i{display:block;position:relative;z-index:1;width:20px;height:2.5px;background:#555;border-radius:2px;transition:transform .3s ease,opacity .3s ease}
+[data-burger][data-open="true"] i:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+[data-burger][data-open="true"] i:nth-child(2){opacity:0}
+[data-burger][data-open="true"] i:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+/* ===================== Responsive =====================
+   PC (>=1024px)  : full multi-column desktop layout (本家準拠)
+   Mobile (<=1023): single-column stack + hamburger nav      */
+@media (max-width:1023px){
+  [data-tsuklio-root] div[style*="grid-template-columns"]{grid-template-columns:1fr !important;}
+  /* マイページのカレンダーは7列を維持（1列畳みの例外） */
+  [data-tsuklio-root] [data-cal-grid]{grid-template-columns:repeat(7,1fr) !important;}
+  [data-tsuklio-root] [style*="grid-column"]{grid-column:auto !important;}
+  /* Brand Concept photo collage: keep 2-col masonry on mobile (本家準拠) */
+  [data-tsuklio-root] div[data-bc-outer]{gap:34px !important;}
+  [data-tsuklio-root] div[data-bc-collage]{grid-template-columns:1fr 1fr !important;gap:11px !important;}
+  [data-tsuklio-root] section,[data-tsuklio-root] footer{padding-top:56px !important;padding-bottom:56px !important;padding-left:22px !important;padding-right:22px !important;}
+  [data-tsuklio-root] [data-section="hero"]{padding:0 !important;}
+  [data-tsuklio-root] [data-section="service"]{padding-top:64px !important;padding-bottom:64px !important;}
+  [data-tsuklio-root] [data-section="nav"]{width:calc(100% - 24px) !important;padding-left:18px !important;}
+  [data-tsuklio-root] [data-nav-links]{display:none !important;}
+  [data-tsuklio-root] [data-hero-banner]{left:14px !important;right:14px !important;width:auto !important;bottom:18px !important;}
+  [data-tsuklio-root] [data-uc-wrap]{padding:0 !important;}
+  [data-tsuklio-root] [data-uc-extra]{display:none !important;}
+  [data-tsuklio-root] [data-step-arrow]{transform:rotate(90deg);padding:6px 0 !important;}
+}
+@media (max-width:768px){
+  [data-tsuklio-root] section,[data-tsuklio-root] footer{padding-left:18px !important;padding-right:18px !important;}
+  [data-tsuklio-root] h2{font-size:25px !important;}
+  [data-tsuklio-root] [data-big-en]{font-size:36px !important;}
+}
+@media (max-width:640px){
+  .mypage-banners{grid-template-columns:1fr !important;}
+}
+@media (min-width:1024px){
+  /* v3-fb1：ナビリンク＋ログインをハンバーガー内へ集約したため、PCでもメニューを使えるようにする（display:none強制を撤去） */
+  /* PC: wide, proportional side margins like 本家 (content centered by each section's max-width) */
+  [data-tsuklio-root] > section:not([data-section="hero"]),
+  [data-tsuklio-root] > footer{padding-left:clamp(48px,6vw,120px) !important;padding-right:clamp(48px,6vw,120px) !important;}
+}
+/* ログイン後トップ(my-top)関連のCSSはLP単体化に伴い削除 */
+</style>
+</head>
+<body>
+
+<!-- ======================= WELCOME SPLASH (ロゴ落下) ======================= -->
+<div id="welcome-splash" style="position:fixed;inset:0;z-index:9999;background:#fff;display:flex;align-items:center;justify-content:center;transition:opacity .6s ease">
+<svg viewBox="0 0 370 73" role="img" aria-label="ヨシケイ楽楽web" style="width:min(480px,72vw);height:auto;display:block;overflow:visible;">
+<g data-ci="0" style="transform-box:fill-box;transform-origin:center;will-change:transform,opacity;">
+<path d="M22.6355 44.1V38.4H3.53551V32H29.3355V62.6H3.53551V56.1H22.6355V50.2H4.53551V44.1H22.6355Z" fill="none" stroke="#C40018" stroke-width="7.071" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M22.6355 44.1V38.4H3.53551V32H29.3355V62.6H3.53551V56.1H22.6355V50.2H4.53551V44.1H22.6355Z" fill="#fff"></path>
+</g>
+<g data-ci="1" style="transform-box:fill-box;transform-origin:center;will-change:transform,opacity;">
+<path d="M49.5355 37.5H37.5355V31H49.6355V37.5H49.5355ZM64.9355 38.5C62.1355 48.6 57.1355 54.7 52.2355 58.1C49.7355 59.8 47.3355 61.1 45.1355 61.8C41.3355 63 37.9355 63.7 37.5355 63.2V56.4C37.5355 56.4 38.1355 56.4 39.2355 56.3C40.3355 56.3 41.7355 56 43.4355 55.5C45.1355 55 46.9355 54.1 48.8355 52.7C52.6355 49.9 55.9355 46 58.3355 38.5H64.9355ZM49.5355 47.5H37.5355V41H49.6355V47.5H49.5355Z" fill="none" stroke="#C40018" stroke-width="7.071" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M49.5355 37.5H37.5355V31H49.6355V37.5H49.5355ZM64.9355 38.5C62.1355 48.6 57.1355 54.7 52.2355 58.1C49.7355 59.8 47.3355 61.1 45.1355 61.8C41.3355 63 37.9355 63.7 37.5355 63.2V56.4C37.5355 56.4 38.1355 56.4 39.2355 56.3C40.3355 56.3 41.7355 56 43.4355 55.5C45.1355 55 46.9355 54.1 48.8355 52.7C52.6355 49.9 55.9355 46 58.3355 38.5H64.9355ZM49.5355 47.5H37.5355V41H49.6355V47.5H49.5355Z" fill="#fff"></path>
+</g>
+<g data-ci="2" style="transform-box:fill-box;transform-origin:center;will-change:transform,opacity;">
+<path d="M85.0355 28.1C84.6355 30.5 84.1355 32.7 83.4355 34.7H100.536V41.3H94.0355C93.1355 49.3 89.7355 54.6 86.0355 57.6C84.1355 59.1 82.4355 60.3 80.7355 61.2C77.9355 62.6 75.4355 63.8 75.0355 63.4V56.7C75.5355 56.9 78.0355 55.8 80.5355 54C83.5355 51.9 86.5355 47.9 87.5355 41.3H80.6355C79.3355 43.6 77.9355 45.3 76.5355 46.7C74.2355 49 72.0355 50.5 71.5355 50.5V42.9C71.7355 43.1 73.2355 41.6 74.3355 39.6C75.7355 37.3 77.6355 33.5 78.4355 28H85.0355V28.1Z" fill="none" stroke="#C40018" stroke-width="7.071" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M85.0355 28.1C84.6355 30.5 84.1355 32.7 83.4355 34.7H100.536V41.3H94.0355C93.1355 49.3 89.7355 54.6 86.0355 57.6C84.1355 59.1 82.4355 60.3 80.7355 61.2C77.9355 62.6 75.4355 63.8 75.0355 63.4V56.7C75.5355 56.9 78.0355 55.8 80.5355 54C83.5355 51.9 86.5355 47.9 87.5355 41.3H80.6355C79.3355 43.6 77.9355 45.3 76.5355 46.7C74.2355 49 72.0355 50.5 71.5355 50.5V42.9C71.7355 43.1 73.2355 41.6 74.3355 39.6C75.7355 37.3 77.6355 33.5 78.4355 28H85.0355V28.1Z" fill="#fff"></path>
+</g>
+<g data-ci="3" style="transform-box:fill-box;transform-origin:center;will-change:transform,opacity;">
+<path d="M134.336 28C132.036 32.8 128.336 37.2 125.536 40.3V62H119.036V45.3C116.936 47 114.836 48.4 112.936 49.4C109.736 51.1 107.036 52.1 106.536 52.1V45.5C107.236 45.5 110.336 44.1 113.936 41.8C118.136 39.2 123.036 34.7 126.936 28H134.336Z" fill="none" stroke="#C40018" stroke-width="7.071" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M134.336 28C132.036 32.8 128.336 37.2 125.536 40.3V62H119.036V45.3C116.936 47 114.836 48.4 112.936 49.4C109.736 51.1 107.036 52.1 106.536 52.1V45.5C107.236 45.5 110.336 44.1 113.936 41.8C118.136 39.2 123.036 34.7 126.936 28H134.336Z" fill="#fff"></path>
+</g>
+<g data-ci="4" style="transform-box:fill-box;transform-origin:center;will-change:transform,opacity;">
+<path d="M158.736 55.1H144.436V48.1H165.336V45H158.236V39.4C154.536 41.7 150.436 44.2 146.936 46.2L142.836 39.4C146.236 37.9 151.236 35.3 156.236 32.7L158.135 38.4V21.6H164.536C164.936 19.7 165.336 17.7 165.536 16L174.736 17C174.136 18.6 173.536 20.2 172.836 21.6H180.736V26.6C183.136 24.3 186.036 21.3 187.736 18.8L194.736 23C191.736 26.3 188.236 29.5 185.436 31.7L180.635 28.5V34.9L183.036 32.1C187.136 34.1 193.135 37.4 196.135 39.7L191.036 45.8C188.736 43.8 184.436 41 180.536 38.8V44.9H173.336V48H194.736V55H180.336C184.836 57.9 190.736 60.3 196.436 61.8C194.636 63.4 192.136 66.6 190.936 68.7C184.836 66.6 178.636 63 173.536 58.9V69.4H165.236V58.9C160.436 63.3 154.236 67 148.036 69.2C146.836 67.2 144.336 64 142.536 62.4C148.436 60.8 154.236 58.2 158.736 55.1ZM143.336 24.3L148.936 19.6C152.136 21.9 156.036 25.2 157.836 27.8L151.836 33C150.336 30.5 146.536 26.8 143.336 24.3ZM172.836 27.7H165.635V30.4H172.836V27.7ZM172.836 36.1H165.635V38.9H172.836V36.1Z" fill="none" stroke="#C40018" stroke-width="7.071" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M158.736 55.1H144.436V48.1H165.336V45H158.236V39.4C154.536 41.7 150.436 44.2 146.936 46.2L142.836 39.4C146.236 37.9 151.236 35.3 156.236 32.7L158.135 38.4V21.6H164.536C164.936 19.7 165.336 17.7 165.536 16L174.736 17C174.136 18.6 173.536 20.2 172.836 21.6H180.736V26.6C183.136 24.3 186.036 21.3 187.736 18.8L194.736 23C191.736 26.3 188.236 29.5 185.436 31.7L180.635 28.5V34.9L183.036 32.1C187.136 34.1 193.135 37.4 196.135 39.7L191.036 45.8C188.736 43.8 184.436 41 180.536 38.8V44.9H173.336V48H194.736V55H180.336C184.836 57.9 190.736 60.3 196.436 61.8C194.636 63.4 192.136 66.6 190.936 68.7C184.836 66.6 178.636 63 173.536 58.9V69.4H165.236V58.9C160.436 63.3 154.236 67 148.036 69.2C146.836 67.2 144.336 64 142.536 62.4C148.436 60.8 154.236 58.2 158.736 55.1ZM143.336 24.3L148.936 19.6C152.136 21.9 156.036 25.2 157.836 27.8L151.836 33C150.336 30.5 146.536 26.8 143.336 24.3ZM172.836 27.7H165.635V30.4H172.836V27.7ZM172.836 36.1H165.635V38.9H172.836V36.1Z" fill="#fff"></path>
+<path d="M160.536 5.94444V2.44444H162.136V4.24444C162.136 4.24444 162.236 4.14444 162.336 4.04444C162.636 3.84444 163.236 3.54444 164.136 3.44444C164.736 3.34444 165.336 3.44444 165.836 3.74444C166.836 4.14444 167.336 5.04444 167.336 6.14444C167.336 8.44444 165.336 9.44444 161.236 8.84444V7.04444C163.136 7.34444 164.236 7.34444 164.836 7.04444C165.436 6.84444 165.636 6.44444 165.636 5.94444C165.636 5.74444 165.536 5.54444 165.436 5.34444C165.236 4.94444 164.836 4.74444 163.936 4.84444C163.136 5.04444 162.436 5.54444 162.036 5.94444H160.536ZM161.336 0.0444444C161.436 0.0444444 162.236 -0.0555556 163.536 0.0444444C164.636 0.0444444 165.636 0.244444 165.836 0.244444V2.04444C165.636 1.84444 164.436 1.74444 163.536 1.74444C162.536 1.74444 161.636 1.84444 161.436 1.84444V0.0444444H161.336Z" fill="#C40018"></path>
+<path d="M178.036 0.0444336C175.736 1.84443 174.136 2.94443 173.336 3.84443C173.236 3.94443 173.236 4.04443 173.236 4.14443C173.236 4.24443 173.236 4.34443 173.336 4.44443C173.636 4.74443 175.136 6.14443 178.036 8.74443H175.436C174.636 8.04443 173.836 7.34443 173.236 6.84443C172.536 6.24443 171.936 5.64443 171.736 5.44443C171.036 4.64443 171.036 3.64443 171.736 2.94443C172.236 2.44443 174.136 0.944434 175.236 0.0444336L178.036 0.0444336Z" fill="#C40018"></path>
+</g>
+<g data-ci="5" style="transform-box:fill-box;transform-origin:center;will-change:transform,opacity;">
+<path d="M218.736 55.1H204.436V48.1H225.336V45H218.236V39.4C214.536 41.7 210.436 44.2 206.936 46.2L202.836 39.4C206.236 37.9 211.236 35.3 216.236 32.7L218.135 38.4V21.6H224.536C224.936 19.7 225.336 17.7 225.536 16L234.736 17C234.136 18.6 233.536 20.2 232.836 21.6H240.736V26.6C243.136 24.3 246.036 21.3 247.736 18.8L254.736 23C251.736 26.3 248.236 29.5 245.436 31.7L240.635 28.5V34.9L243.036 32.1C247.136 34.1 253.135 37.4 256.135 39.7L251.036 45.8C248.736 43.8 244.436 41 240.536 38.8V44.9H233.336V48H254.736V55H240.336C244.836 57.9 250.736 60.3 256.436 61.8C254.636 63.4 252.136 66.6 250.936 68.7C244.836 66.6 238.636 63 233.536 58.9V69.4H225.236V58.9C220.436 63.3 214.236 67 208.036 69.2C206.836 67.2 204.336 64 202.536 62.4C208.436 60.8 214.236 58.2 218.736 55.1ZM203.336 24.3L208.936 19.6C212.136 21.9 216.036 25.2 217.836 27.8L211.836 33C210.336 30.5 206.536 26.8 203.336 24.3ZM232.836 27.7H225.635V30.4H232.836V27.7ZM232.836 36.1H225.635V38.9H232.836V36.1Z" fill="none" stroke="#C40018" stroke-width="7.071" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M218.736 55.1H204.436V48.1H225.336V45H218.236V39.4C214.536 41.7 210.436 44.2 206.936 46.2L202.836 39.4C206.236 37.9 211.236 35.3 216.236 32.7L218.135 38.4V21.6H224.536C224.936 19.7 225.336 17.7 225.536 16L234.736 17C234.136 18.6 233.536 20.2 232.836 21.6H240.736V26.6C243.136 24.3 246.036 21.3 247.736 18.8L254.736 23C251.736 26.3 248.236 29.5 245.436 31.7L240.635 28.5V34.9L243.036 32.1C247.136 34.1 253.135 37.4 256.135 39.7L251.036 45.8C248.736 43.8 244.436 41 240.536 38.8V44.9H233.336V48H254.736V55H240.336C244.836 57.9 250.736 60.3 256.436 61.8C254.636 63.4 252.136 66.6 250.936 68.7C244.836 66.6 238.636 63 233.536 58.9V69.4H225.236V58.9C220.436 63.3 214.236 67 208.036 69.2C206.836 67.2 204.336 64 202.536 62.4C208.436 60.8 214.236 58.2 218.736 55.1ZM203.336 24.3L208.936 19.6C212.136 21.9 216.036 25.2 217.836 27.8L211.836 33C210.336 30.5 206.536 26.8 203.336 24.3ZM232.836 27.7H225.635V30.4H232.836V27.7ZM232.836 36.1H225.635V38.9H232.836V36.1Z" fill="#fff"></path>
+<path d="M220.536 5.94444V2.44444H222.136V4.24444C222.136 4.24444 222.236 4.14444 222.336 4.04444C222.636 3.84444 223.236 3.54444 224.136 3.44444C224.736 3.34444 225.336 3.44444 225.836 3.74444C226.836 4.14444 227.336 5.04444 227.336 6.14444C227.336 8.44444 225.336 9.44444 221.236 8.84444V7.04444C223.136 7.34444 224.236 7.34444 224.836 7.04444C225.436 6.84444 225.636 6.44444 225.636 5.94444C225.636 5.74444 225.536 5.54444 225.436 5.34444C225.236 4.94444 224.836 4.74444 223.936 4.84444C223.136 5.04444 222.436 5.54444 222.036 5.94444H220.536ZM221.336 0.0444444C221.436 0.0444444 222.236 -0.0555556 223.536 0.0444444C224.636 0.0444444 225.636 0.244444 225.836 0.244444V2.04444C225.636 1.84444 224.436 1.74444 223.536 1.74444C222.536 1.74444 221.636 1.84444 221.436 1.84444V0.0444444H221.336Z" fill="#C40018"></path>
+<path d="M238.036 0.0444336C235.736 1.84443 234.136 2.94443 233.336 3.84443C233.236 3.94443 233.236 4.04443 233.236 4.14443C233.236 4.24443 233.236 4.34443 233.336 4.44443C233.636 4.74443 235.136 6.14443 238.036 8.74443H235.436C234.636 8.04443 233.836 7.34443 233.236 6.84443C232.536 6.24443 231.936 5.64443 231.736 5.44443C231.036 4.64443 231.036 3.64443 231.736 2.94443C232.236 2.44443 234.136 0.944434 235.236 0.0444336L238.036 0.0444336Z" fill="#C40018"></path>
+</g>
+<g data-ci="6" style="transform-box:fill-box;transform-origin:center;will-change:transform,opacity;">
+<path d="M270.636 34L273.036 45.7C273.436 48.3 273.736 50.9 274.136 53.6H274.335C274.835 50.9 275.235 48.3 275.835 45.7L278.536 34H285.636L288.436 45.7C289.036 48.3 289.536 50.9 290.036 53.6H290.236C290.636 50.9 290.936 48.3 291.436 45.7L293.736 34H301.335L295.136 60.2H285.536L283.335 50.2C282.835 47.8 282.436 45.4 281.936 42.5H281.736C281.336 45.4 280.936 47.8 280.536 50.2L278.436 60.2H269.036L262.536 34H270.636Z" fill="none" stroke="#C40018" stroke-width="7.071" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M307.536 46.7C307.536 38.2 313.636 33 319.936 33C327.536 33 331.235 38.5 331.235 45.6C331.235 47.1 331.035 48.5 330.835 49.2H315.436C316.136 52.8 318.636 54.3 321.936 54.3C323.836 54.3 325.536 53.7 327.436 52.6L330.135 57.5C327.435 59.4 323.835 60.5 320.735 60.5C313.435 60.5 307.536 55.4 307.536 46.7ZM324.335 43.8C324.335 41.2 323.135 39.3 320.135 39.3C317.835 39.3 315.935 40.7 315.335 43.8H324.335Z" fill="none" stroke="#C40018" stroke-width="7.071" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M347.736 57H347.536L346.936 59.8H340.536V23H348.736V31.9L348.536 35.8C350.436 34 352.936 33 355.336 33C361.636 33 365.636 38.3 365.636 46.3C365.636 55.4 360.236 60.5 354.636 60.5C352.136 60.5 349.736 59.3 347.736 57ZM352.536 53.8C355.036 53.8 357.036 51.7 357.036 46.5C357.036 41.9 355.736 39.7 352.836 39.7C351.336 39.7 350.036 40.4 348.736 41.9V52.3C349.836 53.4 351.236 53.8 352.536 53.8Z" fill="none" stroke="#C40018" stroke-width="7.071" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M270.636 34L273.036 45.7C273.436 48.3 273.736 50.9 274.136 53.6H274.335C274.835 50.9 275.235 48.3 275.835 45.7L278.536 34H285.636L288.436 45.7C289.036 48.3 289.536 50.9 290.036 53.6H290.236C290.636 50.9 290.936 48.3 291.436 45.7L293.736 34H301.335L295.136 60.2H285.536L283.335 50.2C282.835 47.8 282.436 45.4 281.936 42.5H281.736C281.336 45.4 280.936 47.8 280.536 50.2L278.436 60.2H269.036L262.536 34H270.636Z" fill="#fff"></path>
+<path d="M307.536 46.7C307.536 38.2 313.636 33 319.936 33C327.536 33 331.235 38.5 331.235 45.6C331.235 47.1 331.035 48.5 330.835 49.2H315.436C316.136 52.8 318.636 54.3 321.936 54.3C323.836 54.3 325.536 53.7 327.436 52.6L330.135 57.5C327.435 59.4 323.835 60.5 320.735 60.5C313.435 60.5 307.536 55.4 307.536 46.7ZM324.335 43.8C324.335 41.2 323.135 39.3 320.135 39.3C317.835 39.3 315.935 40.7 315.335 43.8H324.335Z" fill="#fff"></path>
+<path d="M347.736 57H347.536L346.936 59.8H340.536V23H348.736V31.9L348.536 35.8C350.436 34 352.936 33 355.336 33C361.636 33 365.636 38.3 365.636 46.3C365.636 55.4 360.236 60.5 354.636 60.5C352.136 60.5 349.736 59.3 347.736 57ZM352.536 53.8C355.036 53.8 357.036 51.7 357.036 46.5C357.036 41.9 355.736 39.7 352.836 39.7C351.336 39.7 350.036 40.4 348.736 41.9V52.3C349.836 53.4 351.236 53.8 352.536 53.8Z" fill="#fff"></path>
+</g>
+</svg>
+</div>
+
+<div data-tsuklio-root="" style="width:100%;max-width:1920px;margin:0 auto;position:relative;background:#fff">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ic-carrot" viewBox="0 0 100 100"><path d="M28 36c-5-3-8-10-6-15 6 2 11 7 12 13z" fill="#509146"></path><path d="M50 32c-2-6-1-14 3-18 5 4 5 13 2 19z" fill="#509146"></path><path d="M40 34c-4-5-6-13-3-18 5 3 8 12 7 18z" fill="#509146"></path><path d="M30 37 58 41 45 86c-1 4-4 4-5 0z" fill="#E11620"></path><g stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".55"><path d="M38 50 50 52"></path><path d="M37 62 47 64"></path><path d="M35 73 44 75"></path></g></symbol>
+  <symbol id="ic-broccoli" viewBox="0 0 100 100"><rect x="44" y="48" width="12" height="36" rx="6" fill="#7cae5e"></rect><circle cx="38" cy="40" r="14" fill="#509146"></circle><circle cx="60" cy="38" r="15" fill="#509146"></circle><circle cx="50" cy="29" r="13" fill="#509146"></circle><circle cx="46" cy="47" r="12" fill="#509146"></circle><circle cx="63" cy="50" r="10" fill="#509146"></circle></symbol>
+  <symbol id="ic-mushroom" viewBox="0 0 100 100"><rect x="42" y="50" width="16" height="32" rx="8" fill="#e7cfa6"></rect><path d="M22 54c0-22 56-22 56 0z" fill="#E11620"></path><circle cx="38" cy="46" r="3.4" fill="#fff" opacity=".85"></circle><circle cx="55" cy="44" r="3" fill="#fff" opacity=".85"></circle><circle cx="64" cy="49" r="2.6" fill="#fff" opacity=".85"></circle></symbol>
+  <symbol id="ic-orange" viewBox="0 0 100 100"><circle cx="50" cy="50" r="34" fill="#E11620"></circle><circle cx="50" cy="50" r="26" fill="#ffb729"></circle><g stroke="#fff" stroke-width="3"><path d="M50 24v52"></path><path d="M24 50h52"></path><path d="M32 32 68 68"></path><path d="M68 32 32 68"></path></g><circle cx="50" cy="50" r="5" fill="#fff"></circle></symbol>
+  <symbol id="ic-pepper" viewBox="0 0 100 100"><path d="M30 41c0-4 6-6 10-4 4-3 16-3 20 0 4-2 10 0 10 4 6 8 4 30-10 38-8 5-12 5-20 0-14-8-16-30-10-38z" fill="#e8623f"></path><rect x="46" y="22" width="8" height="16" rx="4" fill="#509146"></rect><path d="M50 30c4-4 10-4 12 0" stroke="#509146" stroke-width="5" fill="none" stroke-linecap="round"></path></symbol>
+  <symbol id="ic-pea" viewBox="0 0 100 100"><path d="M22 64C24 40 60 24 80 28 78 50 44 70 24 70c-2-1-3-4-2-6z" fill="#509146"></path><circle cx="40" cy="55" r="6" fill="#9ccb7a"></circle><circle cx="52" cy="49" r="6" fill="#9ccb7a"></circle><circle cx="64" cy="43" r="6" fill="#9ccb7a"></circle></symbol>
+  <symbol id="ic-leaf" viewBox="0 0 100 100"><path d="M26 74C26 40 56 24 78 26 80 50 60 76 30 76c-2 0-4-1-4-2z" fill="#509146"></path><path d="M34 70C46 52 62 38 74 32" stroke="#9ccb7a" stroke-width="3" fill="none" stroke-linecap="round"></path></symbol>
+  <symbol id="ic-ladle" viewBox="0 0 100 100"><rect x="54" y="14" width="7" height="44" rx="3.5" fill="#b9b6ab"></rect><path d="M36 56c0 18 28 18 28 0z" fill="#b9b6ab"></path><path d="M40 58c0 12 20 12 20 0z" fill="#d2cfc5"></path></symbol>
+  <symbol id="ic-pot" viewBox="0 0 100 100"><rect x="26" y="44" width="48" height="34" rx="6" fill="#E11620"></rect><rect x="13" y="52" width="13" height="7" rx="3.5" fill="#E11620"></rect><rect x="74" y="52" width="13" height="7" rx="3.5" fill="#E11620"></rect><rect x="24" y="36" width="52" height="9" rx="4.5" fill="#B0101A"></rect><rect x="45" y="28" width="10" height="9" rx="4" fill="#B0101A"></rect></symbol>
+  <symbol id="ic-whisk" viewBox="0 0 100 100"><rect x="46" y="14" width="8" height="22" rx="4" fill="#5c5246"></rect><path d="M50 34C36 44 34 66 44 82M50 34c14 10 16 32 6 48M50 34v48M40 50c6 0 14 0 20 0M38 64c8 0 16 0 24 0" stroke="#b9b6ab" stroke-width="4" fill="none" stroke-linecap="round"></path></symbol>
+  <symbol id="ic-shrimp" viewBox="0 0 100 100"><path d="M70 30C44 24 24 42 26 62c2 18 26 22 40 12-12 2-26-4-26-18 0-12 14-20 32-14 2-4 1-9-2-12z" fill="#E11620"></path><circle cx="66" cy="36" r="3" fill="#5c5246"></circle><path d="M30 64c-4 4-6 6-8 6M32 70c-2 4-4 6-6 8" stroke="#E11620" stroke-width="3" stroke-linecap="round"></path></symbol>
+  <symbol id="ic-fish" viewBox="0 0 100 100"><path d="M20 50C34 32 62 32 74 50 62 68 34 68 20 50z" fill="#b9b6ab"></path><path d="M74 50 88 38 86 62z" fill="#b9b6ab"></path><circle cx="36" cy="46" r="3.4" fill="#5c5246"></circle></symbol>
+  <symbol id="ic-egg" viewBox="0 0 100 100"><path d="M50 22c16 0 24 32 20 48-4 14-36 14-40 0-4-16 4-48 20-48z" fill="#fff" stroke="#e9e2d6" stroke-width="2"></path><circle cx="50" cy="58" r="13" fill="#ffb729"></circle></symbol>
+  <symbol id="ic-corn" viewBox="0 0 100 100"><path d="M38 30c-8-8-16-4-12 4-6 6 0 14 8 10z" fill="#509146"></path><rect x="40" y="26" width="20" height="56" rx="10" fill="#ffb729"></rect><g fill="#eaa100"><circle cx="47" cy="40" r="2.3"></circle><circle cx="54" cy="40" r="2.3"></circle><circle cx="47" cy="50" r="2.3"></circle><circle cx="54" cy="50" r="2.3"></circle><circle cx="47" cy="60" r="2.3"></circle><circle cx="54" cy="60" r="2.3"></circle><circle cx="47" cy="70" r="2.3"></circle><circle cx="54" cy="70" r="2.3"></circle></g></symbol>
+  <symbol id="ic-tomato" viewBox="0 0 100 100"><circle cx="50" cy="56" r="28" fill="#e8623f"></circle><path d="M50 30 42 22M50 30v-10M50 30l8-8" stroke="#509146" stroke-width="5" stroke-linecap="round"></path><circle cx="40" cy="48" r="5" fill="#fff" opacity=".25"></circle></symbol>
+  <symbol id="ic-eggplant" viewBox="0 0 100 100"><path d="M64 30c12 8 14 30 0 44-14 14-36 8-38-8-2-14 14-22 26-24 6-2 8-8 12-12z" fill="#8d7793"></path><path d="M62 28c4-4 10-4 12 0-4 4-8 4-12 6z" fill="#509146"></path></symbol>
+  <symbol id="ic-knife" viewBox="0 0 100 100"><path d="M30 60 66 24c6 6 4 16-6 26L42 68z" fill="#cfccc2"></path><rect x="22" y="63" width="22" height="9" rx="4.5" transform="rotate(45 33 67)" fill="#5c5246"></rect></symbol>
+  <symbol id="ic-smile" viewBox="0 0 100 100"><rect width="100" height="100" rx="34" fill="#E11620"></rect><circle cx="37" cy="42" r="6.5" fill="#fff"></circle><circle cx="63" cy="42" r="6.5" fill="#fff"></circle><path d="M34 60q16 16 32 0" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round"></path></symbol>
+</svg>
+
+<!-- ======================= NAVIGATION ======================= -->
+<div data-nav-wrap="" style="position:sticky;top:10px;z-index:100;height:0">
+  <!-- v3-fb1：モック準拠の白ヘッダー（赤ロゴ＋ヘルプ/お知らせ/お問合せの3アイコン＋ハンバーガー） -->
+  <nav data-section="nav" style="width: min(980px,calc(100% - 36px)); margin: 0 auto; position: relative; background: #fff; border-radius: 10px; box-shadow: 0 4px 18px rgba(0,0,0,.1); display: flex; align-items: center; justify-content: space-between; padding: 8px 12px 8px 20px; border: 1px solid #eee">
+    <a href="#top" style="display:flex;align-items:center">
+      <div class="ph-box" style="height:34px;width:auto;display:block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>ロゴ</span></div>
+    </a>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button data-help-btn="" aria-label="ヘルプ" style="width:48px;border:none;border-radius:11px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#555" stroke-width="1.7"></circle><path d="M9.2 9.3a2.9 2.9 0 0 1 5.6 1c0 1.9-2.8 2.4-2.8 4" stroke="#555" stroke-width="1.7" stroke-linecap="round"></path><circle cx="12" cy="17.4" r="1" fill="#555"></circle></svg>
+        <span style="font-size:10px;font-weight:700;color:#888;line-height:1">ヘルプ</span>
+      </button>
+      <div style="position:relative">
+        <button data-notice-btn="" aria-label="お知らせ" style="width:48px;border:none;border-radius:11px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer">
+          <span style="position:relative;display:inline-flex">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9Z" stroke="#555" stroke-width="1.7" stroke-linejoin="round"></path><path d="M10.3 21a2 2 0 0 0 3.4 0" stroke="#555" stroke-width="1.7" stroke-linecap="round"></path></svg>
+            <span style="position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:#E11620;color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1;box-sizing:border-box">5</span>
+          </span>
+          <span style="font-size:10px;font-weight:700;color:#888;line-height:1">お知らせ</span>
+        </button>
+        <div data-notice-dropdown="" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.14);padding:16px 18px;width:220px;z-index:130;font-size:13px;color:#888;text-align:center">お知らせはありません</div>
+      </div>
+      <button data-contact-btn="" aria-label="お問合せ" style="width:48px;border:none;border-radius:11px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#555" stroke-width="1.7"></rect><path d="m4 7 8 6 8-6" stroke="#555" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        <span style="font-size:10px;font-weight:700;color:#888;line-height:1">お問合せ</span>
+      </button>
+      <button data-burger="" data-open="false" class="tk-btn" style="width:46px;height:46px;border:1px solid #e5e0d8;border-radius:11px;background:#faf8f5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px" aria-label="メニュー"><i></i><i></i><i></i></button>
+    </div>
+    <div data-mobile-menu="" style="display:none;position:absolute;top:calc(100% + 10px);left:0;right:0;background:#fff;border-radius:20px;box-shadow:0 12px 34px rgba(0,0,0,.14);padding:18px 24px;flex-direction:column;gap:16px;z-index:120">
+      <a href="#menu" style="font-size:15px;font-weight:700;color:#E11620">お届けメニュー</a>
+      <a href="#top" style="font-size:15px;font-weight:700;color:#E11620">ご注文</a>
+      <a href="#top" style="font-size:15px;font-weight:700;color:#E11620">ヨシケイについて</a>
+      <!-- 流用先で差し替え: クリックは現在no-op（ログイン機構は削除済み） --><button data-login-btn="" class="tk-btn" style="border:1.5px solid #E11620;background:#fff;color:#E11620;font-size:14px;font-weight:700;padding:11px 16px;border-radius:22px;white-space:nowrap"><span>ログイン</span></button>
+    </div>
+  </nav>
+</div>
+<!-- ======================= HERO ======================= -->
+<section id="top" data-section="hero" style="position:relative;height:100vh;min-height:760px;background:#1a1a1a center/cover no-repeat;overflow:hidden">
+  <div data-hero-slideshow="" style="position:absolute;inset:0">
+    <div class="ph-box" style="position:absolute;inset:0;width:100%;height:100%;opacity:1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>ヒーロー背景画像（横長）</span></div>
+    <div class="ph-box" style="position:absolute;inset:0;width:100%;height:100%;opacity:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>ヒーロー背景画像（横長）</span></div>
+  </div>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.5),rgba(0,0,0,.32) 40%,rgba(0,0,0,.6))"></div>
+  <button data-fade="" class="scroll-arrow-btn" style="position:absolute;left:40px;bottom:42px;width:50px;height:50px;border:none;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.2);opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
+    <svg style="animation:scroll-down 1.1s linear infinite" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 10h13M11 5l6 5-6 5" stroke="#E11620" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+  </button>
+  <!-- 流用先で遷移先を差し替え（元は#order週替わり注文へ遷移） --><div data-hero-banner="" data-fade="" style="position:absolute;right:40px;bottom:40px;background:#fff;border-radius:16px;box-shadow:0 12px 34px rgba(0,0,0,.18);padding:12px;width:330px;cursor:pointer;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="ph-box" style="width:58px;height:58px;border-radius:10px;flex:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>お知らせ画像</span></div>
+      <div style="flex:1;min-width:0">
+        <span style="display:inline-block;background:#E11620;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;margin-bottom:5px">次回お届け分 受付中！</span>
+        <div style="font-size:13px;font-weight:700;color:#222;line-height:1.4">2026年7月6日〜7月12日</div>
+        <div style="display:inline-block;background:#E11620;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;margin:3px 0">ご注文締切：7月1日(水) 18:00</div>
+        <div style="font-size:12px;color:#666;line-height:1.4">お届けのメニューを確認する</div>
+      </div>
+      <button class="tk-btn" style="width:40px;height:40px;border:none;border-radius:10px;background:#E11620;display:flex;align-items:center;justify-content:center;flex:none">
+        <span><svg class="tk-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M8 3l5 5-5 5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= BRAND CONCEPT ======================= -->
+<section data-section="brand-concept" style="padding:96px 40px 70px;background:#fff">
+  <div data-bc-outer="" style="max-width:1660px;margin:0 auto;display:grid;grid-template-columns:5fr 6fr;gap:80px;align-items:start">
+    <div data-fade="" data-bc-collage="" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="ph-box" style="width:100%;height:212px;border-radius:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>食事の様子</span></div>
+        <div class="ph-box" style="width:100%;height:212px;border-radius:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>調理シーン</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="ph-box" style="width:100%;height:438px;border-radius:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>配達の様子</span></div>
+      </div>
+    </div>
+    <div style="position:relative;padding-top:18px">
+      <div data-title-anim="" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E11620;margin-bottom:22px">Brand Concept</div>
+      <h2 data-fade="" style="margin:0 0 28px;font-size:44px;font-weight:700;line-height:1.4;color:#3a3a3a;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">つくる人から<br>笑顔に。</h2>
+      <p data-fade="" data-fade-delay="0.12s" style="margin:0;font-size:16px;line-height:2.05;color:#666;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">「ヨシケイ」は、献立を考えなくても<br>毎日の食卓が整う、食材宅配サービスです。<br>管理栄養士が考えた週替わりの献立と、<br>その日に使いきる分の食材をお届けするから、<br>メニューに悩む時間も、買い出しも必要ありません。<br>家族の顔を思い浮かべながらつくる、<br>できたての手料理のおいしさはそのままに。<br>毎日おいしい、体にうれしい、<br>そして食卓が楽しみになる時間を、<br>ヨシケイがお手伝いします。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= ABOUT TSUKLIO ======================= -->
+<section data-section="about-tsuklio" style="padding:60px 40px 96px;background:#fff">
+  <div style="max-width:640px;margin:0 auto">
+    <div style="position:relative">
+      <div data-title-anim="" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E11620;margin-bottom:20px">About Yoshikei</div>
+      <h2 data-fade="" style="margin:0 0 22px;font-size:31px;font-weight:700;line-height:1.5;color:#3a3a3a;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">作りたての手料理を<br>週に一度まとめてお届け。<br>5分でおいしい食卓が完成！</h2>
+      <p data-fade="" data-fade-delay="0.1s" style="margin:0;font-size:15px;line-height:2;color:#666;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">ご家庭の人数や食数に合わせて、まとめてお届け。<br>好きなおかずを食べたい分だけ選んで、レンジで温めるだけ。<br>忙しい日もあっという間に食卓が完成！</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= OUR MENU ======================= -->
+<section id="menu" data-section="our-menu" style="padding:90px 40px 90px;background:#E11620">
+  <div style="max-width:1340px;margin:0 auto;display:grid;grid-template-columns:46% 54%;gap:64px;align-items:center">
+    <div data-fade="" class="tk-lk" style="background:#fff;border-radius:18px;padding:12px;box-shadow:0 16px 40px rgba(0,0,0,.12);opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px">
+        <div class="ph-box" style="width:100%;height:230px;border-radius:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>メニュー写真</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="ph-box" style="width:100%;height:111px;border-radius:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>メニュー写真</span></div>
+          <div class="ph-box" style="width:100%;height:111px;border-radius:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>メニュー写真</span></div>
+        </div>
+      </div>
+      <div style="padding:18px 12px 12px;position:relative">
+        <span style="display:inline-block;background:#E11620;color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;margin-bottom:12px">次回お届け分 受付中!</span>
+        <div style="font-size:30px;font-weight:700;color:#E11620;line-height:1.1;letter-spacing:.01em">7<span style="font-size:18px">月</span> 6<span style="font-size:18px">日</span> 〜 7<span style="font-size:18px">月</span> 12<span style="font-size:18px">日</span></div>
+        <div style="font-size:20px;font-weight:700;color:#E11620;margin-top:6px">お届けメニューを確認する</div>
+        <button class="tk-btn" style="position:absolute;right:6px;bottom:8px;width:44px;height:44px;border:none;border-radius:11px;background:#E11620;display:flex;align-items:center;justify-content:center">
+          <span><svg class="tk-arrow" width="17" height="17" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M8 3l5 5-5 5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+        </button>
+      </div>
+    </div>
+    <div style="text-align:center;color:#fff">
+      <div data-section="our-menu-label" data-big-en="" data-title-anim="" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:42px;letter-spacing:.01em;color:#fff;line-height:1">Our Menu</div>
+      <div data-fade="" style="font-size:13px;color:rgba(255,255,255,.92);margin-top:8px;letter-spacing:.08em;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">こだわりの手料理について</div>
+      <h2 data-fade="" data-fade-delay="0.08s" style="margin:26px 0 22px;font-size:30px;font-weight:700;line-height:1.5;color:#fff;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">管理栄養士監修！<br>週替わりで飽きない手料理</h2>
+      <p data-fade="" data-fade-delay="0.16s" style="margin:0 auto 30px;max-width:430px;font-size:15px;line-height:2;color:rgba(255,255,255,.92);opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">これまでに開発したメニューは1000種以上！自分で作るには少し手間がかかる料理を、大人も子どもも食べやすい、やさしい味付けで丁寧に手づくりしています。</p>
+      <button data-fade="" data-fade-delay="0.24s" class="tk-btn" style="border:none;background:rgba(255,255,255,.32);color:#fff;font-size:13px;font-weight:700;padding:12px 26px;border-radius:30px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"><span>今月のメニューを見る</span></button>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= SERVICE ======================= -->
+<section data-section="service" style="padding:150px 40px;background:#fff">
+  <div style="max-width:1660px;margin:0 auto">
+    <div data-fade="" style="position:relative;border-radius:22px;overflow:hidden;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
+      <div class="ph-box" style="width:100%;height:520px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>サービス写真</span></div>
+      <div style="position:absolute;left:50%;bottom:22px;transform:translateX(-50%);display:flex;gap:7px">
+        <span style="width:22px;height:6px;border-radius:3px;background:#fff"></span>
+        <span style="width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.6)"></span>
+        <span style="width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.6)"></span>
+        <span style="width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.6)"></span>
+      </div>
+      <div style="position:absolute;right:18px;bottom:16px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.92);color:#333;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,.18)">1</div>
+    </div>
+    <div style="text-align:center;margin-top:44px">
+      <div data-title-anim="" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E11620;margin-bottom:18px">Service</div>
+      <h2 data-fade="" style="margin:0 0 30px;font-size:30px;font-weight:700;line-height:1.6;color:#3a3a3a;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">身体にうれしい手料理を<br>おいしさをそのままに、ご自宅へお届け。</h2>
+      <button data-fade="" data-fade-delay="0.1s" class="tk-btn" style="border:none;background:#E11620;color:#fff;font-size:13px;font-weight:700;padding:13px 32px;border-radius:30px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"><span>もっと見る</span></button>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= USE CASES ======================= -->
+<section data-section="use-cases" style="padding:90px 40px;background:#fff">
+  <div style="max-width:1480px;margin:0 auto;display:grid;grid-template-columns:40% 60%;gap:50px;align-items:center">
+    <div>
+      <div data-title-anim="" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E11620;margin-bottom:18px">Use Cases</div>
+      <h2 data-fade="" style="margin:0 0 22px;font-size:32px;font-weight:700;line-height:1.5;color:#3a3a3a;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">ご家庭に合わせた使い方</h2>
+      <p data-fade="" data-fade-delay="0.1s" style="margin:0 0 34px;font-size:15px;line-height:2;color:#666;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">毎日の夕食にはもちろん、<br>朝食やリモートワークのお昼ご飯にも。</p>
+      <button data-fade="" data-fade-delay="0.18s" class="tk-btn" style="border:none;background:#E11620;color:#fff;font-size:13px;font-weight:700;padding:13px 30px;border-radius:30px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"><span>使い方の例を見る</span></button>
+    </div>
+    <div data-fade="" data-uc-wrap="" style="position:relative;padding-bottom:40px;padding-left:60px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
+      <div style="position:relative;border-radius:22px;overflow:hidden">
+        <div class="ph-box" style="width:100%;height:430px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>お客様の声</span></div>
+        <div style="position:absolute;left:50%;bottom:18px;transform:translateX(-50%);display:flex;gap:7px"><span style="width:22px;height:6px;border-radius:3px;background:#fff"></span><span style="width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.6)"></span><span style="width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.6)"></span><span style="width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.6)"></span></div>
+        <div style="position:absolute;right:18px;bottom:14px;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">1</div>
+      </div>
+      <div data-uc-extra="" style="position:absolute;left:14%;top:-6px;background:#e8eee5;border-radius:18px;padding:14px 22px;text-align:center;box-shadow:0 8px 20px rgba(0,0,0,.08);animation:service-bubble 3s ease-in-out infinite">
+        <div style="font-size:15px;font-weight:700;color:#3a3a3a;line-height:1.4">5食プランで<br>家族みんな</div>
+        <div style="position:absolute;left:30px;bottom:-9px;width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:11px solid #e8eee5"></div>
+      </div>
+      <div class="ph-box" style="position:absolute;left:0;bottom:0;width:200px;height:150px;border-radius:16px;box-shadow:0 10px 26px rgba(0,0,0,.14)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>お客様の声</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= HOW TO USE ======================= -->
+<section data-section="how-to-use" style="padding:50px 40px 100px;background:#fff">
+  <div style="max-width:1480px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:46px">
+      <div data-title-anim="" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E11620;margin-bottom:16px">How to Use</div>
+      <h2 data-fade="" style="margin:0 0 8px;font-size:30px;font-weight:700;color:#3a3a3a;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">ヨシケイの使い方</h2>
+      <div data-fade="" data-fade-delay="0.08s" style="font-size:17px;font-weight:700;color:#E11620;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">見る・登録・注文のかんたん3ステップ！</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 56px 1fr 56px 1fr;align-items:stretch;gap:0">
+      <div data-fade="" style="border-radius:14px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.06);background:#fff;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
+        <div style="background:#E11620;color:#fff;text-align:center;font-weight:700;font-size:14px;padding:11px;letter-spacing:.08em">STEP 1</div>
+        <div style="padding:22px 20px 26px;background:#f6f4f1;text-align:center;height:100%">
+          <div style="font-size:18px;font-weight:700;color:#E11620;margin-bottom:10px">メニューを見る</div>
+          <p style="margin:0 0 22px;font-size:13px;line-height:1.8;color:#666">会員登録なしで、今週の献立・<br>単品メニューを閲覧できます。</p>
+          <div style="background:#fff;border-radius:12px;padding:16px;box-shadow:0 4px 14px rgba(0,0,0,.06)">
+            <div style="display:inline-block;background:#ffb729;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:12px">ゲスト閲覧OK</div>
+            <div class="ph-box" style="width:100%;height:120px;border-radius:8px;margin-bottom:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>使い方（献立）</span></div>
+            <div style="font-size:12px;font-weight:700;color:#333">5/11週のメニューを見る</div>
+          </div>
+        </div>
+      </div>
+      <div data-step-arrow="" style="display:flex;align-items:center;justify-content:center"><svg width="22" height="26" viewBox="0 0 22 26" fill="#E11620"><path d="M4 2 18 13 4 24z"></path></svg></div>
+      <div data-fade="" data-fade-delay="0.12s" style="border-radius:14px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.06);background:#fff;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
+        <div style="background:#E11620;color:#fff;text-align:center;font-weight:700;font-size:14px;padding:11px;letter-spacing:.08em">STEP 2</div>
+        <div style="padding:22px 20px 26px;background:#f6f4f1;text-align:center;height:100%">
+          <div style="font-size:18px;font-weight:700;color:#E11620;margin-bottom:10px">かんたん登録</div>
+          <p style="margin:0 0 22px;font-size:13px;line-height:1.8;color:#666">7つの質問に答えるだけ。<br>あなたに合った献立をご提案<br>するために伺います。</p>
+          <div style="background:#fff;border-radius:12px;padding:14px;box-shadow:0 4px 14px rgba(0,0,0,.06);text-align:left">
+            <div style="font-size:10px;color:#999;text-align:center;margin-bottom:10px;border-bottom:1px solid #eee;padding-bottom:8px">かんたん7つの質問</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;border:2px solid #E11620;border-radius:7px;padding:7px 10px;margin-bottom:6px;font-size:11px;background:#fdf0f1"><span style="font-weight:700;color:#E11620">Q1. 好みの味は？</span><span style="font-weight:700;color:#E11620">こってり</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:7px;padding:7px 10px;margin-bottom:6px;font-size:11px"><span>Q2. 調理にかけたい時間は？</span><span style="color:#999">〜20分</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:7px;padding:7px 10px;margin-bottom:6px;font-size:11px"><span>Q3. 気にしている健康度は？</span><span style="color:#999">減塩</span></div>
+            <div style="font-size:10px;color:#999;text-align:center;margin-top:8px">…あと4問</div>
+          </div>
+        </div>
+      </div>
+      <div data-step-arrow="" style="display:flex;align-items:center;justify-content:center"><svg width="22" height="26" viewBox="0 0 22 26" fill="#E11620"><path d="M4 2 18 13 4 24z"></path></svg></div>
+      <div data-fade="" data-fade-delay="0.24s" style="border-radius:14px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.06);background:#fff;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
+        <div style="background:#E11620;color:#fff;text-align:center;font-weight:700;font-size:14px;padding:11px;letter-spacing:.08em">STEP 3</div>
+        <div style="padding:22px 20px 26px;background:#f6f4f1;text-align:center;height:100%">
+          <div style="font-size:18px;font-weight:700;color:#E11620;margin-bottom:10px">締切までに注文</div>
+          <p style="margin:0 0 22px;font-size:13px;line-height:1.8;color:#666">毎週締切までに選ぶだけ。<br>お休み登録も週ごとに・無料で<br>設定できます。</p>
+          <div style="position:relative;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.06)">
+            <div class="ph-box" style="width:100%;height:180px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>使い方（受け取り）</span></div>
+            <div style="position:absolute;inset:0;background:rgba(255,255,255,.82);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:18px;text-align:center">
+              <div style="font-size:12px;font-weight:700;color:#333;line-height:1.6">ご注文ありがとうございます<br>締切までは変更・お休みも自由</div>
+              <div style="margin-top:12px;background:#E11620;color:#fff;font-size:11px;font-weight:700;padding:8px 16px;border-radius:20px">この週の注文を確定する</div>
+            </div>
+          </div>
+          <p style="margin:14px 0 0;font-size:11px;color:#999;line-height:1.7"><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#06c755;color:#fff;font-size:8px;font-weight:700;text-align:center;line-height:14px;vertical-align:middle;margin-right:4px">L</span>締切のお知らせはLINEでも受け取れます</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= ABOUT ======================= -->
+<section data-section="about" style="padding:90px 40px;background:#f7f5f2">
+  <div style="max-width:1480px;margin:0 auto;display:grid;grid-template-columns:42% 58%;gap:50px;align-items:center">
+    <div>
+      <div data-title-anim="" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E11620;margin-bottom:18px">About</div>
+      <h2 data-fade="" style="margin:0 0 18px;font-size:32px;font-weight:700;color:#3a3a3a;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">ヨシケイについて</h2>
+      <p data-fade="" data-fade-delay="0.1s" style="margin:0 0 26px;font-size:14px;line-height:1.95;color:#666;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">ヨシケイという名前の由来や、安全安心の取り組み<br>について詳しくご紹介します。</p>
+      <button data-fade="" data-fade-delay="0.16s" class="tk-btn" style="border:none;background:#E11620;color:#fff;font-size:13px;font-weight:700;padding:12px 30px;border-radius:30px;margin-bottom:34px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"><span>もっと見る</span></button>
+      <div data-fade="" data-fade-delay="0.16s" style="opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"></div>
+    </div>
+    <div data-fade="" style="opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
+      <div class="tk-lk" style="position:relative;border-radius:18px;overflow:hidden;box-shadow:0 14px 34px rgba(0,0,0,.12)">
+        <div class="ph-box" style="width:100%;height:380px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>TVCM画像</span></div>
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,.22)"></div>
+        <div style="position:absolute;top:26px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:7px">
+          <div style="font-size:12px;color:#fff;letter-spacing:.04em;text-shadow:0 1px 4px rgba(0,0,0,.5)">食材宅配サービス</div>
+          <div style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.94);border-radius:20px;padding:6px 10px 6px 14px"><span style="font-family:'Figtree',sans-serif;font-weight:800;color:#E11620;font-size:16px">ヨシケイ</span><span style="width:26px;height:26px;border-radius:50%;background:#E11620;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#fff" stroke-width="1.7"></circle><path d="m11 11 3 3" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path></svg></span></div>
+        </div>
+        <div style="position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);width:66px;height:66px;border-radius:50%;background:rgba(255,255,255,.94);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.25)"><svg width="20" height="24" viewBox="0 0 20 24" fill="#E11620"><path d="M0 0 20 12 0 24z"></path></svg></div>
+      </div>
+      <div style="font-size:13px;color:#888;margin-top:12px">TVCM ヨシケイにまるッとまかせよ！篇</div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= NEWS ======================= -->
+<section data-section="news" style="padding:64px 40px;background:#fff">
+  <div style="max-width:1480px;margin:0 auto;display:grid;grid-template-columns:220px 1fr;gap:40px;align-items:start">
+    <div>
+      <div data-title-anim="" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:26px;letter-spacing:.04em;color:#E11620;margin-bottom:18px">News</div>
+      <button class="tk-btn" style="border:none;background:#E11620;color:#fff;font-size:12px;font-weight:700;padding:10px 24px;border-radius:30px"><span>全てを見る</span></button>
+    </div>
+    <a href="#top" data-fade="" style="display:flex;gap:24px;align-items:center;border-bottom:1px solid #eee;padding-bottom:22px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
+      <div style="position:relative;flex:none"><div class="ph-box" style="width:160px;height:104px;border-radius:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>お知らせ画像</span></div><span style="position:absolute;top:8px;left:8px;background:#ffb729;color:#fff;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px">その他</span></div>
+      <div><div style="font-size:16px;font-weight:700;color:#333;line-height:1.6;margin-bottom:8px">ヨシケイのブランドサイトが公開されました</div><div style="font-size:12px;color:#999">2026.03.15</div></div>
+    </a>
+  </div>
+</section>
+
+<!-- ======================= CTA ======================= -->
+<section data-section="cta" style="padding:60px 40px 80px;background:#f7f5f2">
+  <div style="max-width:1480px;margin:0 auto;display:grid;grid-template-columns:53% 47%;gap:24px;align-items:stretch">
+    <div data-fade="" style="background:#fcebec;border-radius:22px;padding:36px 40px;position:relative;overflow:hidden;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
+      <div style="overflow:hidden;margin-bottom:24px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)">
+        <div style="display:flex;gap:10px;width:max-content;animation:tk-marquee 26s linear infinite">
+          <svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-carrot"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-broccoli"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-mushroom"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-orange"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-pepper"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-pea"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-leaf"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-ladle"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-pot"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-whisk"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-shrimp"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-fish"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-egg"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-corn"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-tomato"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-knife"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-carrot"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-broccoli"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-mushroom"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-orange"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-pepper"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-pea"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-leaf"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-ladle"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-pot"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-whisk"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-shrimp"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-fish"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-egg"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-corn"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-tomato"></use></svg><svg width="32" height="32" viewBox="0 0 100 100"><use href="#ic-knife"></use></svg>
+        </div>
+      </div>
+      <div style="position:absolute;right:34px;top:64px;text-align:center">
+        <div class="ph-box" style="width:140px;height:auto;display:block;margin:0 0 4px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>ロゴ</span></div>
+        <div style="background:#E11620;color:#fff;font-size:10px;font-weight:700;padding:5px 10px;border-radius:20px;margin-top:8px;white-space:nowrap">提供食数 3000万食突破！</div>
+      </div>
+      <div style="font-size:12px;color:#85775b;font-weight:500;margin-bottom:8px">食材宅配サービス｜ヨシケイ</div>
+      <h2 style="margin:0 0 16px;font-size:29px;font-weight:700;color:#3a3a3a">つくる人から笑顔に。</h2>
+      <p style="margin:0 0 24px;font-size:13px;line-height:1.95;color:#6b6256;max-width:430px">管理栄養士監修の手料理を週替わりでお届け！注文はLINEで完結。プラン変更/お休み/解約もいつでもかんたんに。まずは1週間から、ヨシケイにまかせてみませんか？</p>
+      <!-- v3-fb1：LINE導線（赤ボックス）とプライバシーポリシー注記の一帯を一旦非表示（コードは温存） -->
+      <button class="tk-btn" style="display:none;width:100%;border:none;background:#E11620;border-radius:14px;padding:16px 22px;text-align:left;position:relative">
+        <span style="display:block"><span style="display:block;font-size:18px;font-weight:700;color:#fff;margin-bottom:3px">ヨシケイをはじめる</span><span style="display:block;font-size:12px;color:rgba(255,255,255,.92)">注文はLINEから。友だち追加は無料です。</span></span>
+        <span style="position:absolute;right:18px;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;z-index:1"><span style="font-family:'Figtree',sans-serif;font-weight:800;color:#06c755;font-size:15px">LINE</span></span>
+      </button>
+      <!-- v3-fb1：一旦非表示（コード温存） -->
+      <p style="display:none;margin:14px 0 0;font-size:10px;line-height:1.7;color:#a99">当社は<u>プライバシーポリシー</u>に則り、お客さまの個人情報を適切に管理します。友だち登録をされた場合は、当該<u>プライバシーポリシー</u>に同意されたものといたします。</p>
+    </div>
+    <!-- v3-fb2：4カード（始め方/料金プラン/ご利用イメージ/FAQ）は削除 -->
+  </div>
+</section>
+
+<!-- ======================= FOOTER ======================= -->
+<footer data-section="footer" style="padding:60px 40px 30px;background:#fff;border-top:1px solid #f0eee9">
+  <div style="max-width:1480px;margin:0 auto">
+    <div style="display:grid;grid-template-columns:300px 1fr 1fr;gap:40px;align-items:start">
+      <div>
+        <div style="display:flex;align-items:center;margin-bottom:20px"><div class="ph-box" style="height:28px;width:auto;display:block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>ロゴ</span></div></div>
+        <div style="display:flex;gap:3px;flex-wrap:wrap;max-width:280px">
+          <svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-carrot"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-ladle"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-orange"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-eggplant"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-leaf"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-mushroom"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-tomato"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-corn"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-pea"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-broccoli"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-pepper"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-pot"></use></svg>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px;font-size:15px;font-weight:500;color:#333">
+        <a href="#menu">お届けメニュー</a>
+        <a href="#top">ご注文</a>
+        <a href="#top">ヨシケイについて</a>
+        <a href="#top">ニュース</a>
+        <a href="#top">よくあるご質問</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;font-size:13px;color:#777">
+        <a href="#top">福利厚生プラン<svg width="9" height="9" viewBox="0 0 12 12" fill="none" style="display:inline-block;margin-left:4px;vertical-align:middle"><path d="M3.5 8.5 8.5 3.5M4.5 3.5h4v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+        <a href="#top">料理おやすみカード<svg width="9" height="9" viewBox="0 0 12 12" fill="none" style="display:inline-block;margin-left:4px;vertical-align:middle"><path d="M3.5 8.5 8.5 3.5M4.5 3.5h4v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+        <a href="#top">つくおき<svg width="9" height="9" viewBox="0 0 12 12" fill="none" style="display:inline-block;margin-left:4px;vertical-align:middle"><path d="M3.5 8.5 8.5 3.5M4.5 3.5h4v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+        <span style="height:8px"></span>
+        <a href="#top">プライバシーポリシー</a>
+        <a href="#top">利用規約</a>
+        <a href="#top">特定商取引法に基づく表記</a>
+        <a href="#top">運営会社<svg width="9" height="9" viewBox="0 0 12 12" fill="none" style="display:inline-block;margin-left:4px;vertical-align:middle"><path d="M3.5 8.5 8.5 3.5M4.5 3.5h4v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:40px;padding-top:20px">
+      <div style="display:flex;gap:3px;flex-wrap:wrap;max-width:300px">
+        <svg width="30" height="30" viewBox="0 0 100 100"><use href="#ic-carrot"></use></svg><svg width="30" height="30" viewBox="0 0 100 100"><use href="#ic-knife"></use></svg><svg width="30" height="30" viewBox="0 0 100 100"><use href="#ic-orange"></use></svg><svg width="30" height="30" viewBox="0 0 100 100"><use href="#ic-leaf"></use></svg><svg width="30" height="30" viewBox="0 0 100 100"><use href="#ic-egg"></use></svg><svg width="30" height="30" viewBox="0 0 100 100"><use href="#ic-broccoli"></use></svg><svg width="30" height="30" viewBox="0 0 100 100"><use href="#ic-tomato"></use></svg><svg width="30" height="30" viewBox="0 0 100 100"><use href="#ic-pea"></use></svg><svg width="30" height="30" viewBox="0 0 100 100"><use href="#ic-pot"></use></svg>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="font-size:11px;color:#aaa">© 2026 Yoshikei All rights reserved.</span>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:-22px">
+      <a href="#top" style="width:30px;height:30px;border-radius:7px;background:#06c755;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800;font-family:'Figtree',sans-serif">L</a>
+      <a href="#top" style="width:30px;height:30px;border-radius:7px;background:#222;display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="#fff" stroke-width="1.8"></rect><circle cx="12" cy="12" r="4" stroke="#fff" stroke-width="1.8"></circle><circle cx="17" cy="7" r="1.3" fill="#fff"></circle></svg></a>
+      <a href="#top" style="width:30px;height:30px;border-radius:7px;background:#222;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><path d="M2 2h5l5 7 5-7h5l-7.5 10L22 22h-5l-5-7-5 7H2l7.5-10z"></path></svg></a>
+    </div>
+  </div>
+</footer>
+
+</div>
+<script>
+
+// --- standalone shim: Claude Design の DCLogic を最小実装で代替 ---
+class DCLogic { constructor(props) { this.props = props || {}; } }
+
+
+class Component extends DCLogic {
+  componentDidMount() { this._wire(); }
+  componentDidUpdate() { this._wire(); }
+  _animOn() { return this.props.enableAnimations !== false; }
+  _root() { return document.querySelector('[data-tsuklio-root]'); }
+  _wire() {
+    const root = this._root();
+    if (!root) return;
+    const on = this._animOn();
+
+    // sticky nav toggle
+    const navWrap = root.querySelector('[data-nav-wrap]');
+    if (navWrap) navWrap.style.position = (this.props.stickyNav === false) ? 'static' : 'sticky';
+    this._wireMenu(root);
+    this._buildArrowClips(root);
+
+    // clip-reveal: each char rises from an overflow-hidden box, staggered L->R
+    const labels = root.querySelectorAll('[data-title-anim],[data-big-en]');
+    labels.forEach(el => {
+      if (el.dataset.split) return;
+      const txt = el.textContent;
+      el.innerHTML = txt.split('').map((c, i) =>
+        '<span style="display:inline-block;overflow:hidden;vertical-align:top">' +
+          '<span class="tch" style="display:inline-block;transform:translateY(110%)">' +
+          (c === ' ' ? '&nbsp;' : c) + '</span></span>'
+      ).join('');
+      el.dataset.split = '1';
+    });
+    // clear any stale time-based animations so none can override the scroll-driven transform
+    labels.forEach(el => el.querySelectorAll('.tch').forEach(s => { try { s.getAnimations().forEach(a => a.cancel()); } catch (e) {} }));
+    const runTitle = el => el.querySelectorAll('.tch').forEach(s => {
+      try { s.getAnimations().forEach(a => a.cancel()); } catch (e) {}
+      s.style.transform = 'translateY(0)';
+    });
+
+    if (this._io) this._io.disconnect();
+    if (this._tio) this._tio.disconnect();
+    clearTimeout(this._safety);
+
+    const fades = Array.from(root.querySelectorAll('[data-fade]'));
+
+    if (!on) {
+      if (this._onScroll) { window.removeEventListener('scroll', this._onScroll); window.removeEventListener('resize', this._onScroll); this._onScroll = null; }
+      fades.forEach(el => { el.style.transition = 'none'; el.style.opacity = '1'; el.style.transform = 'none'; });
+      root.querySelectorAll('.tch').forEach(s => { s.style.transition = 'none'; s.style.transform = 'none'; });
+      return;
+    }
+
+    // hero fades: reveal immediately (not scroll-driven), the rest track scroll progress
+    this._fades = fades.filter(el => {
+      if (el.closest('[data-section="hero"]')) {
+        el.style.transition = 'opacity .6s ease-out, transform .6s ease-out';
+        el.style.opacity = '1'; el.style.transform = 'none';
+        return false;
+      }
+      el.style.transition = 'none';
+      el.style.willChange = 'opacity, transform';
+      return true;
+    });
+
+    // B: real-time scroll-driven fade — opacity .2->1 + translateY 15->0 by scroll progress
+    const update = () => {
+      const vh = window.innerHeight || 800;
+      this._fades.forEach(el => {
+        const rect = el.getBoundingClientRect();
+        const progress = Math.max(0, Math.min(1, (vh - rect.top) / (vh * 0.5)));
+        el.style.opacity = (0.2 + progress * 0.8).toFixed(3);
+        el.style.transform = 'translateY(' + ((1 - progress) * 15).toFixed(2) + 'px)';
+      });
+      // C: EN-label chars rise from their clip driven by scroll POSITION (no time clock /
+      // transition / WAAPI -> cannot stall); fully in view resolves every char to translateY(0).
+      labels.forEach(el => {
+        const rect = el.getBoundingClientRect();
+        const lp = Math.max(0, Math.min(1, (vh - rect.top) / (vh * 0.4)));
+        const chars = el._tch || (el._tch = el.querySelectorAll('.tch'));
+        const n = chars.length || 1;
+        chars.forEach((s, i) => {
+          const cp = Math.max(0, Math.min(1, lp * 1.7 - (i / n) * 0.7));
+          s.style.transform = 'translateY(' + ((1 - cp) * 110).toFixed(1) + '%)';
+        });
+      });
+    };
+    if (this._onScroll) { window.removeEventListener('scroll', this._onScroll); window.removeEventListener('resize', this._onScroll); }
+    let ticking = false;
+    this._onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { update(); ticking = false; }); } };
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+    window.addEventListener('resize', this._onScroll, { passive: true });
+    update();
+
+    // safety net: force-reveal any in-view label shortly after mount, so a missed
+    // scroll/IO callback can never leave labels stuck clipped (translateY 110%).
+    clearTimeout(this._safety);
+    this._safety = setTimeout(() => {
+      const vh = window.innerHeight || 800;
+      labels.forEach(el => { const r = el.getBoundingClientRect(); if (r.top < vh && r.bottom > 0) runTitle(el); });
+    }, 1200);
+  }
+  _buildArrowClips(root) {
+    // F: wrap each → arrow in an overflow-hidden clip with a duplicate, so on hover
+    // arrow #1 slides out right while #2 slides in from the left.
+    root.querySelectorAll('.tk-arrow').forEach(svg => {
+      if (svg.dataset.clip || svg.classList.contains('a1') || svg.classList.contains('a2')) return;
+      const box = document.createElement('span');
+      box.className = 'tk-arrowclip';
+      box.style.width = (svg.getAttribute('width') || 16) + 'px';
+      box.style.height = (svg.getAttribute('height') || 16) + 'px';
+      const a2 = svg.cloneNode(true);
+      svg.classList.add('a1'); svg.dataset.clip = '1';
+      a2.classList.add('a2'); a2.dataset.clip = '1';
+      const parent = svg.parentNode;
+      parent.insertBefore(box, svg);
+      box.appendChild(svg);
+      box.appendChild(a2);
+    });
+  }
+  _wireMenu(root) {
+    const burger = root.querySelector('[data-burger]');
+    const menu = root.querySelector('[data-mobile-menu]');
+    if (!burger || !menu || burger.dataset.wired) return;
+    burger.dataset.wired = '1';
+    const close = () => { burger.setAttribute('data-open', 'false'); menu.style.display = 'none'; };
+    burger.addEventListener('click', () => {
+      const open = burger.getAttribute('data-open') === 'true';
+      if (open) { close(); } else { burger.setAttribute('data-open', 'true'); menu.style.display = 'flex'; }
+    });
+    menu.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
+  }
+}
+
+
+// --- 起動: デフォルトprops（アニメーションON・ナビ固定ON）で配線 ---
+const __c = new Component({ enableAnimations: true, stickyNav: true });
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => __c.componentDidMount());
+} else { __c.componentDidMount(); }
+
+</script>
+<!-- ===================== ウェルカムスプラッシュ（ロゴ落下）ロジック ===================== -->
+<script>
+(function(){
+  'use strict';
+  var splash = document.getElementById('welcome-splash');
+  if (!splash) return;
+  var items = Array.prototype.slice.call(splash.querySelectorAll('[data-ci]'));
+  if (!items.length) { splash.parentNode && splash.parentNode.removeChild(splash); return; }
+
+  var animDone = false;
+  var loaded = (document.readyState === 'complete');
+  var removed = false;
+
+  function fadeOut(){
+    if (removed) return;
+    removed = true;
+    splash.style.opacity = '0';
+    var done = function(){ if (splash && splash.parentNode) splash.parentNode.removeChild(splash); };
+    splash.addEventListener('transitionend', done, { once: true });
+    // transitionend が来ない環境の保険（.6s + 余裕）
+    setTimeout(done, 900);
+  }
+  function maybeFade(){ if (animDone && loaded) fadeOut(); }
+
+  window.addEventListener('load', function(){ loaded = true; maybeFade(); });
+  // 保険: 最大5秒で強制フェードアウト
+  setTimeout(function(){ animDone = true; loaded = true; fadeOut(); }, 5000);
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var canAnimate = (typeof Element !== 'undefined') && Element.prototype && (typeof Element.prototype.animate === 'function');
+
+  if (reduce || !canAnimate) {
+    // アニメーションせず即表示 → 600ms後にフェードアウト
+    items.forEach(function(el){ el.style.opacity = '1'; });
+    setTimeout(function(){ animDone = true; maybeFade(); }, 600);
+    return;
+  }
+
+  var total = 2600, fallDur = 1060;
+  var n = items.length;
+  var stagger = (total - fallDur) / 6;
+  var angles = [-16, 14, -21, 12, -13, 18, -15];
+  var xs = [-9, 7, -6, 8, -7, 6, -5];
+  var opDur = Math.min(240, fallDur * 0.4);
+
+  // prime: 全文字を不可視に
+  items.forEach(function(el){ el.style.opacity = '0'; });
+
+  items.forEach(function(el, i){
+    var a = angles[i % angles.length];
+    var x = xs[i % xs.length];
+    var delay = stagger * i;
+    var frames = [
+      { transform: 'translate(' + x + 'px,-150px) rotate(' + a + 'deg)', easing: 'cubic-bezier(.5,0,.85,.35)', offset: 0 },
+      { transform: 'translate(' + (-x * 0.1) + 'px,14px) rotate(' + (-a * 0.16) + 'deg)', easing: 'cubic-bezier(.25,.5,.4,1)', offset: 0.5 },
+      { transform: 'translate(0,-7px) rotate(' + (a * 0.07) + 'deg)', easing: 'cubic-bezier(.5,0,.7,.4)', offset: 0.68 },
+      { transform: 'translate(0,4px) rotate(' + (-a * 0.03) + 'deg)', easing: 'cubic-bezier(.3,.5,.4,1)', offset: 0.85 },
+      { transform: 'translate(0,0) rotate(0)', offset: 1 }
+    ];
+    var fall = el.animate(frames, { duration: fallDur, delay: delay, fill: 'both' });
+    el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: opDur, delay: delay, easing: 'ease-out', fill: 'both' });
+    if (i === n - 1) {
+      fall.onfinish = function(){ animDone = true; maybeFade(); };
+    }
+  });
+})();
+</script>
+
+
+<script>
+/* ===== 楽楽webモックへの配線 =====
+   LPの「ログイン」ボタン → index.html（モック）へ遷移し、ログインモーダルを自動表示 */
+(function(){
+  document.querySelectorAll('[data-login-btn]').forEach(function(b){
+    b.addEventListener('click', function(){ location.href='index.html?login=1'; });
+  });
+})();
+</script>
+
+</body>
+</html>
