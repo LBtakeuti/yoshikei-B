@@ -28,17 +28,17 @@
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&amp;family=Figtree:wght@500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&amp;family=Zen+Maru+Gothic:wght@500;700;900&amp;display=swap" rel="stylesheet">
 <style>
 .ph-box{background:#ebe9e4;border:1px dashed #c7c3ba;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#8a8578;font-size:12px;font-weight:700;text-align:center;line-height:1.4;overflow:hidden;box-sizing:border-box;padding:6px}.ph-box svg{width:26px;height:26px;opacity:.65;flex:none}.ph-box span{padding:0 6px;max-width:100%}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-body{font-family:'Noto Sans JP','Hiragino Sans',sans-serif;font-weight:500;background:#fff;color:#222;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;padding-bottom:0}
+body{font-family:'Zen Kaku Gothic New','Hiragino Sans',sans-serif;font-weight:500;background:#fff;color:#222;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;padding-bottom:0}
 img{display:block;max-width:100%}
 button{font-family:inherit;cursor:pointer}
 a{color:inherit;text-decoration:none}
 :root{--ease-bounce:cubic-bezier(.37,-.47,.91,.65);--ease-fade:cubic-bezier(.25,.46,.45,.94)}
-@keyframes ttl-in{0%{opacity:0;color:#509146;transform:translateY(10px)}45%{opacity:1;color:#509146;transform:none}55%,100%{opacity:1;color:#E11620;transform:none}}
+@keyframes ttl-in{0%{opacity:0;color:#509146;transform:translateY(10px)}45%{opacity:1;color:#509146;transform:none}55%,100%{opacity:1;color:#E50012;transform:none}}
 @keyframes scroll-down{0%{transform:translateY(0) rotate(90deg)}25%{transform:translateY(25%) rotate(90deg)}75%{transform:translateY(-25%) rotate(90deg)}100%{transform:translateY(0) rotate(90deg)}}
 @keyframes service-bubble{0%{transform:translateY(0)}25%{transform:translateY(-10%)}75%{transform:translateY(10%)}100%{transform:translateY(0)}}
 @keyframes link-card-in-arrow{0%{transform:translate(0)}100%{transform:translate(150%)}}
@@ -47,7 +47,7 @@ a{color:inherit;text-decoration:none}
 .onboard-q-title{font-size:22px;font-weight:700;color:#3a3a3a;line-height:1.5;margin-bottom:8px;min-height:66px;display:flex;align-items:flex-start}
 .tk-btn{position:relative;overflow:hidden;transition:color .3s ease}
 .tk-btn>span{position:relative;z-index:1}
-.tk-btn::before{content:'';position:absolute;inset:0;background:#E11620;transform:scale(.97);opacity:0;transition:transform .3s ease,opacity .3s ease;z-index:0}
+.tk-btn::before{content:'';position:absolute;inset:0;background:#E50012;transform:scale(.97);opacity:0;transition:transform .3s ease,opacity .3s ease;z-index:0}
 .tk-btn:hover::before{transform:scale(1);opacity:1}
 .tk-btn:hover>span{color:#fff}
 .tk-arrowclip{position:relative;display:inline-block;overflow:hidden;vertical-align:middle}
@@ -61,7 +61,7 @@ a{color:inherit;text-decoration:none}
 .tk-ph:hover{transform:scale(1.03)}
 [data-nav-links] a,[data-mobile-menu] a{transition:color .3s ease}
 [data-nav-links] a:hover{color:#ffd9dc}
-[data-mobile-menu] a:hover{color:#E11620}
+[data-mobile-menu] a:hover{color:#E50012}
 [data-section="nav"]{transition:background .3s ease,box-shadow .3s ease,backdrop-filter .3s ease}
 [data-burger] i{display:block;position:relative;z-index:1;width:20px;height:2.5px;background:#555;border-radius:2px;transition:transform .3s ease,opacity .3s ease}
 [data-burger][data-open="true"] i:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
@@ -106,6 +106,7 @@ a{color:inherit;text-decoration:none}
 </style>
 </head>
 <body>
+<div style="height:4px;background:#E50012;position:fixed;top:0;left:0;right:0;z-index:300"></div>
 
 <!-- ======================= WELCOME SPLASH (ロゴ落下) ======================= -->
 <div id="welcome-splash" style="position:fixed;inset:0;z-index:9999;background:#fff;display:flex;align-items:center;justify-content:center;transition:opacity .6s ease">
@@ -152,24 +153,24 @@ a{color:inherit;text-decoration:none}
 <div data-tsuklio-root="" style="width:100%;max-width:1920px;margin:0 auto;position:relative;background:#fff">
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="ic-carrot" viewBox="0 0 100 100"><path d="M28 36c-5-3-8-10-6-15 6 2 11 7 12 13z" fill="#509146"></path><path d="M50 32c-2-6-1-14 3-18 5 4 5 13 2 19z" fill="#509146"></path><path d="M40 34c-4-5-6-13-3-18 5 3 8 12 7 18z" fill="#509146"></path><path d="M30 37 58 41 45 86c-1 4-4 4-5 0z" fill="#E11620"></path><g stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".55"><path d="M38 50 50 52"></path><path d="M37 62 47 64"></path><path d="M35 73 44 75"></path></g></symbol>
+  <symbol id="ic-carrot" viewBox="0 0 100 100"><path d="M28 36c-5-3-8-10-6-15 6 2 11 7 12 13z" fill="#509146"></path><path d="M50 32c-2-6-1-14 3-18 5 4 5 13 2 19z" fill="#509146"></path><path d="M40 34c-4-5-6-13-3-18 5 3 8 12 7 18z" fill="#509146"></path><path d="M30 37 58 41 45 86c-1 4-4 4-5 0z" fill="#E50012"></path><g stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".55"><path d="M38 50 50 52"></path><path d="M37 62 47 64"></path><path d="M35 73 44 75"></path></g></symbol>
   <symbol id="ic-broccoli" viewBox="0 0 100 100"><rect x="44" y="48" width="12" height="36" rx="6" fill="#7cae5e"></rect><circle cx="38" cy="40" r="14" fill="#509146"></circle><circle cx="60" cy="38" r="15" fill="#509146"></circle><circle cx="50" cy="29" r="13" fill="#509146"></circle><circle cx="46" cy="47" r="12" fill="#509146"></circle><circle cx="63" cy="50" r="10" fill="#509146"></circle></symbol>
-  <symbol id="ic-mushroom" viewBox="0 0 100 100"><rect x="42" y="50" width="16" height="32" rx="8" fill="#e7cfa6"></rect><path d="M22 54c0-22 56-22 56 0z" fill="#E11620"></path><circle cx="38" cy="46" r="3.4" fill="#fff" opacity=".85"></circle><circle cx="55" cy="44" r="3" fill="#fff" opacity=".85"></circle><circle cx="64" cy="49" r="2.6" fill="#fff" opacity=".85"></circle></symbol>
-  <symbol id="ic-orange" viewBox="0 0 100 100"><circle cx="50" cy="50" r="34" fill="#E11620"></circle><circle cx="50" cy="50" r="26" fill="#ffb729"></circle><g stroke="#fff" stroke-width="3"><path d="M50 24v52"></path><path d="M24 50h52"></path><path d="M32 32 68 68"></path><path d="M68 32 32 68"></path></g><circle cx="50" cy="50" r="5" fill="#fff"></circle></symbol>
+  <symbol id="ic-mushroom" viewBox="0 0 100 100"><rect x="42" y="50" width="16" height="32" rx="8" fill="#e7cfa6"></rect><path d="M22 54c0-22 56-22 56 0z" fill="#E50012"></path><circle cx="38" cy="46" r="3.4" fill="#fff" opacity=".85"></circle><circle cx="55" cy="44" r="3" fill="#fff" opacity=".85"></circle><circle cx="64" cy="49" r="2.6" fill="#fff" opacity=".85"></circle></symbol>
+  <symbol id="ic-orange" viewBox="0 0 100 100"><circle cx="50" cy="50" r="34" fill="#E50012"></circle><circle cx="50" cy="50" r="26" fill="#ffb729"></circle><g stroke="#fff" stroke-width="3"><path d="M50 24v52"></path><path d="M24 50h52"></path><path d="M32 32 68 68"></path><path d="M68 32 32 68"></path></g><circle cx="50" cy="50" r="5" fill="#fff"></circle></symbol>
   <symbol id="ic-pepper" viewBox="0 0 100 100"><path d="M30 41c0-4 6-6 10-4 4-3 16-3 20 0 4-2 10 0 10 4 6 8 4 30-10 38-8 5-12 5-20 0-14-8-16-30-10-38z" fill="#e8623f"></path><rect x="46" y="22" width="8" height="16" rx="4" fill="#509146"></rect><path d="M50 30c4-4 10-4 12 0" stroke="#509146" stroke-width="5" fill="none" stroke-linecap="round"></path></symbol>
   <symbol id="ic-pea" viewBox="0 0 100 100"><path d="M22 64C24 40 60 24 80 28 78 50 44 70 24 70c-2-1-3-4-2-6z" fill="#509146"></path><circle cx="40" cy="55" r="6" fill="#9ccb7a"></circle><circle cx="52" cy="49" r="6" fill="#9ccb7a"></circle><circle cx="64" cy="43" r="6" fill="#9ccb7a"></circle></symbol>
   <symbol id="ic-leaf" viewBox="0 0 100 100"><path d="M26 74C26 40 56 24 78 26 80 50 60 76 30 76c-2 0-4-1-4-2z" fill="#509146"></path><path d="M34 70C46 52 62 38 74 32" stroke="#9ccb7a" stroke-width="3" fill="none" stroke-linecap="round"></path></symbol>
   <symbol id="ic-ladle" viewBox="0 0 100 100"><rect x="54" y="14" width="7" height="44" rx="3.5" fill="#b9b6ab"></rect><path d="M36 56c0 18 28 18 28 0z" fill="#b9b6ab"></path><path d="M40 58c0 12 20 12 20 0z" fill="#d2cfc5"></path></symbol>
-  <symbol id="ic-pot" viewBox="0 0 100 100"><rect x="26" y="44" width="48" height="34" rx="6" fill="#E11620"></rect><rect x="13" y="52" width="13" height="7" rx="3.5" fill="#E11620"></rect><rect x="74" y="52" width="13" height="7" rx="3.5" fill="#E11620"></rect><rect x="24" y="36" width="52" height="9" rx="4.5" fill="#B0101A"></rect><rect x="45" y="28" width="10" height="9" rx="4" fill="#B0101A"></rect></symbol>
+  <symbol id="ic-pot" viewBox="0 0 100 100"><rect x="26" y="44" width="48" height="34" rx="6" fill="#E50012"></rect><rect x="13" y="52" width="13" height="7" rx="3.5" fill="#E50012"></rect><rect x="74" y="52" width="13" height="7" rx="3.5" fill="#E50012"></rect><rect x="24" y="36" width="52" height="9" rx="4.5" fill="#B0101A"></rect><rect x="45" y="28" width="10" height="9" rx="4" fill="#B0101A"></rect></symbol>
   <symbol id="ic-whisk" viewBox="0 0 100 100"><rect x="46" y="14" width="8" height="22" rx="4" fill="#5c5246"></rect><path d="M50 34C36 44 34 66 44 82M50 34c14 10 16 32 6 48M50 34v48M40 50c6 0 14 0 20 0M38 64c8 0 16 0 24 0" stroke="#b9b6ab" stroke-width="4" fill="none" stroke-linecap="round"></path></symbol>
-  <symbol id="ic-shrimp" viewBox="0 0 100 100"><path d="M70 30C44 24 24 42 26 62c2 18 26 22 40 12-12 2-26-4-26-18 0-12 14-20 32-14 2-4 1-9-2-12z" fill="#E11620"></path><circle cx="66" cy="36" r="3" fill="#5c5246"></circle><path d="M30 64c-4 4-6 6-8 6M32 70c-2 4-4 6-6 8" stroke="#E11620" stroke-width="3" stroke-linecap="round"></path></symbol>
+  <symbol id="ic-shrimp" viewBox="0 0 100 100"><path d="M70 30C44 24 24 42 26 62c2 18 26 22 40 12-12 2-26-4-26-18 0-12 14-20 32-14 2-4 1-9-2-12z" fill="#E50012"></path><circle cx="66" cy="36" r="3" fill="#5c5246"></circle><path d="M30 64c-4 4-6 6-8 6M32 70c-2 4-4 6-6 8" stroke="#E50012" stroke-width="3" stroke-linecap="round"></path></symbol>
   <symbol id="ic-fish" viewBox="0 0 100 100"><path d="M20 50C34 32 62 32 74 50 62 68 34 68 20 50z" fill="#b9b6ab"></path><path d="M74 50 88 38 86 62z" fill="#b9b6ab"></path><circle cx="36" cy="46" r="3.4" fill="#5c5246"></circle></symbol>
   <symbol id="ic-egg" viewBox="0 0 100 100"><path d="M50 22c16 0 24 32 20 48-4 14-36 14-40 0-4-16 4-48 20-48z" fill="#fff" stroke="#e9e2d6" stroke-width="2"></path><circle cx="50" cy="58" r="13" fill="#ffb729"></circle></symbol>
   <symbol id="ic-corn" viewBox="0 0 100 100"><path d="M38 30c-8-8-16-4-12 4-6 6 0 14 8 10z" fill="#509146"></path><rect x="40" y="26" width="20" height="56" rx="10" fill="#ffb729"></rect><g fill="#eaa100"><circle cx="47" cy="40" r="2.3"></circle><circle cx="54" cy="40" r="2.3"></circle><circle cx="47" cy="50" r="2.3"></circle><circle cx="54" cy="50" r="2.3"></circle><circle cx="47" cy="60" r="2.3"></circle><circle cx="54" cy="60" r="2.3"></circle><circle cx="47" cy="70" r="2.3"></circle><circle cx="54" cy="70" r="2.3"></circle></g></symbol>
   <symbol id="ic-tomato" viewBox="0 0 100 100"><circle cx="50" cy="56" r="28" fill="#e8623f"></circle><path d="M50 30 42 22M50 30v-10M50 30l8-8" stroke="#509146" stroke-width="5" stroke-linecap="round"></path><circle cx="40" cy="48" r="5" fill="#fff" opacity=".25"></circle></symbol>
   <symbol id="ic-eggplant" viewBox="0 0 100 100"><path d="M64 30c12 8 14 30 0 44-14 14-36 8-38-8-2-14 14-22 26-24 6-2 8-8 12-12z" fill="#8d7793"></path><path d="M62 28c4-4 10-4 12 0-4 4-8 4-12 6z" fill="#509146"></path></symbol>
   <symbol id="ic-knife" viewBox="0 0 100 100"><path d="M30 60 66 24c6 6 4 16-6 26L42 68z" fill="#cfccc2"></path><rect x="22" y="63" width="22" height="9" rx="4.5" transform="rotate(45 33 67)" fill="#5c5246"></rect></symbol>
-  <symbol id="ic-smile" viewBox="0 0 100 100"><rect width="100" height="100" rx="34" fill="#E11620"></rect><circle cx="37" cy="42" r="6.5" fill="#fff"></circle><circle cx="63" cy="42" r="6.5" fill="#fff"></circle><path d="M34 60q16 16 32 0" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round"></path></symbol>
+  <symbol id="ic-smile" viewBox="0 0 100 100"><rect width="100" height="100" rx="34" fill="#E50012"></rect><circle cx="37" cy="42" r="6.5" fill="#fff"></circle><circle cx="63" cy="42" r="6.5" fill="#fff"></circle><path d="M34 60q16 16 32 0" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round"></path></symbol>
 </svg>
 
 <!-- ======================= NAVIGATION ======================= -->
@@ -177,58 +178,57 @@ a{color:inherit;text-decoration:none}
   <!-- v3-fb1：モック準拠の白ヘッダー（赤ロゴ＋ヘルプ/お知らせ/お問合せの3アイコン＋ハンバーガー） -->
   <nav data-section="nav" style="width: min(980px,calc(100% - 36px)); margin: 0 auto; position: relative; background: #fff; border-radius: 10px; box-shadow: 0 4px 18px rgba(0,0,0,.1); display: flex; align-items: center; justify-content: space-between; padding: 8px 12px 8px 20px; border: 1px solid #eee">
     <a href="#top" style="display:flex;align-items:center">
-      <div class="ph-box" style="height:34px;width:auto;display:block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>ロゴ</span></div>
+      <img src="assets/logo.svg" alt="ヨシケイ楽楽web" style="height:32px;width:auto;display:block">
     </a>
     <div style="display:flex;align-items:center;gap:4px">
-      <button data-help-btn="" aria-label="ヘルプ" style="width:48px;border:none;border-radius:11px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#555" stroke-width="1.7"></circle><path d="M9.2 9.3a2.9 2.9 0 0 1 5.6 1c0 1.9-2.8 2.4-2.8 4" stroke="#555" stroke-width="1.7" stroke-linecap="round"></path><circle cx="12" cy="17.4" r="1" fill="#555"></circle></svg>
-        <span style="font-size:10px;font-weight:700;color:#888;line-height:1">ヘルプ</span>
-      </button>
-      <div style="position:relative">
-        <button data-notice-btn="" aria-label="お知らせ" style="width:48px;border:none;border-radius:11px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer">
-          <span style="position:relative;display:inline-flex">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9Z" stroke="#555" stroke-width="1.7" stroke-linejoin="round"></path><path d="M10.3 21a2 2 0 0 0 3.4 0" stroke="#555" stroke-width="1.7" stroke-linecap="round"></path></svg>
-            <span style="position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:#E11620;color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1;box-sizing:border-box">5</span>
-          </span>
-          <span style="font-size:10px;font-weight:700;color:#888;line-height:1">お知らせ</span>
-        </button>
-        <div data-notice-dropdown="" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.14);padding:16px 18px;width:220px;z-index:130;font-size:13px;color:#888;text-align:center">お知らせはありません</div>
-      </div>
       <button data-contact-btn="" aria-label="お問合せ" style="width:48px;border:none;border-radius:11px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#555" stroke-width="1.7"></rect><path d="m4 7 8 6 8-6" stroke="#555" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
         <span style="font-size:10px;font-weight:700;color:#888;line-height:1">お問合せ</span>
+      </button>
+      <button data-help-btn="" aria-label="ヘルプ" style="width:48px;border:none;border-radius:11px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#555" stroke-width="1.7"></circle><path d="M9.2 9.3a2.9 2.9 0 0 1 5.6 1c0 1.9-2.8 2.4-2.8 4" stroke="#555" stroke-width="1.7" stroke-linecap="round"></path><circle cx="12" cy="17.4" r="1" fill="#555"></circle></svg>
+        <span style="font-size:10px;font-weight:700;color:#888;line-height:1">ヘルプ</span>
       </button>
       <button data-login-btn="" class="tk-btn" style="border:none;background:#E50012;color:#fff;font-size:13.5px;font-weight:700;padding:11px 22px;border-radius:22px;white-space:nowrap;margin:0 6px 0 4px;cursor:pointer"><span>ログイン</span></button>
       <button data-burger="" data-open="false" class="tk-btn" style="width:46px;height:46px;border:1px solid #e5e0d8;border-radius:11px;background:#faf8f5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px" aria-label="メニュー"><i></i><i></i><i></i></button>
     </div>
     <div data-mobile-menu="" style="display:none;position:absolute;top:calc(100% + 10px);left:0;right:0;background:#fff;border-radius:20px;box-shadow:0 12px 34px rgba(0,0,0,.14);padding:18px 24px;flex-direction:column;gap:16px;z-index:120">
-      <a href="#menu" style="font-size:15px;font-weight:700;color:#E11620">お届けメニュー</a>
-      <a href="#top" style="font-size:15px;font-weight:700;color:#E11620">ご注文</a>
-      <a href="#top" style="font-size:15px;font-weight:700;color:#E11620">ヨシケイについて</a>
-      <!-- 流用先で差し替え: クリックは現在no-op（ログイン機構は削除済み） --><button data-login-btn="" class="tk-btn" style="border:1.5px solid #E11620;background:#fff;color:#E11620;font-size:14px;font-weight:700;padding:11px 16px;border-radius:22px;white-space:nowrap"><span>ログイン</span></button>
+      <a href="#menu" style="font-size:15px;font-weight:700;color:#E50012">お届けメニュー</a>
+      <a href="#top" style="font-size:15px;font-weight:700;color:#E50012">ご注文</a>
+      <a href="#top" style="font-size:15px;font-weight:700;color:#E50012">ヨシケイについて</a>
+      <!-- 流用先で差し替え: クリックは現在no-op（ログイン機構は削除済み） --><button data-login-btn="" class="tk-btn" style="border:1.5px solid #E50012;background:#fff;color:#E50012;font-size:14px;font-weight:700;padding:11px 16px;border-radius:22px;white-space:nowrap"><span>ログイン</span></button>
     </div>
   </nav>
 </div>
 <!-- ======================= HERO ======================= -->
-<section id="top" data-section="hero" style="position:relative;height:100vh;min-height:760px;background:#1a1a1a center/cover no-repeat;overflow:hidden">
+<section id="top" data-section="hero" style="position:relative;height:100vh;min-height:760px;background:#FBF7EE center/cover no-repeat;overflow:hidden">
   <div data-hero-slideshow="" style="position:absolute;inset:0">
     <div class="ph-box" style="position:absolute;inset:0;width:100%;height:100%;opacity:1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>ヒーロー背景画像（横長）</span></div>
     <div class="ph-box" style="position:absolute;inset:0;width:100%;height:100%;opacity:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>ヒーロー背景画像（横長）</span></div>
   </div>
-  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.5),rgba(0,0,0,.32) 40%,rgba(0,0,0,.6))"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.28) 45%,rgba(251,247,238,.85))"></div>
+  <div data-fade="" style="position:absolute;left:40px;top:50%;transform:translateY(calc(-50% + 30px));z-index:2;opacity:0;transition:opacity .6s ease-out,transform .6s ease-out">
+    <div style="font-size:13px;font-weight:700;color:#E50012;letter-spacing:.08em;margin-bottom:14px">食材宅配サービス｜ヨシケイ楽楽web</div>
+    <h1 style="margin:0 0 18px;font-size:46px;font-weight:900;color:#3a3a3a;line-height:1.5">つくる人から、<br>笑顔に。</h1>
+    <p style="margin:0 0 28px;font-size:14px;line-height:2;color:#6b6256;max-width:420px">管理栄養士監修の手料理を週替わりでお届け。<br>ご注文はWebでかんたん。まずは1週間から、<br>ヨシケイにまかせてみませんか？</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button data-login-btn="" class="tk-btn" style="border:none;background:#E50012;color:#fff;font-size:15px;font-weight:700;padding:15px 40px;border-radius:28px;cursor:pointer"><span>ログイン</span></button>
+      <button data-login-btn="" class="tk-btn" style="border:2px solid #E50012;background:#fff;color:#E50012;font-size:15px;font-weight:700;padding:13px 32px;border-radius:28px;cursor:pointer"><span>無料ではじめる</span></button>
+    </div>
+  </div>
   <button data-fade="" class="scroll-arrow-btn" style="position:absolute;left:40px;bottom:42px;width:50px;height:50px;border:none;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.2);opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
-    <svg style="animation:scroll-down 1.1s linear infinite" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 10h13M11 5l6 5-6 5" stroke="#E11620" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    <svg style="animation:scroll-down 1.1s linear infinite" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 10h13M11 5l6 5-6 5" stroke="#E50012" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
   </button>
-  <!-- 流用先で遷移先を差し替え（元は#order週替わり注文へ遷移） --><div data-hero-banner="" data-fade="" style="position:absolute;right:40px;bottom:40px;background:#fff;border-radius:16px;box-shadow:0 12px 34px rgba(0,0,0,.18);padding:12px;width:330px;cursor:pointer;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
+  <!-- 流用先で遷移先を差し替え（元は#order週替わり注文へ遷移） --><div data-hero-banner="" data-fade="" onclick="location.href='index.html?login=1'" style="position:absolute;right:40px;bottom:40px;background:#fff;border-radius:16px;box-shadow:0 12px 34px rgba(0,0,0,.18);padding:12px;width:330px;cursor:pointer;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
     <div style="display:flex;align-items:center;gap:12px">
       <div class="ph-box" style="width:58px;height:58px;border-radius:10px;flex:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>お知らせ画像</span></div>
       <div style="flex:1;min-width:0">
-        <span style="display:inline-block;background:#E11620;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;margin-bottom:5px">次回お届け分 受付中！</span>
+        <span style="display:inline-block;background:#E50012;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;margin-bottom:5px">次回お届け分 受付中！</span>
         <div style="font-size:13px;font-weight:700;color:#222;line-height:1.4">2026年7月6日〜7月12日</div>
-        <div style="display:inline-block;background:#E11620;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;margin:3px 0">ご注文締切：7月1日(水) 18:00</div>
+        <div style="display:inline-block;background:#E50012;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;margin:3px 0">ご注文締切：7月1日(水) 18:00</div>
         <div style="font-size:12px;color:#666;line-height:1.4">お届けのメニューを確認する</div>
       </div>
-      <button class="tk-btn" style="width:40px;height:40px;border:none;border-radius:10px;background:#E11620;display:flex;align-items:center;justify-content:center;flex:none">
+      <button class="tk-btn" style="width:40px;height:40px;border:none;border-radius:10px;background:#E50012;display:flex;align-items:center;justify-content:center;flex:none">
         <span><svg class="tk-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M8 3l5 5-5 5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
       </button>
     </div>
@@ -248,7 +248,7 @@ a{color:inherit;text-decoration:none}
       </div>
     </div>
     <div style="position:relative;padding-top:18px">
-      <div data-title-anim="" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E11620;margin-bottom:22px">Brand Concept</div>
+      <div data-title-anim="" style="font-family:'Zen Maru Gothic',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E50012;margin-bottom:22px">Brand Concept</div>
       <h2 data-fade="" style="margin:0 0 28px;font-size:44px;font-weight:700;line-height:1.4;color:#3a3a3a;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">つくる人から<br>笑顔に。</h2>
       <p data-fade="" data-fade-delay="0.12s" style="margin:0;font-size:16px;line-height:2.05;color:#666;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">「ヨシケイ」は、献立を考えなくても<br>毎日の食卓が整う、食材宅配サービスです。<br>管理栄養士が考えた週替わりの献立と、<br>その日に使いきる分の食材をお届けするから、<br>メニューに悩む時間も、買い出しも必要ありません。<br>家族の顔を思い浮かべながらつくる、<br>できたての手料理のおいしさはそのままに。<br>毎日おいしい、体にうれしい、<br>そして食卓が楽しみになる時間を、<br>ヨシケイがお手伝いします。</p>
     </div>
@@ -259,7 +259,7 @@ a{color:inherit;text-decoration:none}
 <section data-section="about-tsuklio" style="padding:60px 40px 96px;background:#fff">
   <div style="max-width:640px;margin:0 auto">
     <div style="position:relative">
-      <div data-title-anim="" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E11620;margin-bottom:20px">About Yoshikei</div>
+      <div data-title-anim="" style="font-family:'Zen Maru Gothic',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E50012;margin-bottom:20px">About Yoshikei</div>
       <h2 data-fade="" style="margin:0 0 22px;font-size:31px;font-weight:700;line-height:1.5;color:#3a3a3a;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">作りたての手料理を<br>週に一度まとめてお届け。<br>5分でおいしい食卓が完成！</h2>
       <p data-fade="" data-fade-delay="0.1s" style="margin:0;font-size:15px;line-height:2;color:#666;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">ご家庭の人数や食数に合わせて、まとめてお届け。<br>好きなおかずを食べたい分だけ選んで、レンジで温めるだけ。<br>忙しい日もあっという間に食卓が完成！</p>
     </div>
@@ -267,31 +267,32 @@ a{color:inherit;text-decoration:none}
 </section>
 
 <!-- ======================= OUR MENU ======================= -->
-<section id="menu" data-section="our-menu" style="padding:90px 40px 90px;background:#E11620">
+<section id="menu" data-section="our-menu" style="padding:90px 40px 90px;background:#E50012">
   <div style="max-width:1340px;margin:0 auto;display:grid;grid-template-columns:46% 54%;gap:64px;align-items:center">
     <div data-fade="" class="tk-lk" style="background:#fff;border-radius:18px;padding:12px;box-shadow:0 16px 40px rgba(0,0,0,.12);opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
       <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px">
-        <div class="ph-box" style="width:100%;height:230px;border-radius:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>メニュー写真</span></div>
+        <img src="assets/noimage.png" alt="メニュー写真" style="width:100%;height:230px;object-fit:cover;border-radius:10px;display:block">
         <div style="display:flex;flex-direction:column;gap:8px">
-          <div class="ph-box" style="width:100%;height:111px;border-radius:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>メニュー写真</span></div>
-          <div class="ph-box" style="width:100%;height:111px;border-radius:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>メニュー写真</span></div>
+          <img src="assets/noimage.png" alt="メニュー写真" style="width:100%;height:111px;object-fit:cover;border-radius:10px;display:block">
+          <img src="assets/noimage.png" alt="メニュー写真" style="width:100%;height:111px;object-fit:cover;border-radius:10px;display:block">
         </div>
       </div>
       <div style="padding:18px 12px 12px;position:relative">
-        <span style="display:inline-block;background:#E11620;color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;margin-bottom:12px">次回お届け分 受付中!</span>
-        <div style="font-size:30px;font-weight:700;color:#E11620;line-height:1.1;letter-spacing:.01em">7<span style="font-size:18px">月</span> 6<span style="font-size:18px">日</span> 〜 7<span style="font-size:18px">月</span> 12<span style="font-size:18px">日</span></div>
-        <div style="font-size:20px;font-weight:700;color:#E11620;margin-top:6px">お届けメニューを確認する</div>
-        <button class="tk-btn" style="position:absolute;right:6px;bottom:8px;width:44px;height:44px;border:none;border-radius:11px;background:#E11620;display:flex;align-items:center;justify-content:center">
+        <span style="display:inline-block;background:#E50012;color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;margin-bottom:12px">次回お届け分 受付中!</span>
+        <div style="font-size:30px;font-weight:700;color:#E50012;line-height:1.1;letter-spacing:.01em">7<span style="font-size:18px">月</span> 6<span style="font-size:18px">日</span> 〜 7<span style="font-size:18px">月</span> 12<span style="font-size:18px">日</span></div>
+        <div style="font-size:20px;font-weight:700;color:#E50012;margin-top:6px">お届けメニューを確認する</div>
+        <button class="tk-btn" style="position:absolute;right:6px;bottom:8px;width:44px;height:44px;border:none;border-radius:11px;background:#E50012;display:flex;align-items:center;justify-content:center">
           <span><svg class="tk-arrow" width="17" height="17" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M8 3l5 5-5 5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
         </button>
       </div>
     </div>
     <div style="text-align:center;color:#fff">
-      <div data-section="our-menu-label" data-big-en="" data-title-anim="" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:42px;letter-spacing:.01em;color:#fff;line-height:1">Our Menu</div>
+      <div data-section="our-menu-label" data-big-en="" data-title-anim="" style="font-family:'Zen Maru Gothic',sans-serif;font-weight:800;font-size:42px;letter-spacing:.01em;color:#fff;line-height:1">Our Menu</div>
       <div data-fade="" style="font-size:13px;color:rgba(255,255,255,.92);margin-top:8px;letter-spacing:.08em;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">こだわりの手料理について</div>
       <h2 data-fade="" data-fade-delay="0.08s" style="margin:26px 0 22px;font-size:30px;font-weight:700;line-height:1.5;color:#fff;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">管理栄養士監修！<br>週替わりで飽きない手料理</h2>
       <p data-fade="" data-fade-delay="0.16s" style="margin:0 auto 30px;max-width:430px;font-size:15px;line-height:2;color:rgba(255,255,255,.92);opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">これまでに開発したメニューは1000種以上！自分で作るには少し手間がかかる料理を、大人も子どもも食べやすい、やさしい味付けで丁寧に手づくりしています。</p>
-      <button data-fade="" data-fade-delay="0.24s" class="tk-btn" style="border:none;background:rgba(255,255,255,.32);color:#fff;font-size:13px;font-weight:700;padding:12px 26px;border-radius:30px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"><span>今月のメニューを見る</span></button>
+      <button data-login-btn="" data-fade="" data-fade-delay="0.24s" class="tk-btn" style="border:none;background:rgba(255,255,255,.32);color:#fff;font-size:13px;font-weight:700;padding:12px 26px;border-radius:30px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"><span>今月のメニューを見る</span></button>
+      <div data-fade="" data-fade-delay="0.3s" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:26px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"><span style="background:#DB84AC;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">スマイリーミール</span><span style="background:#6FA8D6;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">スタンダードミール</span><span style="background:#7FBB8C;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">バランスミール</span><span style="background:#5FB8B0;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">カットミール</span><span style="background:#DDA92C;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">ファンミール</span><span style="background:#A98BC7;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">タイムリーミール</span></div>
     </div>
   </div>
 </section>
@@ -310,9 +311,9 @@ a{color:inherit;text-decoration:none}
       <div style="position:absolute;right:18px;bottom:16px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.92);color:#333;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,.18)">1</div>
     </div>
     <div style="text-align:center;margin-top:44px">
-      <div data-title-anim="" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E11620;margin-bottom:18px">Service</div>
+      <div data-title-anim="" style="font-family:'Zen Maru Gothic',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E50012;margin-bottom:18px">Service</div>
       <h2 data-fade="" style="margin:0 0 30px;font-size:30px;font-weight:700;line-height:1.6;color:#3a3a3a;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">身体にうれしい手料理を<br>おいしさをそのままに、ご自宅へお届け。</h2>
-      <button data-fade="" data-fade-delay="0.1s" class="tk-btn" style="border:none;background:#E11620;color:#fff;font-size:13px;font-weight:700;padding:13px 32px;border-radius:30px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"><span>もっと見る</span></button>
+      <button data-fade="" data-fade-delay="0.1s" class="tk-btn" style="border:none;background:#E50012;color:#fff;font-size:13px;font-weight:700;padding:13px 32px;border-radius:30px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"><span>もっと見る</span></button>
     </div>
   </div>
 </section>
@@ -321,10 +322,10 @@ a{color:inherit;text-decoration:none}
 <section data-section="use-cases" style="padding:90px 40px;background:#fff">
   <div style="max-width:1480px;margin:0 auto;display:grid;grid-template-columns:40% 60%;gap:50px;align-items:center">
     <div>
-      <div data-title-anim="" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E11620;margin-bottom:18px">Use Cases</div>
+      <div data-title-anim="" style="font-family:'Zen Maru Gothic',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E50012;margin-bottom:18px">Use Cases</div>
       <h2 data-fade="" style="margin:0 0 22px;font-size:32px;font-weight:700;line-height:1.5;color:#3a3a3a;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">ご家庭に合わせた使い方</h2>
       <p data-fade="" data-fade-delay="0.1s" style="margin:0 0 34px;font-size:15px;line-height:2;color:#666;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">毎日の夕食にはもちろん、<br>朝食やリモートワークのお昼ご飯にも。</p>
-      <button data-fade="" data-fade-delay="0.18s" class="tk-btn" style="border:none;background:#E11620;color:#fff;font-size:13px;font-weight:700;padding:13px 30px;border-radius:30px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"><span>使い方の例を見る</span></button>
+      <button data-fade="" data-fade-delay="0.18s" class="tk-btn" style="border:none;background:#E50012;color:#fff;font-size:13px;font-weight:700;padding:13px 30px;border-radius:30px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"><span>使い方の例を見る</span></button>
     </div>
     <div data-fade="" data-uc-wrap="" style="position:relative;padding-bottom:40px;padding-left:60px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
       <div style="position:relative;border-radius:22px;overflow:hidden">
@@ -345,15 +346,15 @@ a{color:inherit;text-decoration:none}
 <section data-section="how-to-use" style="padding:50px 40px 100px;background:#fff">
   <div style="max-width:1480px;margin:0 auto">
     <div style="text-align:center;margin-bottom:46px">
-      <div data-title-anim="" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E11620;margin-bottom:16px">How to Use</div>
+      <div data-title-anim="" style="font-family:'Zen Maru Gothic',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E50012;margin-bottom:16px">How to Use</div>
       <h2 data-fade="" style="margin:0 0 8px;font-size:30px;font-weight:700;color:#3a3a3a;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">ヨシケイの使い方</h2>
-      <div data-fade="" data-fade-delay="0.08s" style="font-size:17px;font-weight:700;color:#E11620;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">見る・登録・注文のかんたん3ステップ！</div>
+      <div data-fade="" data-fade-delay="0.08s" style="font-size:17px;font-weight:700;color:#E50012;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">見る・登録・注文のかんたん3ステップ！</div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 56px 1fr 56px 1fr;align-items:stretch;gap:0">
       <div data-fade="" style="border-radius:14px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.06);background:#fff;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
-        <div style="background:#E11620;color:#fff;text-align:center;font-weight:700;font-size:14px;padding:11px;letter-spacing:.08em">STEP 1</div>
+        <div style="background:#E50012;color:#fff;text-align:center;font-weight:700;font-size:14px;padding:11px;letter-spacing:.08em">STEP 1</div>
         <div style="padding:22px 20px 26px;background:#f6f4f1;text-align:center;height:100%">
-          <div style="font-size:18px;font-weight:700;color:#E11620;margin-bottom:10px">メニューを見る</div>
+          <div style="font-size:18px;font-weight:700;color:#E50012;margin-bottom:10px">メニューを見る</div>
           <p style="margin:0 0 22px;font-size:13px;line-height:1.8;color:#666">会員登録なしで、今週の献立・<br>単品メニューを閲覧できます。</p>
           <div style="background:#fff;border-radius:12px;padding:16px;box-shadow:0 4px 14px rgba(0,0,0,.06)">
             <div style="display:inline-block;background:#ffb729;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:12px">ゲスト閲覧OK</div>
@@ -362,32 +363,32 @@ a{color:inherit;text-decoration:none}
           </div>
         </div>
       </div>
-      <div data-step-arrow="" style="display:flex;align-items:center;justify-content:center"><svg width="22" height="26" viewBox="0 0 22 26" fill="#E11620"><path d="M4 2 18 13 4 24z"></path></svg></div>
+      <div data-step-arrow="" style="display:flex;align-items:center;justify-content:center"><svg width="22" height="26" viewBox="0 0 22 26" fill="#E50012"><path d="M4 2 18 13 4 24z"></path></svg></div>
       <div data-fade="" data-fade-delay="0.12s" style="border-radius:14px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.06);background:#fff;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
-        <div style="background:#E11620;color:#fff;text-align:center;font-weight:700;font-size:14px;padding:11px;letter-spacing:.08em">STEP 2</div>
+        <div style="background:#E50012;color:#fff;text-align:center;font-weight:700;font-size:14px;padding:11px;letter-spacing:.08em">STEP 2</div>
         <div style="padding:22px 20px 26px;background:#f6f4f1;text-align:center;height:100%">
-          <div style="font-size:18px;font-weight:700;color:#E11620;margin-bottom:10px">かんたん登録</div>
+          <div style="font-size:18px;font-weight:700;color:#E50012;margin-bottom:10px">かんたん登録</div>
           <p style="margin:0 0 22px;font-size:13px;line-height:1.8;color:#666">7つの質問に答えるだけ。<br>あなたに合った献立をご提案<br>するために伺います。</p>
           <div style="background:#fff;border-radius:12px;padding:14px;box-shadow:0 4px 14px rgba(0,0,0,.06);text-align:left">
             <div style="font-size:10px;color:#999;text-align:center;margin-bottom:10px;border-bottom:1px solid #eee;padding-bottom:8px">かんたん7つの質問</div>
-            <div style="display:flex;justify-content:space-between;align-items:center;border:2px solid #E11620;border-radius:7px;padding:7px 10px;margin-bottom:6px;font-size:11px;background:#fdf0f1"><span style="font-weight:700;color:#E11620">Q1. 好みの味は？</span><span style="font-weight:700;color:#E11620">こってり</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;border:2px solid #E50012;border-radius:7px;padding:7px 10px;margin-bottom:6px;font-size:11px;background:#fdf0f1"><span style="font-weight:700;color:#E50012">Q1. 好みの味は？</span><span style="font-weight:700;color:#E50012">こってり</span></div>
             <div style="display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:7px;padding:7px 10px;margin-bottom:6px;font-size:11px"><span>Q2. 調理にかけたい時間は？</span><span style="color:#999">〜20分</span></div>
             <div style="display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:7px;padding:7px 10px;margin-bottom:6px;font-size:11px"><span>Q3. 気にしている健康度は？</span><span style="color:#999">減塩</span></div>
             <div style="font-size:10px;color:#999;text-align:center;margin-top:8px">…あと4問</div>
           </div>
         </div>
       </div>
-      <div data-step-arrow="" style="display:flex;align-items:center;justify-content:center"><svg width="22" height="26" viewBox="0 0 22 26" fill="#E11620"><path d="M4 2 18 13 4 24z"></path></svg></div>
+      <div data-step-arrow="" style="display:flex;align-items:center;justify-content:center"><svg width="22" height="26" viewBox="0 0 22 26" fill="#E50012"><path d="M4 2 18 13 4 24z"></path></svg></div>
       <div data-fade="" data-fade-delay="0.24s" style="border-radius:14px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.06);background:#fff;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
-        <div style="background:#E11620;color:#fff;text-align:center;font-weight:700;font-size:14px;padding:11px;letter-spacing:.08em">STEP 3</div>
+        <div style="background:#E50012;color:#fff;text-align:center;font-weight:700;font-size:14px;padding:11px;letter-spacing:.08em">STEP 3</div>
         <div style="padding:22px 20px 26px;background:#f6f4f1;text-align:center;height:100%">
-          <div style="font-size:18px;font-weight:700;color:#E11620;margin-bottom:10px">締切までに注文</div>
+          <div style="font-size:18px;font-weight:700;color:#E50012;margin-bottom:10px">締切までに注文</div>
           <p style="margin:0 0 22px;font-size:13px;line-height:1.8;color:#666">毎週締切までに選ぶだけ。<br>お休み登録も週ごとに・無料で<br>設定できます。</p>
           <div style="position:relative;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.06)">
             <div class="ph-box" style="width:100%;height:180px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>使い方（受け取り）</span></div>
             <div style="position:absolute;inset:0;background:rgba(255,255,255,.82);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:18px;text-align:center">
               <div style="font-size:12px;font-weight:700;color:#333;line-height:1.6">ご注文ありがとうございます<br>締切までは変更・お休みも自由</div>
-              <div style="margin-top:12px;background:#E11620;color:#fff;font-size:11px;font-weight:700;padding:8px 16px;border-radius:20px">この週の注文を確定する</div>
+              <div style="margin-top:12px;background:#E50012;color:#fff;font-size:11px;font-weight:700;padding:8px 16px;border-radius:20px">この週の注文を確定する</div>
             </div>
           </div>
           <p style="margin:14px 0 0;font-size:11px;color:#999;line-height:1.7"><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#06c755;color:#fff;font-size:8px;font-weight:700;text-align:center;line-height:14px;vertical-align:middle;margin-right:4px">L</span>締切のお知らせはLINEでも受け取れます</p>
@@ -401,10 +402,10 @@ a{color:inherit;text-decoration:none}
 <section data-section="about" style="padding:90px 40px;background:#f7f5f2">
   <div style="max-width:1480px;margin:0 auto;display:grid;grid-template-columns:42% 58%;gap:50px;align-items:center">
     <div>
-      <div data-title-anim="" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E11620;margin-bottom:18px">About</div>
+      <div data-title-anim="" style="font-family:'Zen Maru Gothic',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E50012;margin-bottom:18px">About</div>
       <h2 data-fade="" style="margin:0 0 18px;font-size:32px;font-weight:700;color:#3a3a3a;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">ヨシケイについて</h2>
       <p data-fade="" data-fade-delay="0.1s" style="margin:0 0 26px;font-size:14px;line-height:1.95;color:#666;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">ヨシケイという名前の由来や、安全安心の取り組み<br>について詳しくご紹介します。</p>
-      <button data-fade="" data-fade-delay="0.16s" class="tk-btn" style="border:none;background:#E11620;color:#fff;font-size:13px;font-weight:700;padding:12px 30px;border-radius:30px;margin-bottom:34px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"><span>もっと見る</span></button>
+      <button data-fade="" data-fade-delay="0.16s" class="tk-btn" style="border:none;background:#E50012;color:#fff;font-size:13px;font-weight:700;padding:12px 30px;border-radius:30px;margin-bottom:34px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"><span>もっと見る</span></button>
       <div data-fade="" data-fade-delay="0.16s" style="opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"></div>
     </div>
     <div data-fade="" style="opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
@@ -413,9 +414,9 @@ a{color:inherit;text-decoration:none}
         <div style="position:absolute;inset:0;background:rgba(0,0,0,.22)"></div>
         <div style="position:absolute;top:26px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:7px">
           <div style="font-size:12px;color:#fff;letter-spacing:.04em;text-shadow:0 1px 4px rgba(0,0,0,.5)">食材宅配サービス</div>
-          <div style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.94);border-radius:20px;padding:6px 10px 6px 14px"><span style="font-family:'Figtree',sans-serif;font-weight:800;color:#E11620;font-size:16px">ヨシケイ</span><span style="width:26px;height:26px;border-radius:50%;background:#E11620;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#fff" stroke-width="1.7"></circle><path d="m11 11 3 3" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path></svg></span></div>
+          <div style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.94);border-radius:20px;padding:6px 10px 6px 14px"><span style="font-family:'Zen Maru Gothic',sans-serif;font-weight:800;color:#E50012;font-size:16px">ヨシケイ</span><span style="width:26px;height:26px;border-radius:50%;background:#E50012;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#fff" stroke-width="1.7"></circle><path d="m11 11 3 3" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path></svg></span></div>
         </div>
-        <div style="position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);width:66px;height:66px;border-radius:50%;background:rgba(255,255,255,.94);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.25)"><svg width="20" height="24" viewBox="0 0 20 24" fill="#E11620"><path d="M0 0 20 12 0 24z"></path></svg></div>
+        <div style="position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);width:66px;height:66px;border-radius:50%;background:rgba(255,255,255,.94);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.25)"><svg width="20" height="24" viewBox="0 0 20 24" fill="#E50012"><path d="M0 0 20 12 0 24z"></path></svg></div>
       </div>
       <div style="font-size:13px;color:#888;margin-top:12px">TVCM ヨシケイにまるッとまかせよ！篇</div>
     </div>
@@ -426,8 +427,8 @@ a{color:inherit;text-decoration:none}
 <section data-section="news" style="padding:64px 40px;background:#fff">
   <div style="max-width:1480px;margin:0 auto;display:grid;grid-template-columns:220px 1fr;gap:40px;align-items:start">
     <div>
-      <div data-title-anim="" style="font-family:'Figtree',sans-serif;font-weight:800;font-size:26px;letter-spacing:.04em;color:#E11620;margin-bottom:18px">News</div>
-      <button class="tk-btn" style="border:none;background:#E11620;color:#fff;font-size:12px;font-weight:700;padding:10px 24px;border-radius:30px"><span>全てを見る</span></button>
+      <div data-title-anim="" style="font-family:'Zen Maru Gothic',sans-serif;font-weight:800;font-size:26px;letter-spacing:.04em;color:#E50012;margin-bottom:18px">News</div>
+      <button class="tk-btn" style="border:none;background:#E50012;color:#fff;font-size:12px;font-weight:700;padding:10px 24px;border-radius:30px"><span>全てを見る</span></button>
     </div>
     <a href="#top" data-fade="" style="display:flex;gap:24px;align-items:center;border-bottom:1px solid #eee;padding-bottom:22px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
       <div style="position:relative;flex:none"><div class="ph-box" style="width:160px;height:104px;border-radius:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>お知らせ画像</span></div><span style="position:absolute;top:8px;left:8px;background:#ffb729;color:#fff;font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px">その他</span></div>
@@ -446,17 +447,14 @@ a{color:inherit;text-decoration:none}
         </div>
       </div>
       <div style="position:absolute;right:34px;top:64px;text-align:center">
-        <div class="ph-box" style="width:140px;height:auto;display:block;margin:0 0 4px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>ロゴ</span></div>
-        <div style="background:#E11620;color:#fff;font-size:10px;font-weight:700;padding:5px 10px;border-radius:20px;margin-top:8px;white-space:nowrap">提供食数 3000万食突破！</div>
+        <img src="assets/logo.svg" alt="ヨシケイ楽楽web" style="width:150px;height:auto;display:block;margin:0 0 4px">
+        <div style="background:#E50012;color:#fff;font-size:10px;font-weight:700;padding:5px 10px;border-radius:20px;margin-top:8px;white-space:nowrap">提供食数 3000万食突破！</div>
       </div>
       <div style="font-size:12px;color:#85775b;font-weight:500;margin-bottom:8px">食材宅配サービス｜ヨシケイ</div>
       <h2 style="margin:0 0 16px;font-size:29px;font-weight:700;color:#3a3a3a">つくる人から笑顔に。</h2>
-      <p style="margin:0 0 24px;font-size:13px;line-height:1.95;color:#6b6256;max-width:430px">管理栄養士監修の手料理を週替わりでお届け！注文はLINEで完結。プラン変更/お休み/解約もいつでもかんたんに。まずは1週間から、ヨシケイにまかせてみませんか？</p>
+      <p style="margin:0 0 24px;font-size:13px;line-height:1.95;color:#6b6256;max-width:430px">管理栄養士監修の手料理を週替わりでお届け！ご注文はWebでかんたんに。プラン変更/お休み/解約もいつでもできます。まずは1週間から、ヨシケイにまかせてみませんか？</p>
       <!-- v3-fb1：LINE導線（赤ボックス）とプライバシーポリシー注記の一帯を一旦非表示（コードは温存） -->
-      <button class="tk-btn" style="display:none;width:100%;border:none;background:#E11620;border-radius:14px;padding:16px 22px;text-align:left;position:relative">
-        <span style="display:block"><span style="display:block;font-size:18px;font-weight:700;color:#fff;margin-bottom:3px">ヨシケイをはじめる</span><span style="display:block;font-size:12px;color:rgba(255,255,255,.92)">注文はLINEから。友だち追加は無料です。</span></span>
-        <span style="position:absolute;right:18px;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;z-index:1"><span style="font-family:'Figtree',sans-serif;font-weight:800;color:#06c755;font-size:15px">LINE</span></span>
-      </button>
+      <button data-login-btn="" class="tk-btn" style="width:100%;border:none;background:#E50012;border-radius:14px;padding:16px 22px;text-align:left;position:relative;cursor:pointer"><span style="display:block"><span style="display:block;font-size:18px;font-weight:700;color:#fff;margin-bottom:3px">楽楽webをはじめる</span><span style="display:block;font-size:12px;color:rgba(255,255,255,.92)">ご注文はWebから。無料ではじめられます。</span></span><span style="position:absolute;right:18px;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;z-index:1"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M8 3l5 5-5 5" stroke="#E50012" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></button>
       <!-- v3-fb1：一旦非表示（コード温存） -->
       <p style="display:none;margin:14px 0 0;font-size:10px;line-height:1.7;color:#a99">当社は<u>プライバシーポリシー</u>に則り、お客さまの個人情報を適切に管理します。友だち登録をされた場合は、当該<u>プライバシーポリシー</u>に同意されたものといたします。</p>
     </div>
@@ -469,7 +467,7 @@ a{color:inherit;text-decoration:none}
   <div style="max-width:1480px;margin:0 auto">
     <div style="display:grid;grid-template-columns:300px 1fr 1fr;gap:40px;align-items:start">
       <div>
-        <div style="display:flex;align-items:center;margin-bottom:20px"><div class="ph-box" style="height:28px;width:auto;display:block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>ロゴ</span></div></div>
+        <div style="display:flex;align-items:center;margin-bottom:20px"><img src="assets/logo.svg" alt="ヨシケイ楽楽web" style="height:26px;width:auto;display:block"></div>
         <div style="display:flex;gap:3px;flex-wrap:wrap;max-width:280px">
           <svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-carrot"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-ladle"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-orange"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-eggplant"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-leaf"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-mushroom"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-tomato"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-corn"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-pea"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-broccoli"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-pepper"></use></svg><svg width="34" height="34" viewBox="0 0 100 100"><use href="#ic-pot"></use></svg>
         </div>
@@ -501,7 +499,7 @@ a{color:inherit;text-decoration:none}
       </div>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:-22px">
-      <a href="#top" style="width:30px;height:30px;border-radius:7px;background:#06c755;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800;font-family:'Figtree',sans-serif">L</a>
+      <a href="#top" style="width:30px;height:30px;border-radius:7px;background:#06c755;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800;font-family:'Zen Maru Gothic',sans-serif">L</a>
       <a href="#top" style="width:30px;height:30px;border-radius:7px;background:#222;display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="#fff" stroke-width="1.8"></rect><circle cx="12" cy="12" r="4" stroke="#fff" stroke-width="1.8"></circle><circle cx="17" cy="7" r="1.3" fill="#fff"></circle></svg></a>
       <a href="#top" style="width:30px;height:30px;border-radius:7px;background:#222;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="#fff"><path d="M2 2h5l5 7 5-7h5l-7.5 10L22 22h-5l-5-7-5 7H2l7.5-10z"></path></svg></a>
     </div>
