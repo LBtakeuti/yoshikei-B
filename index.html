@@ -1747,11 +1747,11 @@ const Login=(function(){
     bar.style.width='5%';
     lbl.textContent='エリア確認';
     body.innerHTML='<div style="max-width:460px;margin:0 auto;">'
-      +'<div class="onboard-q-title"><span>お届けエリアです</span></div>'
+      +'<div class="onboard-q-title"><span>エリア確認が完了しました</span></div>'
       +'<div style="border:2px solid #E50012;background:#fdf0f1;border-radius:14px;padding:22px 18px;text-align:center;margin-bottom:24px;">'
         +'<div style="width:46px;height:46px;margin:0 auto 12px;border-radius:50%;background:#E50012;color:#fff;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l5 5 10-11" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
-        +'<div style="font-size:16px;font-weight:700;color:#3a3a3a;line-height:1.6;">〒'+zipValue.slice(0,3)+'-'+zipValue.slice(3)+' はお届けできます</div>'
-        +'<div style="font-size:13.5px;color:#777;margin-top:4px;">担当：'+(area_state.office||'')+'</div>'
+        +'<div style="font-size:16px;font-weight:700;color:#3a3a3a;line-height:1.6;">お住まいの地域はお届けエリア内です</div>'
+        +'<div style="font-size:13.5px;color:#777;margin-top:6px;">〒'+zipValue.slice(0,3)+'-'+zipValue.slice(3)+'　担当：'+(area_state.office||'')+'</div>'
       +'</div>'
       +'<button data-zip-next style="width:100%;border:none;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:12px;">質問に進む</button>'
       +'<div style="text-align:center;margin-top:18px;"><button data-zip-retry style="border:none;background:transparent;color:#999;font-size:13px;font-weight:700;text-decoration:underline;">郵便番号を入力し直す</button></div>'
