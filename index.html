@@ -1697,6 +1697,7 @@ const Login=(function(){
 
   // お届けエリア判定用ダミーデータ（本番は郵便番号＋町名で判定するため、町名粒度に差し替えられるよう判定ロジックと分離して保持）
   const AREA_ZIPS=[
+    {prefix:'000',office:'富山営業所'}, // デモ用：0000000＝エリア内（1111111などはエリア外）
     {prefix:'930',office:'富山営業所'},
     {prefix:'933',office:'高岡営業所'},
     {prefix:'920',office:'金沢営業所'},
@@ -1728,7 +1729,7 @@ const Login=(function(){
   function startOnboard(){step=0;answers={};phase='zip';zipValue='';$('[data-onboard-overlay]').style.display='flex';renderStep();}
 
   /* ステップ0：お住まいの地域（郵便番号）確認 */
-  function renderZip(okOffice){
+  function renderZip(){
     const body=$('[data-onboard-body]'),bar=$('[data-onboard-bar]'),lbl=$('[data-onboard-step]');
     bar.style.width='5%';
     lbl.textContent='エリア確認';
@@ -1737,8 +1738,23 @@ const Login=(function(){
       +'<div class="onboard-q-title"><span>お住まいの地域を教えてください</span></div>'
       +'<p style="font-size:14px;color:#777;margin:0 0 22px;">お届けできる地域かご確認します</p>'
       +'<input data-zip-input type="text" inputmode="numeric" autocomplete="postal-code" maxlength="8" placeholder="郵便番号（数字7桁）" value="'+zipValue+'" style="width:100%;border:1px solid #ddd;border-radius:12px;padding:14px;font-size:16px;font-family:inherit;letter-spacing:.08em;margin-bottom:16px;">'
-      +'<button data-zip-check '+(filled&&!okOffice?'':'disabled ')+'style="width:100%;border:none;background:'+(filled?'#E50012':'#e0dcd5')+';color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:12px;'+(filled?'':'cursor:default;')+'">確認する</button>'
-      +(okOffice?'<div style="margin-top:16px;background:#eef7ee;border:1px solid #bfe0c2;color:#2e7d32;font-size:14px;font-weight:700;border-radius:12px;padding:13px 14px;text-align:center;">お届けエリアです（担当：'+okOffice+'）</div>':'')
+      +'<button data-zip-check '+(filled?'':'disabled ')+'style="width:100%;border:none;background:'+(filled?'#E50012':'#e0dcd5')+';color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:12px;'+(filled?'':'cursor:default;')+'">確認する</button>'
+      +'</div>';
+  }
+  /* エリア内：質問と同じトーンの結果画面（トーストではなく画面として表示） */
+  function renderZipOk(){
+    const body=$('[data-onboard-body]'),bar=$('[data-onboard-bar]'),lbl=$('[data-onboard-step]');
+    bar.style.width='5%';
+    lbl.textContent='エリア確認';
+    body.innerHTML='<div style="max-width:460px;margin:0 auto;">'
+      +'<div class="onboard-q-title"><span>お届けエリアです</span></div>'
+      +'<div style="border:2px solid #E50012;background:#fdf0f1;border-radius:14px;padding:22px 18px;text-align:center;margin-bottom:24px;">'
+        +'<div style="width:46px;height:46px;margin:0 auto 12px;border-radius:50%;background:#E50012;color:#fff;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l5 5 10-11" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
+        +'<div style="font-size:16px;font-weight:700;color:#3a3a3a;line-height:1.6;">〒'+zipValue.slice(0,3)+'-'+zipValue.slice(3)+' はお届けできます</div>'
+        +'<div style="font-size:13.5px;color:#777;margin-top:4px;">担当：'+(area_state.office||'')+'</div>'
+      +'</div>'
+      +'<button data-zip-next style="width:100%;border:none;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:12px;">質問に進む</button>'
+      +'<div style="text-align:center;margin-top:18px;"><button data-zip-retry style="border:none;background:transparent;color:#999;font-size:13px;font-weight:700;text-decoration:underline;">郵便番号を入力し直す</button></div>'
       +'</div>';
   }
   function renderZipNg(){
@@ -1760,8 +1776,8 @@ const Login=(function(){
     area_state.office=office;
     if(office){
       S.office=office;
-      renderZip(office);
-      setTimeout(()=>{if(phase==='zip'){phase='questions';step=0;renderStep();}},1100);
+      phase='zipOk';
+      renderStep();
     }else{
       phase='zipNg';
       renderStep();
@@ -1770,6 +1786,7 @@ const Login=(function(){
 
   function renderStep(){
     if(phase==='zip'){renderZip();return;}
+    if(phase==='zipOk'){renderZipOk();return;}
     if(phase==='zipNg'){renderZipNg();return;}
     const body=$('[data-onboard-body]'),bar=$('[data-onboard-bar]'),lbl=$('[data-onboard-step]');
     if(step<7){
@@ -1917,6 +1934,7 @@ const Login=(function(){
   ob.addEventListener('click',e=>{
     if(e.target.closest('[data-onboard-close]')){ob.style.display='none';return;}
     if(e.target.closest('[data-zip-check]')){checkZip();return;}
+    if(e.target.closest('[data-zip-next]')){phase='questions';step=0;renderStep();return;}
     if(e.target.closest('[data-zip-retry]')){phase='zip';renderStep();return;}
     if(e.target.closest('[data-zip-find]')){e.preventDefault();return;}
     const opt=e.target.closest('[data-opt]');
