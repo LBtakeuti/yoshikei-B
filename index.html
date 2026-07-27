@@ -129,6 +129,12 @@ const SPECIALS=[
   {id:'sp4',cat:'asa',sub:'朝食',title:'朝食パン＆スープセット',price:880},
   {id:'sp5',cat:'asa',sub:'レトルトごはん',title:'レトルトごはん 10食パック',price:1580},
 ];
+/* お届けエリア判定（ダミー：郵便番号先頭3桁で判定。後で町名粒度に差し替えるためデータは分離） */
+const AREA_ZIPS=[
+  {prefix:'930',office:'富山営業所'},{prefix:'933',office:'高岡営業所'},
+  {prefix:'920',office:'金沢営業所'},{prefix:'921',office:'金沢南営業所'},
+  {prefix:'500',office:'岐阜営業所'},{prefix:'501',office:'岐阜西営業所'},
+];
 /* eコイン：2,160円以上の購入で100円につき1pt */
 const COIN_MIN=2160;
 const coinFor=(total)=>total>=COIN_MIN?Math.floor(total/100):0;
@@ -1753,14 +1759,65 @@ const Login=(function(){
   const ILLUSTS=[1,2,3,4,5,6,7].map(n=>'assets/onboard_q'+n+'.svg');
 
   let step=0, answers={};
+  let phase='area', officeName=null, areaResult=null; // phase: 'area'（地域確認）| 'q'（7つの質問）
   const $=(sel)=>document.querySelector(sel);
 
   function open(){$('[data-login-overlay]').style.display='flex';}
   function close(){$('[data-login-overlay]').style.display='none';}
-  function startOnboard(){step=0;answers={};$('[data-onboard-overlay]').style.display='flex';renderStep();}
+  function startOnboard(){step=0;answers={};phase='area';officeName=null;areaResult=null;$('[data-onboard-overlay]').style.display='flex';renderStep();}
+
+  /* ステップ0：郵便番号でお届けエリアを判定（ダミー・先頭3桁） */
+  function renderArea(){
+    const body=$('[data-onboard-body]'),bar=$('[data-onboard-bar]'),lbl=$('[data-onboard-step]');
+    bar.style.width='0%';
+    lbl.textContent='地域確認';
+    if(areaResult&&areaResult.ok){
+      body.innerHTML='<div style="max-width:460px;margin:0 auto;">'
+        +'<img class="onboard-illust" src="'+ILLUSTS[0]+'" alt="">'
+        +'<div style="background:#EAF5EC;border-radius:14px;padding:20px 18px;text-align:center;">'
+        +'<div style="font-size:18px;font-weight:800;color:#4E9265;line-height:1.6;">お届けエリアです</div>'
+        +'<div style="font-size:14px;font-weight:700;color:#3a3a3a;margin-top:6px;">担当：'+officeName+'</div>'
+        +'</div>'
+        +'<button data-area-next style="width:100%;border:none;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:12px;margin-top:20px;">質問に進む</button>'
+        +'</div>';
+      return;
+    }
+    if(areaResult&&!areaResult.ok){
+      body.innerHTML='<div style="max-width:460px;margin:0 auto;">'
+        +'<div style="background:#FBF3EE;border-radius:14px;padding:20px 18px;">'
+        +'<div style="font-size:17px;font-weight:800;color:#3a3a3a;line-height:1.6;">申し訳ございません。ご入力の地域は当社のお届けエリア外です</div>'
+        +'<div style="font-size:13px;color:#666;line-height:1.7;margin-top:10px;">お住まいの地域は別のヨシケイが担当している場合があります。</div>'
+        +'</div>'
+        +'<button data-area-find style="width:100%;border:2px solid #E50012;background:#fff;color:#E50012;font-size:15px;font-weight:700;padding:14px;border-radius:12px;margin-top:16px;">お近くのヨシケイを探す</button>'
+        +'<div style="text-align:center;margin-top:16px;font-size:13px;color:#555;line-height:1.7;">お電話でのお問い合わせ<br><span style="font-size:20px;font-weight:800;color:#E50012;">フリーダイヤル 0120-XXX-XXX</span></div>'
+        +'<div style="text-align:center;margin-top:18px;"><button data-area-retry style="border:none;background:transparent;color:#999;font-size:13px;font-weight:700;text-decoration:underline;">郵便番号を入力し直す</button></div>'
+        +'</div>';
+      return;
+    }
+    body.innerHTML='<div style="max-width:460px;margin:0 auto;">'
+      +'<div class="onboard-q-title" style="min-height:auto;"><span>お住まいの地域を教えてください</span></div>'
+      +'<div style="font-size:14px;color:#666;line-height:1.7;margin-bottom:18px;">お届けできる地域かご確認します。</div>'
+      +'<img class="onboard-illust" src="'+ILLUSTS[0]+'" alt="">'
+      +'<label style="display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:8px;">郵便番号（数字7桁）</label>'
+      +'<input data-zip type="text" inputmode="numeric" placeholder="例：9300001" maxlength="8" style="width:100%;border:1px solid #ddd;border-radius:12px;padding:14px;font-size:18px;letter-spacing:.12em;font-family:inherit;margin-bottom:16px;">'
+      +'<button data-area-check disabled style="width:100%;border:none;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:12px;opacity:.5;">確認する</button>'
+      +'</div>';
+  }
+
+  function checkArea(){
+    const ob=$('[data-onboard-overlay]');
+    const zip=ob.querySelector('[data-zip]');
+    const v=(zip&&zip.value.replace(/[^0-9]/g,''))||'';
+    if(v.length<7)return;
+    const hit=AREA_ZIPS.find(a=>a.prefix===v.slice(0,3));
+    if(hit){officeName=hit.office;areaResult={ok:true};}
+    else{officeName=null;areaResult={ok:false};}
+    renderStep();
+  }
 
   function renderStep(){
     const body=$('[data-onboard-body]'),bar=$('[data-onboard-bar]'),lbl=$('[data-onboard-step]');
+    if(phase==='area'){renderArea();return;}
     if(step<7){
       const Q=QUESTIONS[step];
       bar.style.width=((step+1)/7*100)+'%';
@@ -1888,8 +1945,21 @@ const Login=(function(){
     if(e.target.closest('[data-onboard-start]')){close();startOnboard();return;}
   });
   const ob=$('[data-onboard-overlay]');
+  ob.addEventListener('input',e=>{
+    const zip=e.target.closest('[data-zip]');
+    if(zip){
+      const v=zip.value.replace(/[^0-9]/g,'').slice(0,7);
+      zip.value=v;
+      const btn=ob.querySelector('[data-area-check]');
+      if(btn){btn.disabled=v.length<7;btn.style.opacity=v.length<7?'.5':'1';}
+    }
+  });
   ob.addEventListener('click',e=>{
     if(e.target.closest('[data-onboard-close]')){ob.style.display='none';return;}
+    if(e.target.closest('[data-area-check]')){checkArea();return;}
+    if(e.target.closest('[data-area-next]')){phase='q';step=0;renderStep();return;}
+    if(e.target.closest('[data-area-retry]')){areaResult=null;renderStep();return;}
+    if(e.target.closest('[data-area-find]')){return;} /* ダミー：お近くのヨシケイ検索 */
     const opt=e.target.closest('[data-opt]');
     if(opt){const Q=QUESTIONS[step];if(Q.multi)toggle(opt.getAttribute('data-opt'));else single(opt.getAttribute('data-opt'));return;}
     if(e.target.closest('[data-onboard-next]')){next();return;}
