@@ -200,7 +200,7 @@ let S={
   calY:_now.getFullYear(), calM:_now.getMonth()+1, calSel:null,
   topMode:'series', seriesTab:0, activeDay:0,
   page:null,                       // null | help | news | contact | mypage | cart | orderDone | profile
-  bulkOpen:false, productOpen:false, cartAddedOpen:false,
+  bulkOpen:false, productOpen:false, cartAddedOpen:false, howtoOpen:false,
   product:null, qty:{s2:1,s3:0,s4:0}, noCut:false, recQty:[0,0,0],
   cartItems:[
     {id:'c1',title:'てりやき親子丼 お揚げと野菜のおかず汁',tag:'スマイリーミール',accent:'#DB84AC',unit:'2人用',price:1350,qty:1,week:'5/11'},
@@ -330,6 +330,8 @@ const A={
   remindClose(){S.remindOpen=false;touchCart();render();},
   remindGoCart(){S.remindOpen=false;S.page='cart';touchCart();render();},
 
+  openHowto(){S.howtoOpen=true;render();},
+  closeHowto(){S.howtoOpen=false;render();},
   openBulk(){S.bulkOpen=true;render();},
   closeBulk(){S.bulkOpen=false;render();},
   confirmBulk(){
@@ -808,6 +810,32 @@ function profileSavedHTML(){
     +'</div></div>';
 }
 
+/* かんたんな使い方ガイド（ログイン後トップのボタンから開く・3ステップ） */
+function howtoHTML(){
+  if(!S.howtoOpen)return '';
+  const steps=[
+    {ic:IC.cal(24),t:'お届け週を選ぶ',d:'画面上部で注文したい週を選びます。'},
+    {ic:IC.chop(24),t:'メニューを選んで数量を入れる',d:'気になる料理を開き、人数と数量を決めます。'},
+    {ic:IC.cart(24),t:'カートで注文を確定する',d:'カートで内容を確認し、締切前に確定します。'},
+  ];
+  return '<div onclick="A.closeHowto()" style="position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:24px;animation:rk-fade .18s ease;">'
+    +'<div onclick="event.stopPropagation()" style="width:100%;max-width:420px;background:#fff;border-radius:18px;padding:24px 22px;animation:rk-pop .2s ease;box-shadow:0 24px 60px rgba(0,0,0,.35);">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;">'
+    +'<div style="font-size:18px;font-weight:800;color:#2b2b2b;">かんたんな使い方</div>'
+    +'<button onclick="A.closeHowto()" style="color:#999;padding:4px;">'+IC.close(20)+'</button></div>'
+    +'<div style="font-size:12.5px;color:#666;margin-top:6px;line-height:1.6;">3ステップでご注文いただけます。</div>'
+    +'<div style="margin-top:16px;display:flex;flex-direction:column;gap:12px;">'
+    +steps.map((s,i)=>'<div style="display:flex;gap:13px;align-items:flex-start;background:#FBF7EE;border-radius:12px;padding:14px;">'
+      +'<div style="position:relative;width:46px;height:46px;flex-shrink:0;border-radius:50%;background:#FCEBEC;color:#E50012;display:flex;align-items:center;justify-content:center;">'+s.ic
+      +'<span style="position:absolute;top:-4px;left:-4px;width:20px;height:20px;border-radius:50%;background:#E50012;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;">'+(i+1)+'</span></div>'
+      +'<div style="flex:1;min-width:0;"><div style="font-size:14px;font-weight:800;color:#2b2b2b;">'+s.t+'</div>'
+      +'<div style="font-size:12px;color:#666;margin-top:4px;line-height:1.6;">'+s.d+'</div></div>'
+      +'</div>').join('')
+    +'</div>'
+    +'<div style="text-align:center;margin-top:18px;"><button onclick="A.closeHowto();A.openHelp()" style="color:#E50012;font-size:13px;font-weight:700;text-decoration:underline;">ご不明な点はヘルプへ</button></div>'
+    +'</div></div>';
+}
+
 /* ================= ご注文カレンダー（マイページ・PC/SP共通） ================= */
 const DOWJ=['日','月','火','水','木','金','土'];
 /* 配達データ（モック）：月〜金に配達あり。献立は曜日ごとに WEEK から割り当て */
@@ -948,6 +976,13 @@ function spHTML(){
     +'<span style="font-size:14px;color:#2c2c2c;"><b style="font-size:16.5px;">'+wk.label+'</b> 週のご注文 <span style="font-size:12px;color:#5a5a5a;">（締切日は'+wk.deadline+'です）</span></span></div>'
     +'<div style="margin-top:8px;">'+weekChipsHTML(true)+'</div>'
     +'</div>';
+
+  /* かんたんな使い方（ログイン後トップ） */
+  if(S.loggedIn){
+    h+='<div style="padding:2px 15px 8px;">'
+      +'<button onclick="A.openHowto()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:#FCEBEC;color:#E50012;border-radius:12px;box-shadow:0 0 0 1.5px #F3C6CC inset;padding:12px;font-size:14px;font-weight:800;">'+IC.help(19)+'かんたんな使い方</button>'
+      +'</div>';
+  }
 
   if(isSer){
     /* 親タブ（夕食献立メニュー／特別販売）＋子タブ＋孫タブ */
@@ -1297,6 +1332,7 @@ function spHTML(){
   h+=remindHTML();
   h+=histConfirmHTML();
   h+=profileSavedHTML();
+  h+=howtoHTML();
 
   return h;
 }
@@ -1361,6 +1397,11 @@ function pcHTML(){
   if(pg===null){
     h+='<div style="display:flex;gap:24px;align-items:flex-start;">';
     h+='<div style="flex:1;min-width:0;">';
+
+    /* かんたんな使い方（ログイン後トップ） */
+    if(S.loggedIn){
+      h+='<button onclick="A.openHowto()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:9px;background:#FCEBEC;color:#E50012;border-radius:12px;box-shadow:0 0 0 1.5px #F3C6CC inset;padding:14px;font-size:15px;font-weight:800;margin-bottom:16px;">'+IC.help(20)+'かんたんな使い方</button>';
+    }
 
     if(isSer){
       /* 親タブ＋子タブ＋孫タブ */
@@ -1713,6 +1754,7 @@ function pcHTML(){
   h+=remindHTML();
   h+=histConfirmHTML();
   h+=profileSavedHTML();
+  h+=howtoHTML();
 
   return h;
 }
