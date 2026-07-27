@@ -121,6 +121,11 @@ const SPECIAL_TABS=[
   {key:'benri', name:'便利品＆7月デリシャス', accent:'#E0912C', subs:[]},
   {key:'asa',   name:'朝食・お米・お買い得品', accent:'#7BA86A', subs:['朝食','レトルトごはん']},
 ];
+/* 独立ページ型（案B）で各企画に添える説明文 */
+const SPECIAL_DESC={
+  benri:'毎日の食卓に便利な一品や、季節限定のデリシャス企画をお届けします。数量限定品はお早めにどうぞ。',
+  asa:'忙しい朝にうれしいパンやスープ、常備できるお米・レトルト・お買い得品を集めました。',
+};
 /* 特別販売商品：limit=個数制限（残数表示）／requires=特定メニュー購入が条件 */
 const SPECIALS=[
   {id:'sp1',cat:'benri',sub:null,title:'国産うなぎ蒲焼 2尾セット【数量限定】',price:2980,limit:true},
@@ -183,6 +188,7 @@ let S={
   coins:120,                        // eコイン残高（モック初期値）
   week:0,                           // 選択中の注文週（WEEKS のindex）
   mainTab:'dinner',                 // dinner=夕食献立メニュー | special=特別販売
+  specialMode:'A',                  // 特別販売の表示案：A=タブ型（付随）| B=独立ページ型（デモ切替）
   child:'smile',                    // 夕食献立の子タブ（CATALOG key）
   specialChild:'benri',             // 特別販売の子タブ
   sub:{smile:0,more:0,lovyu:0,tanpin:0,asa:-1},  // 各子タブの孫タブ選択
@@ -241,6 +247,12 @@ const A={
   setDay(i){S.activeDay=i;render();},
   goHome(){S.page=null;render();},
   openHelp(){S.page='help';render();},
+  openSpecialPage(){S.page='specialPage';render();},
+  toggleSpecialMode(){
+    S.specialMode=S.specialMode==='A'?'B':'A';
+    if(S.specialMode==='A'&&S.page==='specialPage')S.page=null; // 独立ページは案B専用
+    render();
+  },
   openNews(){S.page='news';render();},
   openContact(){S.page='contact';render();},
   openMypage(){if(!S.loggedIn){Login.open();return;}S.page='mypage';render();},
@@ -707,6 +719,31 @@ function specialsGridHTML(sp){
         +'</div>'
       :emptyFilterHTML(sp));
 }
+/* 独立ページ型（案B）：週メニューから独立した特販一覧（各企画に説明枠付き） */
+function specialPageContentHTML(sp){
+  return SPECIAL_TABS.map(t=>{
+    const list=SPECIALS.filter(p=>p.cat===t.key).filter(p=>passFilter(itemFacet(p.title,'特別販売','特販')));
+    return '<div style="margin-bottom:'+(sp?'22px':'30px')+';">'
+      +'<div style="display:flex;align-items:center;gap:8px;">'
+      +'<span style="background:#E0912C;color:#fff;font-size:11px;font-weight:800;padding:3px 11px;border-radius:11px;">特別販売</span>'
+      +'<span style="font-size:'+(sp?'15px':'17px')+';font-weight:800;color:#2b2b2b;">'+t.name+'</span></div>'
+      +'<div style="background:#FBF7EE;border-radius:12px;padding:'+(sp?'12px 14px':'14px 16px')+';margin-top:10px;font-size:'+(sp?'12.5px':'13.5px')+';color:#7a6a52;line-height:1.7;">'+(SPECIAL_DESC[t.key]||'')+'</div>'
+      +(list.length
+        ?'<div style="display:grid;grid-template-columns:'+(sp?'1fr 1fr':'repeat(4,1fr)')+';gap:'+(sp?'16px 12px':'18px')+';margin-top:14px;">'
+          +list.map(p=>specialCardHTML(p,sp)).join('')+'</div>'
+        :emptyFilterHTML(sp))
+      +'</div>';
+  }).join('');
+}
+/* デモ用：特別販売の表示案A/B切替ボタン（控えめ・画面右上に固定） */
+function demoToggleHTML(){
+  const b=S.specialMode;
+  const chip=(k,label)=>'<span style="background:'+(b===k?'#E50012':'rgba(255,255,255,.2)')+';padding:2px 7px;border-radius:6px;">'+label+'</span>';
+  return '<div style="position:fixed;top:70px;right:0;z-index:70;">'
+    +'<button onclick="A.toggleSpecialMode()" style="display:flex;align-items:center;gap:6px;background:rgba(55,55,55,.85);color:#fff;font-size:10.5px;font-weight:700;padding:7px 10px;border-radius:10px 0 0 10px;box-shadow:0 2px 8px rgba(0,0,0,.25);border:1px dashed rgba(255,255,255,.45);">'
+    +'<span style="opacity:.7;">表示案</span>'+chip('A','A:タブ型')+chip('B','B:独立型')
+    +'</button></div>';
+}
 /* もう一品いかがですか（注文確定時・追加してもシームレスに確定へ） */
 function lastChanceHTML(sp){
   if(!S.lastChanceOpen)return '';
@@ -1153,6 +1190,8 @@ function spHTML(){
   const pg=S.page;
   h+='<nav style="position:fixed;left:0;right:0;bottom:0;height:66px;background:#E50012;display:flex;align-items:stretch;z-index:35;">'
     +'<button onclick="A.goHome()" style="'+navStyle(pg===null)+'">'+IC.home(23)+'<span style="font-size:11px;">注文TOP</span></button>'
+    +(S.specialMode==='B'?'<div style="align-self:center;height:34px;border-left:2px dotted rgba(255,255,255,.6);"></div>'
+      +'<button onclick="A.openSpecialPage()" style="'+navStyle(pg==='specialPage')+'">'+IC.gridC(22)+'<span style="font-size:11px;">特別販売</span></button>':'')
     +'<div style="align-self:center;height:34px;border-left:2px dotted rgba(255,255,255,.6);"></div>'
     +'<button onclick="A.openMypage()" style="'+navStyle(pg==='mypage')+'">'+IC.user(23)+'<span style="font-size:11px;">'+(S.loggedIn?'マイページ':'ログイン')+'</span></button>'
     +'<div style="align-self:center;height:34px;border-left:2px dotted rgba(255,255,255,.6);"></div>'
@@ -1197,6 +1236,13 @@ function spHTML(){
       +'<div style="font-size:13.5px;color:#444;line-height:1.6;">お困りごとが解決しない場合は<br>お気軽にお問い合わせください。</div>'
       +'<button onclick="A.openContact()" style="margin-top:14px;width:100%;background:#E50012;color:#fff;font-size:15px;font-weight:700;padding:13px;border-radius:10px;">お問い合わせへ</button>'
       +'</div></div>');
+  }
+
+  if(pg==='specialPage'){
+    h+=pageShell('特別販売',
+      '<div style="padding:16px 16px 24px;">'
+      +'<div style="font-size:12.5px;color:#666;line-height:1.7;margin-bottom:16px;">週替わりメニューとは別に、便利品や季節の企画をお選びいただけます。</div>'
+      +specialPageContentHTML(true)+'</div>');
   }
 
   if(pg==='news'){
@@ -1420,6 +1466,7 @@ function spHTML(){
   h+=profileSavedHTML();
   h+=howtoHTML();
   h+=filterPanelHTML(true);
+  h+=demoToggleHTML();
 
   return h;
 }
@@ -1437,6 +1484,7 @@ function pcHTML(){
   if(S.loggedIn){
     h+='<button onclick="A.goHome()" style="display:flex;align-items:center;"><img src="assets/logo.svg" alt="ヨシケイ楽楽web" style="height:32px;width:auto;display:block;"></button>'
       +'<div style="display:flex;align-items:center;gap:24px;">'
+      +(S.specialMode==='B'?'<button onclick="A.openSpecialPage()" style="display:flex;flex-direction:column;align-items:center;gap:3px;color:'+(pg==='specialPage'?'#E50012':'#6f6f6f')+';">'+IC.gridC(22)+'<span style="font-size:10px;">特別販売</span></button>':'')
       +'<button onclick="A.openMypage()" style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6f6f6f;">'+IC.user(22)+'<span style="font-size:10px;">マイページ</span></button>'
       +'<button onclick="A.openHelp()" style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6f6f6f;">'+IC.help(22)+'<span style="font-size:10px;">ヘルプ</span></button>'
       +'<button onclick="A.openContact()" style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6f6f6f;">'+IC.mail(22)+'<span style="font-size:10px;">お問合せ</span></button>'
@@ -1451,6 +1499,7 @@ function pcHTML(){
       +'<button onclick="A.openLogin()" style="background:#E50012;color:#fff;font-size:13px;font-weight:700;padding:10px 26px;border-radius:20px;white-space:nowrap;">ログイン</button>'
       +'</div>'
       +'<div style="display:flex;align-items:center;gap:24px;">'
+      +(S.specialMode==='B'?'<button onclick="A.openSpecialPage()" style="display:flex;flex-direction:column;align-items:center;gap:3px;color:'+(pg==='specialPage'?'#E50012':'#6f6f6f')+';">'+IC.gridC(22)+'<span style="font-size:10px;">特別販売</span></button>':'')
       +'<button onclick="A.openContact()" style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6f6f6f;">'+IC.mail(22)+'<span style="font-size:10px;">お問合せ</span></button>'
       +'<button onclick="A.openHelp()" style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#6f6f6f;">'+IC.help(22)+'<span style="font-size:10px;">ヘルプ</span></button>'
       +'</div>';
@@ -1607,6 +1656,13 @@ function pcHTML(){
   }
 
   const backBtn='<button onclick="A.goHome()" style="display:flex;align-items:center;gap:3px;color:#E50012;font-size:13px;font-weight:700;margin-bottom:16px;">'+IC.back(18)+'商品選択に戻る</button>';
+
+  if(pg==='specialPage'){
+    h+='<div style="max-width:1100px;margin:0 auto;">'+backBtn
+      +'<div style="font-size:24px;font-weight:700;color:#2b2b2b;">特別販売</div>'
+      +'<div style="font-size:13.5px;color:#666;line-height:1.7;margin:8px 0 20px;">週替わりメニューとは別に、便利品や季節の企画をお選びいただけます。</div>'
+      +specialPageContentHTML(false)+'</div>';
+  }
 
   if(pg==='help'){
     h+='<div style="max-width:900px;margin:0 auto;">'+backBtn
@@ -1855,6 +1911,7 @@ function pcHTML(){
   h+=profileSavedHTML();
   h+=howtoHTML();
   h+=filterPanelHTML(false);
+  h+=demoToggleHTML();
 
   return h;
 }
