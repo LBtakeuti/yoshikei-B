@@ -188,6 +188,8 @@ let S={
   sub:{smile:0,more:0,lovyu:0,tanpin:0,asa:-1},  // 各子タブの孫タブ選択
   ddOpen:null,                      // 開いているドロップダウン（子タブkey）
   favs:[],                          // お気に入りメニュー
+  filterOpen:false,                 // 絞り込みパネルの開閉
+  filters:{series:[],category:[],kodawari:[]}, // ファセット絞り込み（ダミー3軸）
   orders:[{id:'o1',week:'5/4',count:5,total:6890,coins:68,status:'active'}], // 注文履歴
   histConfirm:null,                 // 履歴キャンセル確認 {type:'one'|'all',id}
   stock:{sp1:7},                    // 特別販売の残数
@@ -332,6 +334,14 @@ const A={
 
   openHowto(){S.howtoOpen=true;render();},
   closeHowto(){S.howtoOpen=false;render();},
+  openFilter(){S.filterOpen=true;render();},
+  closeFilter(){S.filterOpen=false;render();},
+  toggleFilter(axis,val){
+    const arr=S.filters[axis];const i=arr.indexOf(val);
+    if(i>=0)arr.splice(i,1);else arr.push(val);
+    render();
+  },
+  clearFilter(){S.filters={series:[],category:[],kodawari:[]};render();},
   openBulk(){S.bulkOpen=true;render();},
   closeBulk(){S.bulkOpen=false;render();},
   confirmBulk(){
@@ -412,6 +422,26 @@ const A={
 };
 /* カートに指定シリーズのメニューが入っているか（条件付き特別販売の判定） */
 function cartHasSeries(name){return S.cartItems.some(c=>(c.tag||'').indexOf(name)>=0);}
+
+/* ================= ファセット絞り込み（ダミー3軸） ================= */
+const KODAWARI=['時短','ボリューム','ヘルシー'];
+const FILTER_CATS=['主菜','単品','特販'];
+/* こだわりはtitleから決定的に割り当て（モックの疑似属性） */
+function itemFacet(title,series,category){
+  let h=0;for(let i=0;i<(title||'').length;i++)h+=title.charCodeAt(i);
+  return {series:series,category:category,kodawari:KODAWARI[h%3]};
+}
+function passFilter(f){
+  const F=S.filters;
+  if(F.series.length&&F.series.indexOf(f.series)<0)return false;
+  if(F.category.length&&F.category.indexOf(f.category)<0)return false;
+  if(F.kodawari.length&&F.kodawari.indexOf(f.kodawari)<0)return false;
+  return true;
+}
+const filterCount=()=>S.filters.series.length+S.filters.category.length+S.filters.kodawari.length;
+function emptyFilterHTML(sp){
+  return '<div style="padding:'+(sp?'30px 16px':'40px 16px')+';text-align:center;font-size:13px;color:#999;line-height:1.7;">条件に一致する商品がありません。<br>絞り込み条件を変更してください。</div>';
+}
 const isFav=(title)=>S.favs.some(f=>f.title===title);
 
 /* ================= 共通SVGアイコン ================= */
@@ -667,12 +697,15 @@ function specialsGridHTML(sp){
   const t=SPECIAL_TABS.find(x=>x.key===S.specialChild)||SPECIAL_TABS[0];
   const subIdx=S.sub.asa;
   const subName=(t.key==='asa'&&subIdx>=0)?t.subs[subIdx]:null;
-  const list=SPECIALS.filter(p=>p.cat===t.key&&(!subName||p.sub===subName));
+  const list=SPECIALS.filter(p=>p.cat===t.key&&(!subName||p.sub===subName))
+    .filter(p=>passFilter(itemFacet(p.title,'特別販売','特販')));
   const heading='【特別販売】'+t.name+(subName?'　＞ '+subName:'');
   return '<div style="font-size:'+(sp?'13px':'14px')+';font-weight:800;color:#5a5145;margin:'+(sp?'12px 0 0':'16px 0 0')+';">'+heading+'</div>'
-    +'<div style="display:grid;grid-template-columns:'+(sp?'1fr 1fr':'repeat(4,1fr)')+';gap:'+(sp?'16px 12px':'18px')+';padding:'+(sp?'12px 0 8px':'16px 0 6px')+';">'
-    +list.map(p=>specialCardHTML(p,sp)).join('')
-    +'</div>';
+    +(list.length
+      ?'<div style="display:grid;grid-template-columns:'+(sp?'1fr 1fr':'repeat(4,1fr)')+';gap:'+(sp?'16px 12px':'18px')+';padding:'+(sp?'12px 0 8px':'16px 0 6px')+';">'
+        +list.map(p=>specialCardHTML(p,sp)).join('')
+        +'</div>'
+      :emptyFilterHTML(sp));
 }
 /* もう一品いかがですか（注文確定時・追加してもシームレスに確定へ） */
 function lastChanceHTML(sp){
@@ -836,6 +869,38 @@ function howtoHTML(){
     +'</div></div>';
 }
 
+/* 絞り込みパネル（SPはボトムシート／PCは中央モーダル） */
+function filterPanelHTML(sp){
+  if(!S.filterOpen)return '';
+  const group=(label,axis,opts)=>'<div style="margin-top:16px;">'
+    +'<div style="font-size:12.5px;font-weight:800;color:#5a5145;margin-bottom:9px;">'+label+'</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:8px;">'
+    +opts.map(o=>{
+      const on=S.filters[axis].indexOf(o)>=0;
+      return '<button onclick="A.toggleFilter(\''+axis+'\',\''+o+'\')" style="display:flex;align-items:center;gap:5px;padding:8px 14px;border-radius:20px;font-size:12.5px;font-weight:700;'
+        +(on?'background:#E50012;color:#fff;':'background:#fff;color:#555;box-shadow:0 0 0 1.5px #E0E0E0 inset;')+'">'
+        +(on?'<span style="width:14px;height:14px;">'+IC.check(12)+'</span>':'')+o+'</button>';
+    }).join('')+'</div></div>';
+  const wrap=sp
+    ?'position:fixed;inset:0;z-index:82;background:rgba(0,0,0,.45);display:flex;flex-direction:column;justify-content:flex-end;animation:rk-fade .18s ease;'
+    :'position:fixed;inset:0;z-index:82;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:32px;animation:rk-fade .18s ease;';
+  const box=sp
+    ?'background:#fff;border-radius:18px 18px 0 0;padding:20px 18px 24px;max-height:84vh;overflow-y:auto;animation:rk-up .22s ease;'
+    :'width:100%;max-width:440px;background:#fff;border-radius:16px;padding:24px 22px;max-height:84vh;overflow-y:auto;animation:rk-pop .2s ease;box-shadow:0 24px 60px rgba(0,0,0,.35);';
+  return '<div onclick="A.closeFilter()" style="'+wrap+'">'
+    +'<div onclick="event.stopPropagation()" style="'+box+'">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;">'
+    +'<div style="font-size:17px;font-weight:800;color:#2b2b2b;display:flex;align-items:center;gap:8px;"><span style="color:#E50012;">'+IC.filter(20)+'</span>絞り込み</div>'
+    +'<button onclick="A.closeFilter()" style="color:#999;padding:4px;">'+IC.close(20)+'</button></div>'
+    +group('シリーズ','series',SERIES.map(s=>s.name))
+    +group('カテゴリ','category',FILTER_CATS)
+    +group('こだわり','kodawari',KODAWARI)
+    +'<div style="display:flex;gap:11px;margin-top:22px;">'
+    +'<button onclick="A.clearFilter()" style="flex:1;background:#fff;color:#666;font-size:14px;font-weight:700;padding:13px;border-radius:10px;box-shadow:0 0 0 1.5px #DADADA inset;">クリア</button>'
+    +'<button onclick="A.closeFilter()" style="flex:2;background:#E50012;color:#fff;font-size:15px;font-weight:700;padding:13px;border-radius:10px;">'+(filterCount()?filterCount()+'件の条件で絞り込む':'閉じる')+'</button>'
+    +'</div></div></div>';
+}
+
 /* ================= ご注文カレンダー（マイページ・PC/SP共通） ================= */
 const DOWJ=['日','月','火','水','木','金','土'];
 /* 配達データ（モック）：月〜金に配達あり。献立は曜日ごとに WEEK から割り当て */
@@ -966,7 +1031,7 @@ function spHTML(){
     +'<button onclick="A.goDelivery()" style="'+segBase+'background:'+(!isSer?'#FCEBEC':'#fff')+';color:'+(!isSer?'#E50012':'#333')+';">'+IC.truck(20)+'<span>配達日から<br>商品を選択</span></button>'
     +'</div>'
     +'<button onclick="Search.open()" style="width:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:11px;box-shadow:0 0 0 1.5px #E2E2E2 inset;color:#5a5a5a;">'+IC.search(19)+'<span style="font-size:10px;">検索</span></button>'
-    +'<button style="width:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:11px;box-shadow:0 0 0 1.5px #E2E2E2 inset;color:#5a5a5a;">'+IC.filter(19)+'<span style="font-size:10px;">絞り込み</span></button>'
+    +'<button onclick="A.openFilter()" style="position:relative;width:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:11px;box-shadow:0 0 0 1.5px '+(filterCount()?'#E50012':'#E2E2E2')+' inset;color:'+(filterCount()?'#E50012':'#5a5a5a')+';">'+IC.filter(19)+'<span style="font-size:10px;">絞り込み</span>'+(filterCount()?'<span style="position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;background:#E50012;color:#fff;border-radius:9px;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px;">'+filterCount()+'</span>':'')+'</button>'
     +'</div>';
 
   /* 日付行＋週セレクタ（複数週を同一画面で注文） */
@@ -997,28 +1062,40 @@ function spHTML(){
       /* まとめて購入 */
       h+='<div style="padding:10px 14px 4px;">'
         +'<button onclick="A.openBulk()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:9px;background:#fff;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.10);padding:13px;font-size:14px;font-weight:700;color:#2c2c2c;">'+IC.grid(17)+'まとめて購入セット</button></div>';
-      /* 週リスト */
-      h+='<div style="padding:6px 14px 16px;display:flex;flex-direction:column;gap:13px;">'
-        +wdates(S.week).map((m,wi)=>'<div onclick="A.openSer('+wi+')" style="display:flex;text-align:left;background:#fff;border-radius:14px;box-shadow:0 1px 7px rgba(0,0,0,.09);overflow:hidden;cursor:pointer;">'
-          +'<div style="width:62px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:'+cs.tint+';color:'+cs.dark+';">'
-          +'<span style="font-size:14px;font-weight:700;">'+m.date+'</span><span style="font-size:11px;">（'+m.dow+'）</span></div>'
-          +'<div style="flex:1;min-width:0;padding:11px 13px 13px;">'
-          +'<div style="position:relative;height:145px;border-radius:10px;overflow:hidden;">'+favBtn(m.title,cs.name,cs.accent,toNum(m.price))+slot(m.title)+'</div>'
-          +'<div style="font-size:14.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:10px;">'+m.title+'</div>'
-          +'<div style="font-size:15px;font-weight:800;color:#2b2b2b;margin-top:7px;">2人用 '+m.price+'円〜</div>'
-          +'</div></div>').join('')+'</div>';
+      /* 週リスト（絞り込み適用・indexは維持） */
+      const smList=wdates(S.week).map((m,wi)=>({m,wi})).filter(x=>passFilter(itemFacet(x.m.title,cs.name,'主菜')));
+      h+='<div style="padding:6px 14px 16px;">'
+        +(smList.length
+          ?'<div style="display:flex;flex-direction:column;gap:13px;">'
+            +smList.map(({m,wi})=>'<div onclick="A.openSer('+wi+')" style="display:flex;text-align:left;background:#fff;border-radius:14px;box-shadow:0 1px 7px rgba(0,0,0,.09);overflow:hidden;cursor:pointer;">'
+              +'<div style="width:62px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:'+cs.tint+';color:'+cs.dark+';">'
+              +'<span style="font-size:14px;font-weight:700;">'+m.date+'</span><span style="font-size:11px;">（'+m.dow+'）</span></div>'
+              +'<div style="flex:1;min-width:0;padding:11px 13px 13px;">'
+              +'<div style="position:relative;height:145px;border-radius:10px;overflow:hidden;">'+favBtn(m.title,cs.name,cs.accent,toNum(m.price))+slot(m.title)+'</div>'
+              +'<div style="font-size:14.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:10px;">'+m.title+'</div>'
+              +'<div style="font-size:15px;font-weight:800;color:#2b2b2b;margin-top:7px;">2人用 '+m.price+'円〜</div>'
+              +'</div></div>').join('')
+            +'</div>'
+          :emptyFilterHTML(true))
+        +'</div>';
     }else{
       /* ＆more／Lovyu／単品・冷凍食品：グリッド */
       const cat=CATALOG.find(c=>c.key===S.child);
       const subName=cat.subs[S.sub[cat.key]]||cat.subs[0];
+      const gList=subItems(subName).map((it,i)=>({it,i})).filter(x=>passFilter(itemFacet(x.it.title,subName,'単品')));
       h+='<div style="padding:12px 14px 0;font-size:13px;font-weight:800;color:#5a5145;">【'+cat.name+'】'+subName+'</div>'
-        +'<div style="padding:12px 14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;">'
-        +subItems(subName).map((it,i)=>'<div onclick="A.openGrid('+i+')" style="text-align:left;display:flex;flex-direction:column;cursor:pointer;">'
-          +'<div style="position:relative;height:116px;border-radius:6px;overflow:hidden;width:100%;">'+favBtn(it.title,subName,cat.accent,toNum(it.price))+slot(it.title)+'</div>'
-          +'<span style="align-self:flex-start;margin:9px 0 0;padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:'+cat.accent+';">'+subName+'</span>'
-          +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:6px;">'+it.title+'</div>'
-          +'<div style="font-size:14px;font-weight:800;color:#2b2b2b;margin-top:6px;">'+it.price+'円〜</div>'
-          +'</div>').join('')+'</div>';
+        +'<div style="padding:12px 14px 16px;">'
+        +(gList.length
+          ?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;">'
+            +gList.map(({it,i})=>'<div onclick="A.openGrid('+i+')" style="text-align:left;display:flex;flex-direction:column;cursor:pointer;">'
+              +'<div style="position:relative;height:116px;border-radius:6px;overflow:hidden;width:100%;">'+favBtn(it.title,subName,cat.accent,toNum(it.price))+slot(it.title)+'</div>'
+              +'<span style="align-self:flex-start;margin:9px 0 0;padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:'+cat.accent+';">'+subName+'</span>'
+              +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:6px;">'+it.title+'</div>'
+              +'<div style="font-size:14px;font-weight:800;color:#2b2b2b;margin-top:6px;">'+it.price+'円〜</div>'
+              +'</div>').join('')
+            +'</div>'
+          :emptyFilterHTML(true))
+        +'</div>';
     }
   }else{
     /* 配達日ビュー：日付セレクタ */
@@ -1040,25 +1117,34 @@ function spHTML(){
       +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:6px;">'+title+'</div>'
       +'<div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:6px;">2人用 1,350円〜</div></button>';
 
+    const dSmile=SMILE.map((c,i)=>({c,i})).filter(x=>passFilter(itemFacet('てりやき親子丼 お揚げと野菜のおかず汁',SERIES[x.c.si].name,'主菜')));
     h+='<div style="padding:10px 14px 0;">'
       +'<div style="display:flex;align-items:center;gap:8px;border-bottom:2px solid #333;padding-bottom:7px;">'+IC.chop(18,'#333')
       +'<span style="font-size:17px;font-weight:700;font-family:\'Zen Maru Gothic\',sans-serif;color:#2b2b2b;">Smile &amp; table</span></div>'
-      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;padding:14px 0 8px;">'
-      +SMILE.map((c,i)=>{const s=SERIES[c.si];return smileCard('てりやき親子丼 お揚げと野菜のおかず汁',s.name,s.accent,'A.openSmile('+i+')');}).join('')
-      +'</div></div>';
+      +(dSmile.length
+        ?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;padding:14px 0 8px;">'
+          +dSmile.map(({c,i})=>{const s=SERIES[c.si];return smileCard('てりやき親子丼 お揚げと野菜のおかず汁',s.name,s.accent,'A.openSmile('+i+')');}).join('')
+          +'</div>'
+        :emptyFilterHTML(true))
+      +'</div>';
 
     /* &more */
+    const dMore=MORE.map((c,i)=>({c,i})).filter(x=>passFilter(itemFacet(x.c.title,x.c.tag,'主菜')));
     h+='<div style="padding:6px 14px 0;">'
       +'<div style="display:flex;align-items:center;gap:8px;border-bottom:2px solid #333;padding-bottom:7px;">'+IC.chop(18,'#333')
       +'<span style="font-size:17px;font-weight:700;font-family:\'Zen Maru Gothic\',sans-serif;color:#2b2b2b;">&amp;more</span></div>'
-      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;padding:14px 0 8px;">'
-      +MORE.map((c,i)=>{
-        return '<button onclick="A.openMore('+i+')" style="text-align:left;display:flex;flex-direction:column;">'
-          +'<div style="height:116px;border-radius:6px;overflow:hidden;width:100%;">'+slot(c.title)+'</div>'
-          +'<span style="align-self:flex-start;margin:9px 0 0;padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:'+c.accent+';">'+c.tag+'</span>'
-          +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:6px;">'+c.title+'</div>'
-          +'<div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:6px;">2人用 '+c.price+'円〜</div></button>';
-      }).join('')+'</div></div>';
+      +(dMore.length
+        ?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;padding:14px 0 8px;">'
+          +dMore.map(({c,i})=>{
+            return '<button onclick="A.openMore('+i+')" style="text-align:left;display:flex;flex-direction:column;">'
+              +'<div style="height:116px;border-radius:6px;overflow:hidden;width:100%;">'+slot(c.title)+'</div>'
+              +'<span style="align-self:flex-start;margin:9px 0 0;padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:'+c.accent+';">'+c.tag+'</span>'
+              +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:6px;">'+c.title+'</div>'
+              +'<div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:6px;">2人用 '+c.price+'円〜</div></button>';
+          }).join('')
+          +'</div>'
+        :emptyFilterHTML(true))
+      +'</div>';
   }
   h+='</div>'; /* /メイン */
 
@@ -1333,6 +1419,7 @@ function spHTML(){
   h+=histConfirmHTML();
   h+=profileSavedHTML();
   h+=howtoHTML();
+  h+=filterPanelHTML(true);
 
   return h;
 }
@@ -1381,7 +1468,7 @@ function pcHTML(){
       +'<button onclick="A.goDelivery()" style="'+segBaseD+'background:'+(!isSer?'#FCEBEC':'#fff')+';color:'+(!isSer?'#E50012':'#555')+';">'+IC.truck(20)+'配達日から商品を選択</button>'
       +'</div>'
       +'<button onclick="Search.open()" style="display:flex;align-items:center;gap:7px;padding:11px 16px;border-radius:11px;box-shadow:0 0 0 1.5px #E2E2E2 inset;color:#5a5a5a;font-size:13px;font-weight:700;">'+IC.search(18)+'検索</button>'
-      +'<button style="display:flex;align-items:center;gap:7px;padding:11px 16px;border-radius:11px;box-shadow:0 0 0 1.5px #E2E2E2 inset;color:#5a5a5a;font-size:13px;font-weight:700;">'+IC.filter(18)+'絞り込み</button>'
+      +'<button onclick="A.openFilter()" style="position:relative;display:flex;align-items:center;gap:7px;padding:11px 16px;border-radius:11px;box-shadow:0 0 0 1.5px '+(filterCount()?'#E50012':'#E2E2E2')+' inset;color:'+(filterCount()?'#E50012':'#5a5a5a')+';font-size:13px;font-weight:700;">'+IC.filter(18)+'絞り込み'+(filterCount()?'<span style="min-width:18px;height:18px;background:#E50012;color:#fff;border-radius:9px;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px;">'+filterCount()+'</span>':'')+'</button>'
       +'</div>'
       +'<div style="display:flex;align-items:center;gap:14px;">'
       +'<div style="display:flex;align-items:center;gap:8px;">'+IC.cal(19)
@@ -1412,27 +1499,33 @@ function pcHTML(){
         const cs=SERIES[S.sub.smile]||SERIES[0];
         h+='<div style="font-size:14px;font-weight:800;color:#5a5145;margin-bottom:12px;">【Smile＆table】'+cs.name+'</div>';
         h+='<button onclick="A.openBulk()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.09);padding:16px;font-size:15px;font-weight:700;color:#2c2c2c;">'+IC.grid(18)+'まとめて購入セット</button>';
-        h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:20px;">'
-          +wdates(S.week).map((m,wi)=>'<div onclick="A.openSer('+wi+')" style="text-align:left;background:#fff;border-radius:14px;box-shadow:0 1px 7px rgba(0,0,0,.09);overflow:hidden;display:flex;flex-direction:column;cursor:pointer;">'
-            +'<div style="position:relative;height:172px;">'+favBtn(m.title,cs.name,cs.accent,toNum(m.price),32)+slot(m.title)
-            +'<span style="position:absolute;top:10px;left:10px;background:'+cs.dark+';color:#fff;padding:4px 11px;border-radius:8px;font-size:12px;font-weight:700;">'+m.date+'（'+m.dow+'）</span></div>'
-            +'<div style="padding:13px 14px 15px;flex:1;display:flex;flex-direction:column;">'
-            +'<div style="font-size:14.5px;font-weight:700;color:#2b2b2b;line-height:1.45;">'+m.title+'</div>'
-            +'<div style="font-size:15px;font-weight:800;color:#2b2b2b;margin-top:auto;padding-top:10px;">2人用 '+m.price+'円〜</div>'
-            +'</div></div>').join('')
-          +'</div>';
+        const smListP=wdates(S.week).map((m,wi)=>({m,wi})).filter(x=>passFilter(itemFacet(x.m.title,cs.name,'主菜')));
+        h+=(smListP.length
+          ?'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:20px;">'
+            +smListP.map(({m,wi})=>'<div onclick="A.openSer('+wi+')" style="text-align:left;background:#fff;border-radius:14px;box-shadow:0 1px 7px rgba(0,0,0,.09);overflow:hidden;display:flex;flex-direction:column;cursor:pointer;">'
+              +'<div style="position:relative;height:172px;">'+favBtn(m.title,cs.name,cs.accent,toNum(m.price),32)+slot(m.title)
+              +'<span style="position:absolute;top:10px;left:10px;background:'+cs.dark+';color:#fff;padding:4px 11px;border-radius:8px;font-size:12px;font-weight:700;">'+m.date+'（'+m.dow+'）</span></div>'
+              +'<div style="padding:13px 14px 15px;flex:1;display:flex;flex-direction:column;">'
+              +'<div style="font-size:14.5px;font-weight:700;color:#2b2b2b;line-height:1.45;">'+m.title+'</div>'
+              +'<div style="font-size:15px;font-weight:800;color:#2b2b2b;margin-top:auto;padding-top:10px;">2人用 '+m.price+'円〜</div>'
+              +'</div></div>').join('')
+            +'</div>'
+          :emptyFilterHTML(false));
       }else{
         const cat=CATALOG.find(c=>c.key===S.child);
         const subName=cat.subs[S.sub[cat.key]]||cat.subs[0];
+        const gListP=subItems(subName).map((it,i)=>({it,i})).filter(x=>passFilter(itemFacet(x.it.title,subName,'単品')));
         h+='<div style="font-size:14px;font-weight:800;color:#5a5145;margin-bottom:12px;">【'+cat.name+'】'+subName+'</div>'
-          +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;">'
-          +subItems(subName).map((it,i)=>'<div onclick="A.openGrid('+i+')" style="text-align:left;display:flex;flex-direction:column;cursor:pointer;">'
-            +'<div style="position:relative;height:130px;border-radius:8px;overflow:hidden;width:100%;">'+favBtn(it.title,subName,cat.accent,toNum(it.price))+slot(it.title)+'</div>'
-            +'<span style="align-self:flex-start;margin:9px 0 0;padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:'+cat.accent+';">'+subName+'</span>'
-            +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.45;margin-top:7px;">'+it.title+'</div>'
-            +'<div style="font-size:14.5px;font-weight:800;color:#2b2b2b;margin-top:6px;">'+it.price+'円〜</div>'
-            +'</div>').join('')
-          +'</div>';
+          +(gListP.length
+            ?'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;">'
+              +gListP.map(({it,i})=>'<div onclick="A.openGrid('+i+')" style="text-align:left;display:flex;flex-direction:column;cursor:pointer;">'
+                +'<div style="position:relative;height:130px;border-radius:8px;overflow:hidden;width:100%;">'+favBtn(it.title,subName,cat.accent,toNum(it.price))+slot(it.title)+'</div>'
+                +'<span style="align-self:flex-start;margin:9px 0 0;padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:'+cat.accent+';">'+subName+'</span>'
+                +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.45;margin-top:7px;">'+it.title+'</div>'
+                +'<div style="font-size:14.5px;font-weight:800;color:#2b2b2b;margin-top:6px;">'+it.price+'円〜</div>'
+                +'</div>').join('')
+              +'</div>'
+            :emptyFilterHTML(false));
       }
     }else{
       /* 配達日セレクタ */
@@ -1455,17 +1548,23 @@ function pcHTML(){
         +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.45;margin-top:7px;">'+title+'</div>'
         +'<div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:6px;">2人用 '+price+'円〜</div></button>';
 
+      const dSmileP=SMILE.map((c,i)=>({c,i})).filter(x=>passFilter(itemFacet('てりやき親子丼 お揚げと野菜のおかず汁',SERIES[x.c.si].name,'主菜')));
       h+='<div style="display:flex;align-items:center;gap:9px;border-bottom:2px solid #333;padding-bottom:8px;margin:26px 0 0;">'+IC.chop(20,'#333')
         +'<span style="font-size:19px;font-weight:700;font-family:\'Zen Maru Gothic\',sans-serif;color:#2b2b2b;">Smile &amp; table</span></div>'
-        +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;padding:18px 0 6px;">'
-        +SMILE.map((c,i)=>{const s=SERIES[c.si];return gridCard('てりやき親子丼 お揚げと野菜のおかず汁',s.name,s.accent,'1,350','A.openSmile('+i+')');}).join('')
-        +'</div>';
+        +(dSmileP.length
+          ?'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;padding:18px 0 6px;">'
+            +dSmileP.map(({c,i})=>{const s=SERIES[c.si];return gridCard('てりやき親子丼 お揚げと野菜のおかず汁',s.name,s.accent,'1,350','A.openSmile('+i+')');}).join('')
+            +'</div>'
+          :emptyFilterHTML(false));
 
+      const dMoreP=MORE.map((c,i)=>({c,i})).filter(x=>passFilter(itemFacet(x.c.title,x.c.tag,'主菜')));
       h+='<div style="display:flex;align-items:center;gap:9px;border-bottom:2px solid #333;padding-bottom:8px;margin:24px 0 0;">'+IC.chop(20,'#333')
         +'<span style="font-size:19px;font-weight:700;font-family:\'Zen Maru Gothic\',sans-serif;color:#2b2b2b;">&amp;more</span></div>'
-        +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;padding:18px 0 6px;">'
-        +MORE.map((c,i)=>gridCard(c.title,c.tag,c.accent,c.price,'A.openMore('+i+')')).join('')
-        +'</div>';
+        +(dMoreP.length
+          ?'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;padding:18px 0 6px;">'
+            +dMoreP.map(({c,i})=>gridCard(c.title,c.tag,c.accent,c.price,'A.openMore('+i+')')).join('')
+            +'</div>'
+          :emptyFilterHTML(false));
     }
     h+='</div>'; /* /left */
 
@@ -1755,6 +1854,7 @@ function pcHTML(){
   h+=histConfirmHTML();
   h+=profileSavedHTML();
   h+=howtoHTML();
+  h+=filterPanelHTML(false);
 
   return h;
 }
