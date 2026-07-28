@@ -51,6 +51,13 @@
     #pc-root{display:block;}
     #sp-root{display:none;}
   }
+  /* デモ用：表示案A/B切替の位置。SP幅では左下（フッターナビ上）へ退避し検索・絞り込み等と重ならないようにする。PC幅は右上のまま。 */
+  .demo-toggle{position:fixed;left:8px;bottom:80px;right:auto;top:auto;z-index:70;}
+  .demo-toggle button{border-radius:10px !important;}
+  @media (min-width:1024px){
+    .demo-toggle{left:auto;bottom:auto;right:0;top:70px;}
+    .demo-toggle button{border-radius:10px 0 0 10px !important;}
+  }
 </style>
 </head>
 <body>
@@ -733,7 +740,7 @@ function specialPageContentHTML(sp){
 function demoToggleHTML(){
   const b=S.specialMode;
   const chip=(k,label)=>'<span style="background:'+(b===k?'#E50012':'rgba(255,255,255,.2)')+';padding:2px 7px;border-radius:6px;">'+label+'</span>';
-  return '<div style="position:fixed;top:70px;right:0;z-index:70;">'
+  return '<div class="demo-toggle">'
     +'<button onclick="A.toggleSpecialMode()" style="display:flex;align-items:center;gap:6px;background:rgba(55,55,55,.85);color:#fff;font-size:10.5px;font-weight:700;padding:7px 10px;border-radius:10px 0 0 10px;box-shadow:0 2px 8px rgba(0,0,0,.25);border:1px dashed rgba(255,255,255,.45);">'
     +'<span style="opacity:.7;">表示案</span>'+chip('A','A:タブ型')+chip('B','B:独立型')
     +'</button></div>';
