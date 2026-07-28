@@ -187,13 +187,13 @@ a{color:inherit;text-decoration:none}
       <img src="assets/logo.svg" alt="ヨシケイ楽楽web" style="height:32px;width:auto;display:block">
     </a>
     <div style="display:flex;align-items:center;gap:4px">
-      <button data-contact-btn="" aria-label="お問合せ" style="width:48px;border:none;border-radius:11px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer">
+      <button data-contact-btn="" aria-label="お問合せ" style="min-width:48px;padding:0 3px;border:none;border-radius:11px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#555" stroke-width="1.7"></rect><path d="m4 7 8 6 8-6" stroke="#555" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-        <span style="font-size:10px;font-weight:700;color:#888;line-height:1">お問合せ</span>
+        <span style="font-size:10px;font-weight:700;color:#888;line-height:1;white-space:nowrap">お問合せ</span>
       </button>
-      <button data-help-btn="" aria-label="ヘルプ" style="width:48px;border:none;border-radius:11px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer">
+      <button data-help-btn="" aria-label="ヘルプ" style="min-width:48px;padding:0 3px;border:none;border-radius:11px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#555" stroke-width="1.7"></circle><path d="M9.2 9.3a2.9 2.9 0 0 1 5.6 1c0 1.9-2.8 2.4-2.8 4" stroke="#555" stroke-width="1.7" stroke-linecap="round"></path><circle cx="12" cy="17.4" r="1" fill="#555"></circle></svg>
-        <span style="font-size:10px;font-weight:700;color:#888;line-height:1">ヘルプ</span>
+        <span style="font-size:10px;font-weight:700;color:#888;line-height:1;white-space:nowrap">ヘルプ</span>
       </button>
       <button data-login-btn="" class="tk-btn" style="border:none;background:#E50012;color:#fff;font-size:13.5px;font-weight:700;padding:11px 22px;border-radius:22px;white-space:nowrap;margin:0 6px 0 4px;cursor:pointer"><span>ログイン</span></button>
       <button data-burger="" data-open="false" class="tk-btn" style="width:46px;height:46px;border:1px solid #e5e0d8;border-radius:11px;background:#faf8f5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px" aria-label="メニュー"><i></i><i></i><i></i></button>
@@ -201,7 +201,6 @@ a{color:inherit;text-decoration:none}
     <div data-mobile-menu="" style="display:none;position:absolute;top:calc(100% + 10px);left:0;right:0;background:#fff;border-radius:20px;box-shadow:0 12px 34px rgba(0,0,0,.14);padding:18px 24px;flex-direction:column;gap:16px;z-index:120">
       <a href="#menu" style="font-size:15px;font-weight:700;color:#E50012">お届けメニュー</a>
       <a href="#top" style="font-size:15px;font-weight:700;color:#E50012">ご注文</a>
-      <a href="#top" style="font-size:15px;font-weight:700;color:#E50012">ヨシケイについて</a>
       <!-- 流用先で差し替え: クリックは現在no-op（ログイン機構は削除済み） --><button data-login-btn="" class="tk-btn" style="border:1.5px solid #E50012;background:#fff;color:#E50012;font-size:14px;font-weight:700;padding:11px 16px;border-radius:22px;white-space:nowrap"><span>ログイン</span></button>
     </div>
   </nav>
@@ -214,7 +213,6 @@ a{color:inherit;text-decoration:none}
   </div>
   <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.28) 45%,rgba(251,247,238,.85))"></div>
   <div data-fade="" data-hero-copy="" style="position:absolute;left:40px;top:50%;transform:translateY(calc(-50% + 30px));z-index:2;opacity:0;transition:opacity .6s ease-out,transform .6s ease-out">
-    <div style="font-size:13px;font-weight:700;color:#E50012;letter-spacing:.08em;margin-bottom:14px">食材宅配サービス｜ヨシケイ楽楽web</div>
     <h1 style="margin:0 0 18px;font-size:46px;font-weight:900;color:#3a3a3a;line-height:1.5">つくる人から、<br>笑顔に。</h1>
     <p style="margin:0 0 28px;font-size:14px;line-height:2;color:#6b6256;max-width:420px">管理栄養士監修の手料理を週替わりでお届け。<br>ご注文はWebでかんたん。まずは1週間から、<br>ヨシケイにまかせてみませんか？</p>
     <div style="display:flex;gap:12px;flex-wrap:wrap">
@@ -273,8 +271,8 @@ a{color:inherit;text-decoration:none}
 </section>
 
 <!-- ======================= OUR MENU ======================= -->
-<section id="menu" data-section="our-menu" style="padding:90px 40px 90px;background:#E50012">
-  <div style="max-width:1340px;margin:0 auto;display:grid;grid-template-columns:46% 54%;gap:64px;align-items:center">
+<section id="menu" data-section="our-menu" style="padding:48px 40px 48px;background:#E50012">
+  <div style="max-width:1340px;margin:0 auto;display:grid;grid-template-columns:46% 54%;gap:40px;align-items:center">
     <div data-fade="" class="tk-lk" style="background:#fff;border-radius:18px;padding:12px;box-shadow:0 16px 40px rgba(0,0,0,.12);opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
       <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px">
         <img src="assets/noimage.png" alt="メニュー写真" style="width:100%;height:230px;object-fit:cover;border-radius:10px;display:block">
@@ -295,10 +293,10 @@ a{color:inherit;text-decoration:none}
     <div style="text-align:center;color:#fff">
       <div data-section="our-menu-label" data-big-en="" data-title-anim="" style="font-family:'Zen Maru Gothic',sans-serif;font-weight:800;font-size:42px;letter-spacing:.01em;color:#fff;line-height:1">Our Menu</div>
       <div data-fade="" style="font-size:13px;color:rgba(255,255,255,.92);margin-top:8px;letter-spacing:.08em;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">こだわりの手料理について</div>
-      <h2 data-fade="" data-fade-delay="0.08s" style="margin:26px 0 22px;font-size:30px;font-weight:700;line-height:1.5;color:#fff;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">管理栄養士監修！<br>週替わりで飽きない手料理</h2>
-      <p data-fade="" data-fade-delay="0.16s" style="margin:0 auto 30px;max-width:430px;font-size:15px;line-height:2;color:rgba(255,255,255,.92);opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">これまでに開発したメニューは1000種以上！自分で作るには少し手間がかかる料理を、大人も子どもも食べやすい、やさしい味付けで丁寧に手づくりしています。</p>
+      <h2 data-fade="" data-fade-delay="0.08s" style="margin:16px 0 14px;font-size:30px;font-weight:700;line-height:1.5;color:#fff;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">管理栄養士監修！<br>週替わりで飽きない手料理</h2>
+      <p data-fade="" data-fade-delay="0.16s" style="margin:0 auto 20px;max-width:430px;font-size:15px;line-height:1.9;color:rgba(255,255,255,.92);opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">これまでに開発したメニューは1000種以上！自分で作るには少し手間がかかる料理を、大人も子どもも食べやすい、やさしい味付けで丁寧に手づくりしています。</p>
       <button data-login-btn="" data-fade="" data-fade-delay="0.24s" class="tk-btn" style="border:none;background:rgba(255,255,255,.32);color:#fff;font-size:13px;font-weight:700;padding:12px 26px;border-radius:30px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"><span>今月のメニューを見る</span></button>
-      <div data-fade="" data-fade-delay="0.3s" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:26px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"><span style="background:#DB84AC;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">スマイリーミール</span><span style="background:#6FA8D6;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">スタンダードミール</span><span style="background:#7FBB8C;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">バランスミール</span><span style="background:#5FB8B0;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">カットミール</span><span style="background:#DDA92C;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">ファンミール</span><span style="background:#A98BC7;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">タイムリーミール</span></div>
+      <div data-fade="" data-fade-delay="0.3s" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"><span style="background:#DB84AC;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">スマイリーミール</span><span style="background:#6FA8D6;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">スタンダードミール</span><span style="background:#7FBB8C;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">バランスミール</span><span style="background:#5FB8B0;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">カットミール</span><span style="background:#DDA92C;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">ファンミール</span><span style="background:#A98BC7;color:#fff;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:14px;white-space:nowrap">タイムリーミール</span></div>
     </div>
   </div>
 </section>
@@ -397,34 +395,8 @@ a{color:inherit;text-decoration:none}
               <div style="margin-top:12px;background:#E50012;color:#fff;font-size:11px;font-weight:700;padding:8px 16px;border-radius:20px">この週の注文を確定する</div>
             </div>
           </div>
-          <p style="margin:14px 0 0;font-size:11px;color:#999;line-height:1.7"><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#06c755;color:#fff;font-size:8px;font-weight:700;text-align:center;line-height:14px;vertical-align:middle;margin-right:4px">L</span>締切のお知らせはLINEでも受け取れます</p>
         </div>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- ======================= ABOUT ======================= -->
-<section data-section="about" style="padding:90px 40px;background:#f7f5f2">
-  <div style="max-width:1480px;margin:0 auto;display:grid;grid-template-columns:42% 58%;gap:50px;align-items:center">
-    <div>
-      <div data-title-anim="" style="font-family:'Zen Maru Gothic',sans-serif;font-weight:800;font-size:15px;letter-spacing:.07em;color:#E50012;margin-bottom:18px">About</div>
-      <h2 data-fade="" style="margin:0 0 18px;font-size:32px;font-weight:700;color:#3a3a3a;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">ヨシケイについて</h2>
-      <p data-fade="" data-fade-delay="0.1s" style="margin:0 0 26px;font-size:14px;line-height:1.95;color:#666;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">ヨシケイという名前の由来や、安全安心の取り組み<br>について詳しくご紹介します。</p>
-      <button data-fade="" data-fade-delay="0.16s" class="tk-btn" style="border:none;background:#E50012;color:#fff;font-size:13px;font-weight:700;padding:12px 30px;border-radius:30px;margin-bottom:34px;opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"><span>もっと見る</span></button>
-      <div data-fade="" data-fade-delay="0.16s" style="opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out"></div>
-    </div>
-    <div data-fade="" style="opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s ease-out">
-      <div class="tk-lk" style="position:relative;border-radius:18px;overflow:hidden;box-shadow:0 14px 34px rgba(0,0,0,.12)">
-        <div class="ph-box" style="width:100%;height:380px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>TVCM画像</span></div>
-        <div style="position:absolute;inset:0;background:rgba(0,0,0,.22)"></div>
-        <div style="position:absolute;top:26px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:7px">
-          <div style="font-size:12px;color:#fff;letter-spacing:.04em;text-shadow:0 1px 4px rgba(0,0,0,.5)">食材宅配サービス</div>
-          <div style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.94);border-radius:20px;padding:6px 10px 6px 14px"><span style="font-family:'Zen Maru Gothic',sans-serif;font-weight:800;color:#E50012;font-size:16px">ヨシケイ</span><span style="width:26px;height:26px;border-radius:50%;background:#E50012;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#fff" stroke-width="1.7"></circle><path d="m11 11 3 3" stroke="#fff" stroke-width="1.7" stroke-linecap="round"></path></svg></span></div>
-        </div>
-        <div style="position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);width:66px;height:66px;border-radius:50%;background:rgba(255,255,255,.94);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.25)"><svg width="20" height="24" viewBox="0 0 20 24" fill="#E50012"><path d="M0 0 20 12 0 24z"></path></svg></div>
-      </div>
-      <div style="font-size:13px;color:#888;margin-top:12px">TVCM ヨシケイにまるッとまかせよ！篇</div>
     </div>
   </div>
 </section>
@@ -481,7 +453,6 @@ a{color:inherit;text-decoration:none}
       <div style="display:flex;flex-direction:column;gap:16px;font-size:15px;font-weight:500;color:#333">
         <a href="#menu">お届けメニュー</a>
         <a href="#top">ご注文</a>
-        <a href="#top">ヨシケイについて</a>
         <a href="#top">ニュース</a>
         <a href="#top">よくあるご質問</a>
       </div>
