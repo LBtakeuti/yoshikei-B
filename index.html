@@ -2206,7 +2206,7 @@ const Login=(function(){
   /* イベント配線（オーバーレイは再描画対象外の静的DOM） */
   const lo=$('[data-login-overlay]');
   lo.addEventListener('click',e=>{
-    if(e.target===lo||e.target.closest('[data-login-close]')){close();return;}
+    if(e.target===lo||e.target.closest('[data-login-close]')){close();if(!S.loggedIn){location.href='lp.html';}return;}
     if(e.target.closest('[data-login-submit]')){doEmailLogin();return;}
     if(e.target.closest('[data-onboard-start]')){close();startOnboard();return;}
   });
@@ -2227,7 +2227,7 @@ const Login=(function(){
     }
   });
   ob.addEventListener('click',e=>{
-    if(e.target.closest('[data-onboard-close]')){ob.style.display='none';return;}
+    if(e.target.closest('[data-onboard-close]')){ob.style.display='none';if(!S.loggedIn){open();}return;}
     if(e.target.closest('[data-zip-check]')){checkZip();return;}
     if(e.target.closest('[data-zip-next]')){phase='questions';step=0;renderStep();return;}
     if(e.target.closest('[data-zip-retry]')){phase='zip';renderStep();return;}
@@ -2301,10 +2301,14 @@ setInterval(()=>{
 
 render();
 
-/* LP（lp.html）からの遷移：?login=1 でログインモーダルを自動表示 */
+/* 本体（index.html）はログイン後の画面。
+   - LP（lp.html）から ?login=1 で遷移 → ログインモーダルを自動表示
+   - パラメータなしで未ログインのまま直接開かれた場合 → ログイン前の画面であるLPへ戻す */
 try{
   if(new URLSearchParams(location.search).has('login')&&!S.loggedIn){
     setTimeout(function(){Login.open();},450);
+  }else if(!S.loggedIn){
+    location.replace('lp.html');
   }
 }catch(e){}
 </script>
