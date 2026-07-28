@@ -128,6 +128,18 @@ const SPECIAL_TABS=[
   {key:'benri', name:'便利品＆7月デリシャス', accent:'#E0912C', subs:[]},
   {key:'asa',   name:'朝食・お米・お買い得品', accent:'#7BA86A', subs:['朝食','レトルトごはん']},
 ];
+/* シリーズ/孫タブ名 → 出自カテゴリ(cat)対応表。CATALOG から自動生成（smile/more/lovyu/tanpin） */
+const SERIES_CAT={};
+CATALOG.forEach(c=>c.subs.forEach(s=>{SERIES_CAT[s]=c.key;}));
+/* シリーズ名(tag)の正規化：カット有無サフィックス(／…)と楽◯◯の「楽」を除いて同一シリーズ扱いにする */
+function seriesBase(name){return String(name||'').split('／')[0].replace(/^楽/,'').trim();}
+/* 商品のシリーズ名から出自カテゴリ(cat)を判定。特別販売は special、未知は tanpin 扱い */
+function catFor(name,special){
+  if(special)return 'special';
+  const b=seriesBase(name);
+  if(b==='特別販売')return 'special';
+  return SERIES_CAT[b]||'tanpin';
+}
 /* 独立ページ型（案B）で各企画に添える説明文 */
 const SPECIAL_DESC={
   benri:'毎日の食卓に便利な一品や、季節限定のデリシャス企画をお届けします。数量限定品はお早めにどうぞ。',
@@ -141,9 +153,17 @@ const SPECIALS=[
   {id:'sp4',cat:'asa',sub:'朝食',title:'朝食パン＆スープセット',price:880},
   {id:'sp5',cat:'asa',sub:'レトルトごはん',title:'レトルトごはん 10食パック',price:1580},
 ];
-/* eコイン：2,160円以上の購入で100円につき1pt */
+/* eコイン：対象商品(smile/more/lovyu)合計が2,160円(税込)以上で108円ごとに1コイン。単品・特別販売は対象外 */
 const COIN_MIN=2160;
-const coinFor=(total)=>total>=COIN_MIN?Math.floor(total/100):0;
+/* eコイン付与対象額：cat が smile/more/lovyu の商品合計のみ（tanpin・special は対象外） */
+function coinBase(items){
+  return (items||S.cartItems).reduce((a,c)=>{
+    const cat=c.cat||catFor(c.tag);
+    return a+((cat==='smile'||cat==='more'||cat==='lovyu')?c.price*c.qty:0);
+  },0);
+}
+/* 付与コイン数：対象額が2,160円以上のとき 対象額÷108 の切り捨て */
+const coinFor=(base)=>base>=COIN_MIN?Math.floor(base/108):0;
 /* 週ごとの献立（モック：日付を週に合わせて生成） */
 function wdates(wi){return WEEK.map((m,i)=>({...m,date:'5/'+(11+wi*7+i)}));}
 function weekDays(wi){return ['月','火','水','木','金','土'].map((d,i)=>({n:String(11+wi*7+i),dow:d}));}
@@ -212,9 +232,9 @@ let S={
   bulkOpen:false, productOpen:false, cartAddedOpen:false, howtoOpen:false,
   product:null, qty:{s2:1,s3:0,s4:0}, noCut:false, recQty:[0,0,0],
   cartItems:[
-    {id:'c1',title:'てりやき親子丼 お揚げと野菜のおかず汁',tag:'スマイリーミール',accent:'#DB84AC',unit:'2人用',price:1350,qty:1,week:'5/11'},
-    {id:'c2',title:'チキンソテー〜トマトガーリックソース〜 ウインナーとキャベツ',tag:'スタンダードミール',accent:'#6FA8D6',unit:'2人用',price:1350,qty:1,week:'5/11'},
-    {id:'c3',title:'神戸ドーナツ プレーン・夏みかん＋キャラメル',tag:'食料雑貨',accent:'#8FC24A',unit:'',price:1490,qty:1,week:'5/11'},
+    {id:'c1',title:'てりやき親子丼 お揚げと野菜のおかず汁',tag:'スマイリーミール',accent:'#DB84AC',unit:'2人用',price:1350,qty:1,week:'5/11',day:'5/11',cat:'smile'},
+    {id:'c2',title:'チキンソテー〜トマトガーリックソース〜 ウインナーとキャベツ',tag:'スタンダードミール',accent:'#6FA8D6',unit:'2人用',price:1350,qty:1,week:'5/11',day:'5/11',cat:'smile'},
+    {id:'c3',title:'神戸ドーナツ プレーン・夏みかん＋キャラメル',tag:'食料雑貨',accent:'#8FC24A',unit:'',price:1490,qty:1,week:'5/11',day:'5/11',cat:'tanpin'},
   ],
 };
 let lastCartChange=Date.now(), remindShown=false;
@@ -329,11 +349,11 @@ const A={
   finalizeOrder(withExtra){
     if(withExtra&&S.lastQty>0){
       const r=REC[1];
-      S.cartItems=[...S.cartItems,{id:'last-'+Date.now(),title:r.title,tag:r.tag,accent:r.tagColor,unit:'',price:toNum(r.price),qty:S.lastQty,week:WEEKS[S.week].label}];
+      S.cartItems=[...S.cartItems,{id:'last-'+Date.now(),title:r.title,tag:r.tag,accent:r.tagColor,unit:'',price:toNum(r.price),qty:S.lastQty,week:WEEKS[S.week].label,day:WEEKS[S.week].label,cat:'tanpin'}];
     }
     const disc=cartDiscount();
     const total=cartSubtotal()+cartShip()-disc;
-    const pts=coinFor(total);
+    const pts=coinFor(coinBase());
     S.coins+=pts;
     S.orders=[{id:'o-'+Date.now(),week:WEEKS[S.week].label,count:cartCount(),total,discount:disc,coins:pts,status:'active'},...S.orders];
     S.lastOrder={count:cartCount(),total,discount:disc,coins:pts,week:WEEKS[S.week].label};
@@ -359,13 +379,13 @@ const A={
   closeBulk(){S.bulkOpen=false;render();},
   confirmBulk(){
     const now=Date.now();
-    const add=wdates(S.week).map(m=>({id:'bulk-'+m.id+'-'+now,title:m.title,tag:'スマイリーミール',accent:'#DB84AC',unit:'2人用',price:toNum(m.price),qty:1,week:WEEKS[S.week].label}));
+    const add=wdates(S.week).map(m=>({id:'bulk-'+m.id+'-'+now,title:m.title,tag:'スマイリーミール',accent:'#DB84AC',unit:'2人用',price:toNum(m.price),qty:1,week:WEEKS[S.week].label,day:m.date,cat:'smile'}));
     S.cartItems=[...S.cartItems,...add];S.bulkOpen=false;touchCart();render();
   },
 
   openSer(wi){
     const cs=SERIES[S.sub.smile]||SERIES[0], m=wdates(S.week)[wi];
-    A._openProduct({title:m.title,seriesName:cs.name,accent:cs.accent,price:toNum(m.price)});
+    A._openProduct({title:m.title,seriesName:cs.name,accent:cs.accent,price:toNum(m.price),day:m.date});
   },
   openSmile(i){
     const s=SERIES[SMILE[i].si];
@@ -410,7 +430,7 @@ const A={
     if(n<=0){S.productOpen=false;render();return;}
     const unit=p.special?'':(t.s4?'4人用':(t.s3?'3人用':'2人用'));
     const cutLabel=p.special?'':(S.cut==='on'?'／カットあり':'／カットなし');
-    S.cartItems=[...S.cartItems,{id:'add-'+Date.now(),title:p.title||'商品',tag:(p.seriesName||'')+cutLabel,accent:p.accent||'#DB84AC',unit,price:p.price||1350,qty:n,week:WEEKS[S.week].label}];
+    S.cartItems=[...S.cartItems,{id:'add-'+Date.now(),title:p.title||'商品',tag:(p.seriesName||'')+cutLabel,accent:p.accent||'#DB84AC',unit,price:p.price||1350,qty:n,week:WEEKS[S.week].label,day:p.day||WEEKS[S.week].label,cat:p.special?'special':catFor(p.seriesName)}];
     if(p.special&&p.limit){S.stock[p.specialId]=Math.max(0,(S.stock[p.specialId]||0)-n);}
     S.recMode=p.special?'menus':'goods';  // 特別商品のときは通常メニューをレコメンド
     S.productOpen=false;S.cartAddedOpen=true;S.recQty=[0,0,0];touchCart();render();
@@ -422,10 +442,10 @@ const A={
     if(S.recMode==='menus'){
       const menus=wdates(S.week).slice(0,3);
       add=menus.map((m,i)=>({m,q:S.recQty[i]})).filter(x=>x.q>0)
-        .map(x=>({id:'recm-'+x.m.id+'-'+now,title:x.m.title,tag:'スマイリーミール',accent:'#DB84AC',unit:'2人用',price:toNum(x.m.price),qty:x.q,week:WEEKS[S.week].label}));
+        .map(x=>({id:'recm-'+x.m.id+'-'+now,title:x.m.title,tag:'スマイリーミール',accent:'#DB84AC',unit:'2人用',price:toNum(x.m.price),qty:x.q,week:WEEKS[S.week].label,day:x.m.date,cat:'smile'}));
     }else{
       add=REC.map((r,i)=>({r,q:S.recQty[i]})).filter(x=>x.q>0)
-        .map(x=>({id:'rec-'+x.r.id+'-'+now,title:x.r.title,tag:x.r.tag,accent:x.r.tagColor,unit:'',price:toNum(x.r.price),qty:x.q,week:WEEKS[S.week].label}));
+        .map(x=>({id:'rec-'+x.r.id+'-'+now,title:x.r.title,tag:x.r.tag,accent:x.r.tagColor,unit:'',price:toNum(x.r.price),qty:x.q,week:WEEKS[S.week].label,day:WEEKS[S.week].label,cat:'tanpin'}));
     }
     S.cartItems=[...S.cartItems,...add];S.cartAddedOpen=false;S.recQty=[0,0,0];touchCart();render();
   },
@@ -560,14 +580,17 @@ function coinPreviewHTML(){
   let selTotal=0;
   if(p.special){selTotal=(S.qty.s2||0)*(p.price||0);}
   else{selTotal=SIZES.reduce((a,s)=>a+(S.qty[s.k]||0)*toNum(s.price),0);}
-  const projected=coinFor(cartSubtotal()+selTotal);
-  const now=coinFor(cartSubtotal());
+  /* 追加しようとしている商品が付与対象(smile/more/lovyu)のときだけ対象額に加算 */
+  const pcat=p.special?'special':catFor(p.seriesName);
+  const selBase=(pcat==='smile'||pcat==='more'||pcat==='lovyu')?selTotal:0;
+  const projected=coinFor(coinBase()+selBase);
+  const now=coinFor(coinBase());
   const gain=Math.max(0,projected-now);
   return '<div style="display:flex;align-items:center;gap:7px;margin-top:13px;background:#FFF7E8;border-radius:10px;padding:9px 12px;">'
     +'<span style="color:#E0912C;">'+IC.coin(17)+'</span>'
     +(projected>0
-      ?'<span style="font-size:12px;color:#7a5c1e;">この追加で <b style="font-size:14px;color:#E0912C;">+'+gain+'pt</b> のeコインが貯まる見込み（ご注文合計'+yen(cartSubtotal()+selTotal)+'）</span>'
-      :'<span style="font-size:12px;color:#7a5c1e;">eコインは<b>2,160円以上</b>のご注文で100円につき1pt貯まります</span>')
+      ?'<span style="font-size:12px;color:#7a5c1e;">この追加で <b style="font-size:14px;color:#E0912C;">+'+gain+'pt</b> のeコインが貯まる見込み（対象商品合計'+yen(coinBase()+selBase)+'）</span>'
+      :'<span style="font-size:12px;color:#7a5c1e;">eコインは対象商品<b>2,160円以上</b>のご注文で108円ごとに1コイン貯まります（特別販売は対象外）</span>')
     +'</div>';
 }
 function recRowsHTML(){
@@ -622,16 +645,19 @@ function discountRowHTML(fs){
     +'<span>通し割引<span style="font-size:'+(fs-2)+'px;font-weight:600;margin-left:5px;">（5日分以上）</span></span>'
     +'<span style="font-size:'+(fs+2)+'px;font-weight:800;">-'+yen(d)+'</span></div>';
 }
+/* eコイン付与ルールの注記（獲得コイン表示の近くに小さく添える） */
+const COIN_NOTE='対象商品2,160円以上のご注文で108円ごとに1コイン（特別販売は対象外）';
 /* カート集計＋eコイン行 */
 function cartCoinRowHTML(){
-  const total=cartTotal();
-  const pts=coinFor(total);
+  const base=coinBase();
+  const pts=coinFor(base);
   return '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:11px;background:#FFF7E8;border-radius:9px;padding:8px 12px;">'
     +'<span style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#7a5c1e;"><span style="color:#E0912C;">'+IC.coin(16)+'</span>獲得予定eコイン</span>'
     +(pts>0
       ?'<span style="font-size:15px;font-weight:800;color:#E0912C;">+'+pts+'pt</span>'
-      :'<span style="font-size:11px;color:#9a8a60;">あと'+yen(Math.max(0,COIN_MIN-total))+'で対象</span>')
-    +'</div>';
+      :'<span style="font-size:11px;color:#9a8a60;">対象商品あと'+yen(Math.max(0,COIN_MIN-base))+'で対象</span>')
+    +'</div>'
+    +'<div style="font-size:10.5px;color:#9a8a60;line-height:1.5;margin-top:5px;padding:0 3px;">'+COIN_NOTE+'</div>';
 }
 /* 週セレクタ（販売2週間分・大きく見やすく） */
 function weekChipsHTML(sp){
@@ -1379,8 +1405,9 @@ function spHTML(){
       +'<div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:14px;font-weight:700;color:#2b2b2b;">お支払い合計</span><span style="font-size:24px;font-weight:900;color:#E50012;">'+yen(o.total)+'</span></div>'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:11px;background:#FFF7E8;border-radius:9px;padding:8px 12px;">'
       +'<span style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#7a5c1e;"><span style="color:#E0912C;">'+IC.coin(16)+'</span>今回の獲得eコイン</span>'
-      +(o.coins?'<span style="font-size:15px;font-weight:800;color:#E0912C;">+'+o.coins+'pt</span>':'<span style="font-size:11px;color:#9a8a60;">対象外（2,160円未満）</span>')
+      +(o.coins?'<span style="font-size:15px;font-weight:800;color:#E0912C;">+'+o.coins+'pt</span>':'<span style="font-size:11px;color:#9a8a60;">対象外（対象商品2,160円未満）</span>')
       +'</div>'
+      +'<div style="font-size:10.5px;color:#9a8a60;line-height:1.5;margin-top:5px;padding:0 3px;">'+COIN_NOTE+'</div>'
       +'</div></div>'
       /* 次の週のご注文への案内 */
       +(hasNext
@@ -1829,8 +1856,9 @@ function pcHTML(){
       +'<div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:14px;font-weight:700;color:#2b2b2b;">お支払い合計</span><span style="font-size:26px;font-weight:900;color:#E50012;">'+yen(o.total)+'</span></div>'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:11px;background:#FFF7E8;border-radius:9px;padding:8px 12px;">'
       +'<span style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#7a5c1e;"><span style="color:#E0912C;">'+IC.coin(16)+'</span>今回の獲得eコイン</span>'
-      +(o.coins?'<span style="font-size:15px;font-weight:800;color:#E0912C;">+'+o.coins+'pt</span>':'<span style="font-size:11px;color:#9a8a60;">対象外（2,160円未満）</span>')
+      +(o.coins?'<span style="font-size:15px;font-weight:800;color:#E0912C;">+'+o.coins+'pt</span>':'<span style="font-size:11px;color:#9a8a60;">対象外（対象商品2,160円未満）</span>')
       +'</div>'
+      +'<div style="font-size:10.5px;color:#9a8a60;line-height:1.5;margin-top:5px;padding:0 3px;">'+COIN_NOTE+'</div>'
       +'</div>'
       +(hasNext
         ?'<div style="max-width:400px;margin:22px auto 0;background:#FCEBEC;border-radius:12px;padding:18px 20px;">'
