@@ -244,13 +244,28 @@ const toNum=v=>Number(String(v).replace(/,/g,''))||0;
 const cartCount=()=>S.cartItems.reduce((a,c)=>a+c.qty,0);
 const cartSubtotal=()=>S.cartItems.reduce((a,c)=>a+c.price*c.qty,0);
 const cartShip=()=>S.cartItems.length?330:0;
-/* 通し割引：同じ料理（title一致）を5日分以上で対象商品合計の5%（10円未満切り捨て）。
-   人数違い・カットあり/なしの混在でも同一料理なら対象（お客様確定仕様・割引額はモックダミー） */
+/* 通し割引（正式ルール）：判定単位はシリーズ（コース）×週。
+   同一シリーズ（tag を正規化：カット有無サフィックス・楽◯◯を吸収）の商品を、
+   週内で異なるお届け日(day)が5日または6日ぶん注文していれば、そのシリーズの対象商品合計に割引適用。
+   カット有無・利用人数の混在は同一シリーズ扱い。
+   対象は★印コース＝ミールキット系（cat が smile/more/lovyu）のみ。単品(tanpin)・特別販売(special)は対象外。
+   割引額はモックのため対象合計の5%（10円未満切り捨て）を維持。
+   本実装では通常価格と通し割引価格（基幹 menu.urine2）の差額合計に置き換える。 */
 function cartDiscount(){
-  const byTitle={};
-  S.cartItems.forEach(c=>{byTitle[c.title]=(byTitle[c.title]||0)+c.qty;});
+  const groups={};  // key: 正規化シリーズ|週 → {days:{}, base:number}
+  S.cartItems.forEach(c=>{
+    const cat=c.cat||catFor(c.tag);
+    if(cat!=='smile'&&cat!=='more'&&cat!=='lovyu')return;  // 単品・特別販売は対象外
+    const key=seriesBase(c.tag)+'|'+(c.week||'');
+    const g=groups[key]||(groups[key]={days:{},base:0});
+    g.days[c.day||c.week||'?']=true;   // 異なるお届け日をカウント（数量ではなく日数）
+    g.base+=c.price*c.qty;
+  });
   let base=0;
-  S.cartItems.forEach(c=>{if(byTitle[c.title]>=5)base+=c.price*c.qty;});
+  Object.keys(groups).forEach(k=>{
+    const g=groups[k];
+    if(Object.keys(g.days).length>=5)base+=g.base;  // 週内5日または6日で成立（上限6は日付数で自然に頭打ち）
+  });
   return Math.floor(base*0.05/10)*10;
 }
 const cartTotal=()=>cartSubtotal()+cartShip()-cartDiscount();
@@ -625,7 +640,7 @@ function bulkPriceHTML(){
   return '<div style="margin-top:8px;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;">'
     +'<span style="font-size:13px;color:#999;text-decoration:line-through;">2人用 '+Number(sub).toLocaleString('ja-JP')+'円</span>'
     +'<span style="font-size:18px;font-weight:800;color:#E50012;">'+Number(after).toLocaleString('ja-JP')+'円</span>'
-    +'<span style="font-size:11px;font-weight:700;color:#E50012;background:#FCEBEC;padding:2px 8px;border-radius:9px;">通し割引 -'+Number(disc).toLocaleString('ja-JP')+'円</span>'
+    +'<span style="font-size:11px;font-weight:700;color:#E50012;background:#FCEBEC;padding:2px 8px;border-radius:9px;">通し割引（週5日以上） -'+Number(disc).toLocaleString('ja-JP')+'円</span>'
     +'</div>';
 }
 function bulkRowsHTML(){
@@ -642,7 +657,7 @@ function discountRowHTML(fs){
   if(d<=0)return '';
   fs=fs||13.5;
   return '<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:'+fs+'px;color:#E50012;font-weight:700;margin-top:'+(fs<13?'8px':'11px')+';">'
-    +'<span>通し割引<span style="font-size:'+(fs-2)+'px;font-weight:600;margin-left:5px;">（5日分以上）</span></span>'
+    +'<span>通し割引<span style="font-size:'+(fs-2)+'px;font-weight:600;margin-left:5px;">（週5日以上）</span></span>'
     +'<span style="font-size:'+(fs+2)+'px;font-weight:800;">-'+yen(d)+'</span></div>';
 }
 /* eコイン付与ルールの注記（獲得コイン表示の近くに小さく添える） */
@@ -862,7 +877,7 @@ function orderHistoryHTML(sp){
       +'</div>'
       +'<div style="font-size:11.5px;color:#888;margin-top:4px;">全'+o.count+'点 ／ <b style="font-size:13px;color:#555;">'+yen(o.total)+'</b>'
       +(o.coins?'　<span style="color:#E0912C;font-weight:700;">+'+o.coins+'pt</span>':'')+'</div>'
-      +(o.discount?'<div style="font-size:11px;color:#E50012;font-weight:700;margin-top:3px;">通し割引 -'+yen(o.discount)+' 適用</div>':'')
+      +(o.discount?'<div style="font-size:11px;color:#E50012;font-weight:700;margin-top:3px;">通し割引（週5日以上） -'+yen(o.discount)+' 適用</div>':'')
       +'</div>'
       +(dead?'':'<button onclick="A.histAsk(\'one\',\''+o.id+'\')" style="flex-shrink:0;font-size:11.5px;font-weight:700;color:#E50012;padding:8px 13px;border-radius:8px;box-shadow:0 0 0 1.5px #E50012 inset;">キャンセル</button>')
       +'</div>';
@@ -1400,7 +1415,7 @@ function spHTML(){
       +'<div style="padding:22px 16px 0;"><div style="background:#fff;border-radius:14px;box-shadow:0 1px 7px rgba(0,0,0,.09);padding:16px;">'
       +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;"><span>お届け週</span><span style="font-weight:700;">'+o.week+'週</span></div>'
       +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;margin-top:11px;"><span>ご注文点数</span><span style="font-weight:700;">'+o.count+'点</span></div>'
-      +(o.discount?'<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:#E50012;font-weight:700;margin-top:11px;"><span>通し割引<span style="font-size:11px;font-weight:600;margin-left:5px;">（5日分以上）</span></span><span style="font-size:15px;font-weight:800;">-'+yen(o.discount)+'</span></div>':'')
+      +(o.discount?'<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:#E50012;font-weight:700;margin-top:11px;"><span>通し割引<span style="font-size:11px;font-weight:600;margin-left:5px;">（週5日以上）</span></span><span style="font-size:15px;font-weight:800;">-'+yen(o.discount)+'</span></div>':'')
       +'<div style="border-top:1px solid #EEE;margin:13px 0;"></div>'
       +'<div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:14px;font-weight:700;color:#2b2b2b;">お支払い合計</span><span style="font-size:24px;font-weight:900;color:#E50012;">'+yen(o.total)+'</span></div>'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:11px;background:#FFF7E8;border-radius:9px;padding:8px 12px;">'
@@ -1851,7 +1866,7 @@ function pcHTML(){
       +'<div style="max-width:400px;margin:26px auto 0;text-align:left;background:#FAF8F5;border-radius:12px;padding:18px 20px;">'
       +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;"><span>お届け週</span><span style="font-weight:700;">'+o.week+'週</span></div>'
       +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;margin-top:11px;"><span>ご注文点数</span><span style="font-weight:700;">'+o.count+'点</span></div>'
-      +(o.discount?'<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:#E50012;font-weight:700;margin-top:11px;"><span>通し割引<span style="font-size:11px;font-weight:600;margin-left:5px;">（5日分以上）</span></span><span style="font-size:15px;font-weight:800;">-'+yen(o.discount)+'</span></div>':'')
+      +(o.discount?'<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:#E50012;font-weight:700;margin-top:11px;"><span>通し割引<span style="font-size:11px;font-weight:600;margin-left:5px;">（週5日以上）</span></span><span style="font-size:15px;font-weight:800;">-'+yen(o.discount)+'</span></div>':'')
       +'<div style="border-top:1px solid #E8E4DE;margin:13px 0;"></div>'
       +'<div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:14px;font-weight:700;color:#2b2b2b;">お支払い合計</span><span style="font-size:26px;font-weight:900;color:#E50012;">'+yen(o.total)+'</span></div>'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:11px;background:#FFF7E8;border-radius:9px;padding:8px 12px;">'
