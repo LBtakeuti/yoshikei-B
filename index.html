@@ -2016,12 +2016,12 @@ const Login=(function(){
   ];
   const ILLUSTS=[1,2,3,4,5,6,7].map(n=>'assets/onboard_q'+n+'.svg');
 
-  let step=0, answers={}, phase='zip', zipValue='';
+  let step=0, answers={}, phase='zip', zipValue='', regName='';
   const $=(sel)=>document.querySelector(sel);
 
   function open(){$('[data-login-overlay]').style.display='flex';}
   function close(){$('[data-login-overlay]').style.display='none';}
-  function startOnboard(){step=0;answers={};phase='zip';zipValue='';$('[data-onboard-overlay]').style.display='flex';renderStep();}
+  function startOnboard(){step=0;answers={};phase='zip';zipValue='';regName='';$('[data-onboard-overlay]').style.display='flex';renderStep();}
 
   /* ステップ0：お住まいの地域（郵便番号）確認 */
   function renderZip(){
@@ -2083,6 +2083,8 @@ const Login=(function(){
     if(phase==='zip'){renderZip();return;}
     if(phase==='zipOk'){renderZipOk();return;}
     if(phase==='zipNg'){renderZipNg();return;}
+    if(phase==='signup'){renderSignup();return;}
+    if(phase==='done'){renderDone();return;}
     const body=$('[data-onboard-body]'),bar=$('[data-onboard-bar]'),lbl=$('[data-onboard-step]');
     if(step<7){
       const Q=QUESTIONS[step];
@@ -2103,15 +2105,102 @@ const Login=(function(){
         +'<img class="onboard-illust" src="'+(ILLUSTS[step]||'')+'" alt="">'
         +opts+footer+'</div>';
     }else{
-      bar.style.width='100%';
-      lbl.textContent='あと少し！';
-      body.innerHTML='<div style="max-width:460px;margin:0 auto;">'
-        +'<div style="font-size:22px;font-weight:700;color:#3a3a3a;line-height:1.5;margin-bottom:24px;">お名前を教えてください</div>'
-        +'<input data-onboard-name type="text" placeholder="お名前（ニックネーム可）" style="width:100%;border:1px solid #ddd;border-radius:12px;padding:14px;font-size:16px;font-family:inherit;margin-bottom:16px;">'
-        +'<button data-onboard-finish style="width:100%;border:none;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:12px;">登録完了</button>'
-        +'<div style="text-align:center;margin-top:18px;"><button data-onboard-back style="border:none;background:transparent;color:#999;font-size:13px;font-weight:700;">← 前の質問に戻る</button></div>'
-        +'</div>';
+      renderReco();
     }
+  }
+
+  /* おすすめコース判定：調理時間が最優先、次に健康志向、それ以外は定番 */
+  function recommend(){
+    if(answers.cook_time==='10分以内')return SERIES.find(s=>s.key==='cut');
+    if(answers.health==='カロリー'||answers.health==='塩分')return SERIES.find(s=>s.key==='balance');
+    return SERIES.find(s=>s.key==='smile');
+  }
+
+  /* A. おすすめ提示画面 */
+  function renderReco(){
+    const body=$('[data-onboard-body]'),bar=$('[data-onboard-bar]'),lbl=$('[data-onboard-step]');
+    bar.style.width='100%';
+    lbl.textContent='あなたへのおすすめ';
+    const s=recommend();
+    const cards=subItems(s.name).slice(0,3).map(it=>'<div style="border:1px solid #ece8e1;border-radius:14px;overflow:hidden;background:#fff;">'
+      +'<div style="width:100%;height:96px;background:'+s.tint+';">'+slot(it.title)+'</div>'
+      +'<div style="padding:9px 11px;">'
+      +'<div style="font-size:12.5px;font-weight:700;color:#3a3a3a;line-height:1.45;">'+it.title+'</div>'
+      +'<div style="font-size:13px;font-weight:800;color:#2b2b2b;margin-top:5px;">'+it.price+'円</div>'
+      +'</div></div>').join('');
+    body.innerHTML='<div style="max-width:460px;margin:0 auto;">'
+      +'<div class="onboard-q-title"><span>あなたにおすすめのコースはこちら</span></div>'
+      +'<div style="border:2px solid '+s.accent+';background:'+s.tint+';border-radius:14px;padding:16px 18px;text-align:center;margin-bottom:20px;">'
+        +'<div style="font-size:21px;font-weight:800;color:'+s.dark+';">'+s.name+'</div>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">'+cards+'</div>'
+      +'<button data-reco-next style="width:100%;border:none;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:12px;">このメニューをはじめる（仮登録へ）</button>'
+      +'<div style="text-align:center;margin-top:18px;"><button data-onboard-back style="border:none;background:transparent;color:#999;font-size:13px;font-weight:700;">← 前の質問に戻る</button></div>'
+      +'</div>';
+  }
+
+  /* 家族人数の初期値：質問1（何人分）から転記 */
+  function familyDefault(){
+    const sv=answers.serving;
+    if(sv==='2人分')return {adult:2,child:0};
+    if(sv==='3人分')return {adult:2,child:1};
+    return {adult:2,child:2};
+  }
+
+  /* B. 仮登録フォーム画面（KOKYAKU対応を意識した本人情報入力） */
+  function renderSignup(){
+    const body=$('[data-onboard-body]'),bar=$('[data-onboard-bar]'),lbl=$('[data-onboard-step]');
+    bar.style.width='100%';
+    lbl.textContent='仮登録';
+    const ist='width:100%;border:1px solid #ddd;border-radius:12px;padding:13px;font-size:16px;font-family:inherit;box-sizing:border-box;';
+    const lab=(t,req)=>'<div style="font-size:13px;font-weight:700;color:#555;margin:14px 0 6px;">'+t+(req?'<span style="color:#E50012;"> *</span>':'<span style="color:#aaa;font-weight:600;font-size:12px;"> （任意）</span>')+'</div>';
+    const fam=familyDefault();
+    const numOpts=(sel)=>{let o='';for(let i=0;i<=8;i++){o+='<option value="'+i+'"'+(i===sel?' selected':'')+'>'+i+'人</option>';}return o;};
+    body.innerHTML='<div style="max-width:460px;margin:0 auto;text-align:left;">'
+      +'<div class="onboard-q-title" style="text-align:left;"><span>お届けに必要な情報をご入力ください</span></div>'
+      +lab('お名前',true)+'<input data-su-name type="text" placeholder="山田 太郎" style="'+ist+'">'
+      +lab('フリガナ',true)+'<input data-su-kana type="text" placeholder="ヤマダ タロウ" style="'+ist+'">'
+      +lab('郵便番号',true)+'<input data-su-zip type="text" inputmode="numeric" value="'+(area_state.zip||'')+'" style="'+ist+'">'
+      +lab('ご住所',true)+'<input data-su-addr type="text" placeholder="市区町村・番地" style="'+ist+'">'
+      +lab('電話番号',true)+'<input data-su-tel type="tel" inputmode="numeric" placeholder="09012345678" style="'+ist+'"><div style="font-size:11.5px;color:#999;margin-top:5px;">ご本人確認とお届けのご連絡に使用します</div>'
+      +lab('メールアドレス',true)+'<input data-su-email type="email" placeholder="you@example.com" style="'+ist+'">'
+      +lab('パスワード',true)+'<input data-su-pass type="password" placeholder="8文字以上" style="'+ist+'">'
+      +lab('生年月日',false)+'<input data-su-birth type="date" style="'+ist+'">'
+      +lab('ご家族の人数',false)
+      +'<div style="display:flex;gap:12px;">'
+        +'<div style="flex:1;"><div style="font-size:12px;color:#888;margin-bottom:4px;">大人</div><select data-su-adult style="'+ist+'">'+numOpts(fam.adult)+'</select></div>'
+        +'<div style="flex:1;"><div style="font-size:12px;color:#888;margin-bottom:4px;">子ども</div><select data-su-child style="'+ist+'">'+numOpts(fam.child)+'</select></div>'
+      +'</div>'
+      +lab('ご紹介者コード',false)+'<input data-su-ref type="text" inputmode="numeric" maxlength="6" placeholder="6桁" style="'+ist+'">'
+      +'<button data-su-submit style="width:100%;border:none;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:12px;margin-top:22px;">仮登録する</button>'
+      +'<div style="text-align:center;margin-top:16px;"><button data-su-back style="border:none;background:transparent;color:#999;font-size:13px;font-weight:700;">← おすすめに戻る</button></div>'
+      +'</div>';
+  }
+
+  function submitSignup(){
+    const req=[['[data-su-name]','お名前'],['[data-su-kana]','フリガナ'],['[data-su-zip]','郵便番号'],['[data-su-addr]','ご住所'],['[data-su-tel]','電話番号'],['[data-su-email]','メールアドレス'],['[data-su-pass]','パスワード']];
+    for(let i=0;i<req.length;i++){
+      const el=$(req[i][0]);
+      if(!el||!el.value.trim()){alert(req[i][1]+'をご入力ください');if(el)el.focus();return;}
+    }
+    const nm=$('[data-su-name]');
+    regName=(nm&&nm.value.trim())||'会員';
+    phase='done';renderStep();
+  }
+
+  /* C. 受付番号発行完了画面 */
+  function renderDone(){
+    const body=$('[data-onboard-body]'),bar=$('[data-onboard-bar]'),lbl=$('[data-onboard-step]');
+    bar.style.width='100%';
+    lbl.textContent='仮登録完了';
+    body.innerHTML='<div style="max-width:460px;margin:0 auto;text-align:center;">'
+      +'<div style="width:56px;height:56px;margin:8px auto 18px;border-radius:50%;background:#E50012;display:flex;align-items:center;justify-content:center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l5 5 10-11" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
+      +'<div style="font-size:22px;font-weight:800;color:#3a3a3a;margin-bottom:22px;">仮登録が完了しました</div>'
+      +'<div style="font-size:13px;color:#888;margin-bottom:6px;">受付番号</div>'
+      +'<div style="font-size:30px;font-weight:800;color:#E50012;letter-spacing:.06em;margin-bottom:24px;">R-260730-001</div>'
+      +'<p style="font-size:13.5px;color:#666;line-height:1.95;margin:0 0 26px;">担当営業所で確認後、本登録のご案内をお送りします<br>いまから仮のご注文が可能です。お届けは本登録完了後に確定します</p>'
+      +'<button data-su-menu style="width:100%;border:none;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:12px;">メニューを見る</button>'
+      +'</div>';
   }
   function single(v){answers[QUESTIONS[step].key]=v;step++;renderStep();}
   function toggle(v){
@@ -2157,8 +2246,7 @@ const Login=(function(){
   }
 
   function finish(){
-    const nameEl=$('[data-onboard-name]');
-    const name=(nameEl&&nameEl.value.trim())||'会員';
+    const name=regName||'会員';
     buildProfile(name);
     playWelcome(name);
   }
@@ -2237,7 +2325,10 @@ const Login=(function(){
     if(e.target.closest('[data-onboard-next]')){next();return;}
     if(e.target.closest('[data-onboard-skip]')){step++;renderStep();return;}
     if(e.target.closest('[data-onboard-back]')){back();return;}
-    if(e.target.closest('[data-onboard-finish]')){finish();return;}
+    if(e.target.closest('[data-reco-next]')){phase='signup';renderStep();return;}
+    if(e.target.closest('[data-su-back]')){phase='questions';step=7;renderStep();return;}
+    if(e.target.closest('[data-su-submit]')){submitSignup();return;}
+    if(e.target.closest('[data-su-menu]')){finish();return;}
   });
 
   return {open};
