@@ -136,11 +136,10 @@ const SERIES=[
   {key:'fun',      name:'ファンミール',       accent:'#DDA92C', dark:'#B2851A', tint:'#FBF3DE'},
   {key:'timely',   name:'タイムリーミール',   accent:'#A98BC7', dark:'#8663AC', tint:'#F2ECF8'},
 ];
-/* 注文可能な週（販売は2週間分のみ・同一画面で切り替えて注文可） */
-const WEEKS=[
-  {label:'5/11',deadline:'5/1'},
-  {label:'5/18',deadline:'5/8'},
-];
+/* 注文可能な週（販売は2週間分のみ・同一画面で切り替えて注文可）。
+   label＝お届け週の月曜。deadline は業務ルール（前週水曜 23:59）から自動算出し、
+   画面内の締切表示が食い違わないよう単一の算出ロジック（orderDeadlineDate）に統一する。 */
+const WEEKS=[{label:'5/11'},{label:'5/18'}].map(w=>({label:w.label,deadline:orderDeadlineDate(w.label)}));
 /* タブカタログ：親タブ（夕食献立メニュー／特別販売）＞子タブ＞孫タブ */
 const CATALOG=[
   {key:'smile', name:'Smile＆table',   accent:'#DB84AC', subs:SERIES.map(s=>s.name)},
@@ -198,13 +197,17 @@ function mockDow(md){
   return ['月','火','水','木','金','土','日'][((d-11)%7+7)%7];
 }
 /* 注文締切（業務ルール）：お届け週の前週水曜 23:59＝お届け週の月曜の5日前。
-   引数は週ラベル 'M/D'（＝お届け週の月曜）。戻り値は 'M/D(水)' 形式。 */
-function orderDeadline(weekLabel){
+   引数は週ラベル 'M/D'（＝お届け週の月曜）。
+   orderDeadlineDate → 'M/D' ／ orderDeadline → 'M/D(水)'（曜日付き・画面表示用） */
+function orderDeadlineDate(weekLabel){
   const p=String(weekLabel||'').split('/');
   const mon=Number(p[1]);
   if(!mon)return '';
-  const md=p[0]+'/'+(mon-5);
-  return md+'('+mockDow(md)+')';
+  return p[0]+'/'+(mon-5);
+}
+function orderDeadline(weekLabel){
+  const md=orderDeadlineDate(weekLabel);
+  return md?md+'('+mockDow(md)+')':'';
 }
 /* 子タブ（孫なしのグリッド用）の商品生成 */
 function subItems(subName){
@@ -726,7 +729,7 @@ function weekChipsHTML(sp){
       return '<button onclick="A.setWeek('+i+')" style="'+(sp?'flex:1;':'flex:none;')+'display:flex;flex-direction:column;align-items:center;gap:2px;padding:'+(sp?'9px 10px':'8px 20px')+';border-radius:12px;white-space:nowrap;'
         +(on?'background:#E50012;color:#fff;box-shadow:0 3px 9px rgba(229,0,18,.32);':'background:#fff;color:#888;box-shadow:0 0 0 1.5px #E0E0E0 inset;')+'">'
         +'<span style="font-size:'+(sp?'16px':'16px')+';font-weight:900;line-height:1.15;white-space:nowrap;">'+w.label+'週</span>'
-        +'<span style="font-size:'+(sp?'10px':'10px')+';font-weight:700;white-space:nowrap;'+(on?'opacity:.85;':'color:#aaa;')+'">締切 '+w.deadline+'</span>'
+        +'<span style="font-size:'+(sp?'10px':'10px')+';font-weight:700;white-space:nowrap;'+(on?'opacity:.85;':'color:#aaa;')+'">締切 '+orderDeadline(w.label)+'</span>'
         +'</button>';
     }).join('')
     +'</div>';
@@ -1198,7 +1201,7 @@ function spHTML(){
   const wk=WEEKS[S.week];
   h+='<div style="padding:8px 15px 8px;">'
     +'<div style="display:flex;align-items:center;gap:7px;">'+IC.cal(18)
-    +'<span style="font-size:14px;color:#2c2c2c;"><b style="font-size:16.5px;">'+wk.label+'</b> 週のご注文 <span style="font-size:12px;color:#5a5a5a;">（締切日は'+wk.deadline+'です）</span></span></div>'
+    +'<span style="font-size:14px;color:#2c2c2c;"><b style="font-size:16.5px;">'+wk.label+'</b> 週のご注文 <span style="font-size:12px;color:#5a5a5a;">（締切は'+orderDeadline(wk.label)+' 23:59です）</span></span></div>'
     +'<div style="margin-top:8px;">'+weekChipsHTML(true)+'</div>'
     +'</div>';
 
@@ -1447,7 +1450,7 @@ function spHTML(){
         if(!items.length)return;
         inner+='<div style="padding:10px 16px 2px;display:flex;align-items:center;gap:7px;">'
           +'<span style="background:#FCEBEC;color:#E50012;font-size:11px;font-weight:800;padding:3px 11px;border-radius:11px;">'+w.label+'週のお届け</span>'
-          +'<span style="font-size:11px;color:#999;">締切 '+w.deadline+'</span></div>'
+          +'<span style="font-size:11px;color:#999;">締切 '+orderDeadline(w.label)+' 23:59</span></div>'
           +'<div style="padding:6px 16px 0;display:flex;flex-direction:column;gap:12px;">'
           +items.map(c=>'<div style="background:#fff;border-radius:14px;box-shadow:0 1px 7px rgba(0,0,0,.09);padding:13px;display:flex;gap:12px;">'
             +'<div style="width:86px;height:76px;border-radius:8px;overflow:hidden;flex-shrink:0;">'+slot(c.title)+'</div>'
@@ -1651,7 +1654,7 @@ function pcHTML(){
       +'</div>'
       +'<div style="display:flex;align-items:center;gap:14px;">'
       +'<div style="display:flex;align-items:center;gap:8px;">'+IC.cal(19)
-      +'<span style="font-size:15px;color:#2c2c2c;"><b style="font-size:18px;">'+WEEKS[S.week].label+'</b> 週のご注文 <span style="font-size:13px;color:#5a5a5a;">（締切日は'+WEEKS[S.week].deadline+'です）</span></span></div>'
+      +'<span style="font-size:15px;color:#2c2c2c;"><b style="font-size:18px;">'+WEEKS[S.week].label+'</b> 週のご注文 <span style="font-size:13px;color:#5a5a5a;">（締切は'+orderDeadline(WEEKS[S.week].label)+' 23:59です）</span></span></div>'
       +weekChipsHTML(false)
       +'</div>'
       +'</div></div>';
@@ -1902,7 +1905,7 @@ function pcHTML(){
         if(!items.length)return;
         itemsCol+='<div style="display:flex;align-items:center;gap:8px;">'
           +'<span style="background:#FCEBEC;color:#E50012;font-size:12px;font-weight:800;padding:4px 13px;border-radius:12px;">'+w.label+'週のお届け</span>'
-          +'<span style="font-size:12px;color:#999;">締切 '+w.deadline+'</span></div>'
+          +'<span style="font-size:12px;color:#999;">締切 '+orderDeadline(w.label)+' 23:59</span></div>'
           +items.map(c=>'<div style="background:#fff;border-radius:14px;box-shadow:0 1px 7px rgba(0,0,0,.09);padding:16px;display:flex;gap:16px;">'
             +'<div style="width:120px;height:96px;border-radius:9px;overflow:hidden;flex-shrink:0;">'+slot(c.title)+'</div>'
             +'<div style="flex:1;min-width:0;">'
