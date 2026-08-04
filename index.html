@@ -84,20 +84,23 @@
   .bnr-dots{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 0 2px}
   .bnr-dot{height:7px;border-radius:4px;transition:width .2s ease,background .2s ease}
   .bnr-arrow{display:none}
+  /* PC：カルーセル全体をコンテンツ幅（1200px）で中央寄せし、peek なしの1枚表示にする
+     （隣がちら見えする peek 演出は SP のみ）。左右 56px のガターを空けてそこに矢印を置くため、
+     ワイド画面でもバナーが巨大化せず、矢印がキャッチコピーに重ならない。 */
   @media (min-width:1024px){
-    .bnr-wrap{padding:20px 0 6px}
-    .bnr-track{gap:16px;padding:0 13%}
-    .bnr-item{flex:0 0 74%;aspect-ratio:4/1;border-radius:16px}
+    .bnr-wrap{padding:20px 0 6px;max-width:1200px;margin:0 auto}
+    .bnr-track{gap:24px;padding:0 56px;scroll-padding:0 56px}
+    .bnr-item{flex:0 0 100%;aspect-ratio:4/1;border-radius:16px}
     .bnr-frame{inset:9px;border-radius:12px}
     .bnr-body{padding:0 40px;gap:9px}
     .bnr-label{font-size:26px}
     .bnr-sub{font-size:14px}
     .bnr-note{font-size:11px;top:12px;right:14px;padding:3px 9px}
-    /* 中央のバナー（幅＝コンテンツ幅の約54.8%）の左右端に寄せて配置する */
+    /* 矢印はカルーセルの左右端・上下中央に固定（バナーの外側 56px ガター内） */
     .bnr-arrow{display:flex;position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:50%;background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.18);align-items:center;justify-content:center;color:#3E3A34;z-index:3}
     .bnr-arrow:hover{background:#FCEBEC;color:#E50012}
-    .bnr-prev{left:calc(22.6% - 50px)}
-    .bnr-next{right:calc(22.6% - 50px)}
+    .bnr-prev{left:7px}
+    .bnr-next{right:7px}
   }
   /* PC / SP 切り替え（1024px） */
   #pc-root{display:none;}
@@ -1238,7 +1241,8 @@ function bannerHTML(sp){
     +'</div>'
     +'<div class="bnr-dots" data-dots="'+key+'">'+dots+'</div>'
     +'</div>';
-  return sp?wrap:'<div style="background:#fff;"><div style="max-width:1200px;margin:0 auto;position:relative;">'+wrap+'</div></div>';
+  /* PC の最大幅・中央寄せは .bnr-wrap 側（CSS）で一元管理する。ここは白背景の全幅帯だけ担う。 */
+  return sp?wrap:'<div style="background:#fff;">'+wrap+'</div>';
 }
 
 /* カルーセルの挙動（スナップ位置・ドット・自動送り・矢印・ディープリンク）。
@@ -1331,8 +1335,19 @@ const Banner=(function(){
   }
   /* 横方向のホイール／トラックパッド操作だけを「スワイプ」とみなす（縦スクロールでは止めない） */
   function onWheel(e){if(Math.abs(e.deltaX)>Math.abs(e.deltaY))stop();}
+  /* ウィンドウ幅が変わるとバナー幅も変わりスクロール位置がずれるため、現在のバナーを中央へ再スナップする */
+  let rzTimer=null, bound=false;
+  function relayout(){
+    ['sp','pc'].forEach(function(key){
+      const t=list(key)[0];
+      if(shown(t))t.scrollTo({left:pos(t,index(t)),behavior:'auto'});
+      paint(key);
+    });
+  }
+  function onResize(){clearTimeout(rzTimer);rzTimer=setTimeout(relayout,120);}
   function mount(){
     anchors();
+    if(!bound){window.addEventListener('resize',onResize);bound=true;}
     ['sp','pc'].forEach(function(key){
       list(key).forEach(function(t){
         t.addEventListener('scroll',function(){paint(key);},{passive:true});
