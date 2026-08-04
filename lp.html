@@ -369,7 +369,7 @@ a{color:inherit;text-decoration:none}
      claude.ai/design「TrialCampaignSection」からの移植（静的HTML化）。
      富山・石川・岐阜の各ボタンは現行導線（index.html?login=1 のログイン/はじめての方モーダル）へ遷移。
      お試しキャンペーン専用ページができたら遷移先を差し替える。 -->
-<section data-section="trial-campaign" style="background:#fff;padding:34px 0 56px">
+<section id="trial-campaign" data-section="trial-campaign" style="background:#fff;padding:34px 0 56px;scroll-margin-top:24px">
   <style>
     .tcamp-inner{max-width:960px;margin:0 auto;padding:0 24px}
     .tcamp-hero{position:relative;display:flex;justify-content:center;align-items:flex-end;padding:0 0 30px}
@@ -770,6 +770,22 @@ if (document.readyState === 'loading') {
 (function(){
   document.querySelectorAll('[data-login-btn]').forEach(function(b){
     b.addEventListener('click', function(){ location.href='index.html?login=1'; });
+  });
+})();
+</script>
+
+<script>
+/* ===== ディープリンク（lp.html#trial-campaign など）の位置合わせ =====
+   ウェルカムスプラッシュのフェードと画像読み込みでレイアウトが動くため、
+   読み込み完了後に改めて該当セクションへ寄せ直す。 */
+(function(){
+  window.addEventListener('load', function(){
+    var h = location.hash;
+    if (!h || h.length < 2) return;
+    var el = null;
+    try { el = document.querySelector(h); } catch(e) { return; }
+    if (!el) return;
+    setTimeout(function(){ el.scrollIntoView({behavior:'smooth', block:'start'}); }, 1000);
   });
 })();
 </script>
