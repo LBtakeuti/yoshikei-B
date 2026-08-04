@@ -197,6 +197,15 @@ function mockDow(md){
   if(!d)return '';
   return ['月','火','水','木','金','土','日'][((d-11)%7+7)%7];
 }
+/* 注文締切（業務ルール）：お届け週の前週水曜 23:59＝お届け週の月曜の5日前。
+   引数は週ラベル 'M/D'（＝お届け週の月曜）。戻り値は 'M/D(水)' 形式。 */
+function orderDeadline(weekLabel){
+  const p=String(weekLabel||'').split('/');
+  const mon=Number(p[1]);
+  if(!mon)return '';
+  const md=p[0]+'/'+(mon-5);
+  return md+'('+mockDow(md)+')';
+}
 /* 子タブ（孫なしのグリッド用）の商品生成 */
 function subItems(subName){
   return [1,2,3,4].map(i=>({title:subName+' おすすめセット'+i,price:'1,280'}));
@@ -1110,8 +1119,8 @@ function calendarHTML(sp){
 /* ================= ECヒーロー（未ログインのゲスト閲覧時のみ・注文TOPの最上部） =================
    週表示・締切は選択中の週（WEEKS[S.week]）から生成する。写真は既存のプレースホルダー方式。 */
 function heroHTML(){
-  const wk=WEEKS[S.week]||{label:'',deadline:''};
-  const dow=mockDow(wk.deadline);
+  const wk=WEEKS[S.week]||{label:''};
+  const dl=orderDeadline(wk.label);
   return '<section class="echero" data-section="ec-hero">'
     +'<div class="echero-photo">'
     +'<div class="ph-box" style="position:absolute;inset:0;width:100%;height:100%">'
@@ -1124,7 +1133,7 @@ function heroHTML(){
     +'<div class="echero-week">'
     +'<span class="echero-badge">受付中</span>'
     +'<span class="echero-weektext">'+wk.label+'週のご注文受付中</span>'
-    +'<span class="echero-deadline">締切：'+wk.deadline+'('+dow+') 23:59</span>'
+    +'<span class="echero-deadline">締切：'+dl+' 23:59</span>'
     +'</div></div></section>';
 }
 
