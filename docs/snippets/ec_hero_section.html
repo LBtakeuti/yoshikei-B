@@ -1,0 +1,43 @@
+<!-- ============ ECトップ ヒーローセクション（claude.ai/design「EcHero」の静的化） ============
+     未ログイン（ゲスト閲覧）時のみ、注文TOPの最上部（ヘッダー直下）に表示する。
+     デザイン元の下部商品一覧は「見え方確認用デモ」のため実装しない（既存のメニューセクションが直下に来る）。 -->
+
+<!-- (1) index.html の <style> に追加するCSS -->
+<style>
+  .echero{position:relative;height:218px;background:#FBF7EE;display:flex;align-items:center;overflow:hidden}
+  .echero-photo{position:absolute;top:0;bottom:0;right:0;left:56%}
+  .echero-scrim{position:absolute;inset:0;background:linear-gradient(90deg,#FBF7EE 0%,#FBF7EE 56%,rgba(251,247,238,.72) 68%,rgba(251,247,238,0) 84%)}
+  .echero-inner{position:relative;z-index:2;padding-left:20px;display:flex;flex-direction:column;gap:14px;max-width:238px}
+  .echero-catch{margin:0;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:26px;line-height:1.35;color:#3E3A34;letter-spacing:.01em;word-break:keep-all}
+  .echero-week{display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px}
+  .echero-badge{font-size:11.5px;font-weight:700;color:#fff;background:#E50012;border-radius:999px;padding:4px 11px;letter-spacing:.02em}
+  .echero-weektext{font-size:13.5px;font-weight:700;color:#3E3A34;font-family:'Zen Maru Gothic',sans-serif;word-break:keep-all}
+  .echero-deadline{font-size:12.5px;font-weight:500;color:#7C6E58;background:#fff;border-radius:8px;padding:5px 10px;border:1px solid #E7DCC7}
+  @media (min-width:1024px){
+    .echero{height:270px}
+    .echero-photo{left:46%}
+    .echero-scrim{background:linear-gradient(90deg,#FBF7EE 0%,#FBF7EE 48%,rgba(251,247,238,.85) 58%,rgba(251,247,238,0) 74%)}
+    .echero-inner{padding-left:56px;gap:20px;max-width:560px}
+    .echero-catch{font-size:44px}
+    .echero-badge{font-size:12.5px;padding:5px 13px}
+    .echero-weektext{font-size:16px}
+    .echero-deadline{font-size:13.5px;padding:6px 12px}
+  }
+</style>
+
+<!-- (2) セクション本体。JSレンダリング内で使えるようテンプレート文字列化して組み込むこと。
+     週表示と締切は既存の週状態から生成する（下のマーカー参照）。写真は既存の ph-box プレースホルダー方式。 -->
+<section class="echero" data-section="ec-hero">
+  <div class="echero-photo">
+    <div class="ph-box" style="position:absolute;inset:0;width:100%;height:100%"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg><span>ヒーロー用の料理写真</span></div>
+  </div>
+  <div class="echero-scrim"></div>
+  <div class="echero-inner">
+    <h1 class="echero-catch">つくる人から、<br>笑顔に。</h1>
+    <div class="echero-week">
+      <span class="echero-badge">受付中</span>
+      <span class="echero-weektext">{{WEEK}}週のご注文受付中</span>
+      <span class="echero-deadline">締切：{{DEADLINE}}</span>
+    </div>
+  </div>
+</section>
