@@ -68,6 +68,37 @@
     .echero-weektext{font-size:16px}
     .echero-deadline{font-size:13.5px;padding:6px 12px}
   }
+  /* バナーカルーセル（未ログインのゲストトップ・ヒーロー直下）
+     将来は管理画面から入稿した横長画像を .bnr-img に差し替える。img 未設定の間は
+     テーマ色のグラデーション帯＋破線フレームで「画像入稿エリア」を明示する。 */
+  .bnr-wrap{position:relative;background:#fff;padding:14px 0 4px}
+  .bnr-stage{position:relative}
+  .bnr-track{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 7%;-webkit-overflow-scrolling:touch}
+  .bnr-item{position:relative;flex:0 0 86%;scroll-snap-align:center;aspect-ratio:21/9;border-radius:14px;overflow:hidden;display:block;text-align:left;padding:0}
+  .bnr-img{width:100%;height:100%;object-fit:cover;display:block}
+  .bnr-frame{position:absolute;inset:6px;border:1.5px dashed rgba(255,255,255,.55);border-radius:10px;pointer-events:none}
+  .bnr-note{position:absolute;top:8px;right:10px;font-size:9.5px;font-weight:700;color:rgba(255,255,255,.94);background:rgba(0,0,0,.22);border-radius:6px;padding:2px 8px;letter-spacing:.02em}
+  .bnr-body{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:5px;padding:0 18px}
+  .bnr-label{font-family:'Zen Maru Gothic',sans-serif;font-size:15px;font-weight:900;line-height:1.35;letter-spacing:.01em;word-break:keep-all}
+  .bnr-sub{font-size:11.5px;font-weight:700;line-height:1.4}
+  .bnr-dots{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 0 2px}
+  .bnr-dot{height:7px;border-radius:4px;transition:width .2s ease,background .2s ease}
+  .bnr-arrow{display:none}
+  @media (min-width:1024px){
+    .bnr-wrap{padding:20px 0 6px}
+    .bnr-track{gap:16px;padding:0 13%}
+    .bnr-item{flex:0 0 74%;aspect-ratio:4/1;border-radius:16px}
+    .bnr-frame{inset:9px;border-radius:12px}
+    .bnr-body{padding:0 40px;gap:9px}
+    .bnr-label{font-size:26px}
+    .bnr-sub{font-size:14px}
+    .bnr-note{font-size:11px;top:12px;right:14px;padding:3px 9px}
+    /* 中央のバナー（幅＝コンテンツ幅の約54.8%）の左右端に寄せて配置する */
+    .bnr-arrow{display:flex;position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:50%;background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.18);align-items:center;justify-content:center;color:#3E3A34;z-index:3}
+    .bnr-arrow:hover{background:#FCEBEC;color:#E50012}
+    .bnr-prev{left:calc(22.6% - 50px)}
+    .bnr-next{right:calc(22.6% - 50px)}
+  }
   /* PC / SP 切り替え（1024px） */
   #pc-root{display:none;}
   #sp-root{display:block;}
@@ -140,6 +171,21 @@ const SERIES=[
    label＝お届け週の月曜。deadline は業務ルール（前週水曜 23:59）から自動算出し、
    画面内の締切表示が食い違わないよう単一の算出ロジック（orderDeadlineDate）に統一する。 */
 const WEEKS=[{label:'5/11'},{label:'5/18'}].map(w=>({label:w.label,deadline:orderDeadlineDate(w.label)}));
+/* トップのバナーカルーセル（未ログイン時のみ表示）。
+   将来は管理画面から横長画像を入稿する前提のデータ駆動。このデータ形がそのまま API/CMS の器になる想定。
+   img … 入稿画像のURL（null の間はテーマ色のプレースホルダー帯を描画）
+   href … '#xxx' はページ内アンカーへスムーズスクロール（ディープリンク）／'#' 単体はダミー／それ以外は通常遷移 */
+const BANNERS=[
+  {id:'trial',  img:null, label:'初回限定 お試しキャンペーン実施中', sub:'対象コースが最大50%OFF', href:'lp.html#trial-campaign', theme:'red'},
+  {id:'shelf',  img:null, label:'今週のメニューをのぞいてみる',     sub:'管理栄養士監修の献立',   href:'#guest-shelf',           theme:'green'},
+  {id:'coin',   img:null, label:'eコインでおトクに続ける',          sub:'週2,160円以上で貯まる',  href:'#',                      theme:'gold'}
+];
+/* バナーのテーマ色（プレースホルダー帯のグラデーションと文字色） */
+const BANNER_THEME={
+  red:  {from:'#E50012',to:'#B10010',fg:'#fff',sub:'rgba(255,255,255,.90)'},
+  green:{from:'#4E9265',to:'#7FBB8C',fg:'#fff',sub:'rgba(255,255,255,.92)'},
+  gold: {from:'#DDA92C',to:'#B2851A',fg:'#fff',sub:'rgba(255,255,255,.92)'},
+};
 /* タブカタログ：親タブ（夕食献立メニュー／特別販売）＞子タブ＞孫タブ */
 const CATALOG=[
   {key:'smile', name:'Smile＆table',   accent:'#DB84AC', subs:SERIES.map(s=>s.name)},
@@ -248,6 +294,7 @@ const HELPCATS=[
 const _now=new Date();
 let S={
   loggedIn:false, userName:null, lastOrder:null,
+  guestFull:false,                  // 未ログイントップ：false=雑誌型トップ / true=フルメニュー（週タブ＋一覧）
   coins:120,                        // eコイン残高（モック初期値）
   week:0,                           // 選択中の注文週（WEEKS のindex）
   mainTab:'dinner',                 // dinner=夕食献立メニュー | special=特別販売
@@ -348,6 +395,10 @@ const A={
   openSignup(){S.menuOpen=false;render();Login.signup();},
   toggleMenu(){S.menuOpen=!S.menuOpen;render();},
   logout(){S.loggedIn=false;S.userName=null;S.page=null;location.href='lp.html';},
+
+  /* 未ログイントップ（雑誌型）⇄ フルメニューの切り替え（リロードなし・再描画のみ） */
+  guestShowAll(){S.guestFull=true;S.page=null;render();Banner.jump('guest-full');},
+  guestBackTop(){S.guestFull=false;S.page=null;render();window.scrollTo({top:0,behavior:'smooth'});},
 
   /* 週の切り替え（複数週にわたり同一画面で注文可能） */
   setWeek(i){S.week=i;render();},
@@ -1140,6 +1191,233 @@ function heroHTML(){
     +'</div></div></section>';
 }
 
+/* ================= 簡易トースト（ダミー導線の案内用・ルート再描画の影響を受けないよう body 直下） ================= */
+let toastTimer=null;
+function toast(msg){
+  let el=document.querySelector('[data-toast]');
+  if(!el){
+    el=document.createElement('div');
+    el.setAttribute('data-toast','');
+    el.style.cssText='position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:420;'
+      +'background:rgba(43,43,43,.92);color:#fff;font-size:13px;font-weight:700;padding:11px 18px;border-radius:22px;'
+      +'box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:86%;text-align:center;pointer-events:none;transition:opacity .25s ease;';
+    document.body.appendChild(el);
+  }
+  el.textContent=msg;el.style.opacity='1';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){el.style.opacity='0';},1800);
+}
+
+/* ================= バナーカルーセル（未ログインのゲストトップ・ヒーロー直下） =================
+   BANNERS を描画するだけのデータ駆動ビュー。img が入れば画像、null ならテーマ色の
+   プレースホルダー帯（＝管理画面から入稿する横長画像の位置）を表示する。 */
+function bannerHTML(sp){
+  const key=sp?'sp':'pc';
+  const items=BANNERS.map(function(b){
+    const th=BANNER_THEME[b.theme]||BANNER_THEME.red;
+    const inner=b.img
+      ?'<img class="bnr-img" src="'+b.img+'" alt="'+b.label+'">'
+      :'<span class="bnr-frame"></span>'
+       +'<span class="bnr-note">管理画面から入稿する横長画像</span>'
+       +'<span class="bnr-body"><span class="bnr-label" style="color:'+th.fg+';">'+b.label+'</span>'
+       +'<span class="bnr-sub" style="color:'+th.sub+';">'+b.sub+'</span></span>';
+    return '<button class="bnr-item" onclick="Banner.go(\''+b.id+'\')" aria-label="'+b.label+'" '
+      +'style="background:linear-gradient(100deg,'+th.from+' 0%,'+th.to+' 100%);">'+inner+'</button>';
+  }).join('');
+  const dots=BANNERS.map(function(b,i){
+    return '<button class="bnr-dot" data-dot="'+i+'" onclick="Banner.to(\''+key+'\','+i+')" aria-label="'+(i+1)+'枚目のバナーを表示" '
+      +'style="width:'+(i===0?'18px':'7px')+';background:'+(i===0?'#E50012':'#D8D4CC')+';"></button>';
+  }).join('');
+  const arrows=sp?''
+    :'<button class="bnr-arrow bnr-prev" onclick="Banner.nav(\'pc\',-1)" aria-label="前のバナー">'+IC.back(20)+'</button>'
+     +'<button class="bnr-arrow bnr-next" onclick="Banner.nav(\'pc\',1)" aria-label="次のバナー">'+IC.chevR(20,'#3E3A34')+'</button>';
+  const wrap='<div class="bnr-wrap" data-section="guest-banners">'
+    +'<div class="bnr-stage">'
+    +'<div class="bnr-track hs" data-banner="'+key+'" data-sc="bnr-'+key+'">'+items+'</div>'
+    +arrows
+    +'</div>'
+    +'<div class="bnr-dots" data-dots="'+key+'">'+dots+'</div>'
+    +'</div>';
+  return sp?wrap:'<div style="background:#fff;"><div style="max-width:1200px;margin:0 auto;position:relative;">'+wrap+'</div></div>';
+}
+
+/* カルーセルの挙動（スナップ位置・ドット・自動送り・矢印・ディープリンク）。
+   ルート再描画で DOM が作り直されるため、render() の最後に mount() で貼り直す。 */
+const Banner=(function(){
+  let paused=false, timer=null;
+  const list=(key)=>Array.prototype.slice.call(document.querySelectorAll('[data-banner="'+key+'"]'));
+  const shown=(el)=>!!el&&el.offsetParent!==null&&el.clientWidth>0;
+  const items=(t)=>Array.prototype.slice.call(t.querySelectorAll('.bnr-item'));
+  /* いま中央に見えているバナーの位置（実測ベース。CSSの幅指定に依存しない） */
+  function index(t){
+    const tr=t.getBoundingClientRect(), c=tr.left+tr.width/2;
+    let best=0, bd=Infinity;
+    items(t).forEach(function(it,i){
+      const r=it.getBoundingClientRect(), d=Math.abs(r.left+r.width/2-c);
+      if(d<bd){bd=d;best=i;}
+    });
+    return best;
+  }
+  /* i番目のバナーを中央に寄せるスクロール位置 */
+  function pos(t,i){
+    const its=items(t), n=its.length;
+    if(!n)return 0;
+    const it=its[((i%n)+n)%n];
+    const tr=t.getBoundingClientRect(), r=it.getBoundingClientRect();
+    return Math.max(0,t.scrollLeft+(r.left-tr.left)-(t.clientWidth-r.width)/2);
+  }
+  /* ドットインジケーターの現在位置ハイライト */
+  function paint(key){
+    const t=list(key)[0];
+    if(!t)return;
+    const i=index(t);
+    document.querySelectorAll('[data-dots="'+key+'"] [data-dot]').forEach(function(d){
+      const on=Number(d.getAttribute('data-dot'))===i;
+      d.style.width=on?'18px':'7px';
+      d.style.background=on?'#E50012':'#D8D4CC';
+    });
+  }
+  function move(key,i){
+    list(key).forEach(function(t){t.scrollTo({left:pos(t,i),behavior:'smooth'});});
+    setTimeout(function(){paint(key);},420);
+  }
+  /* ユーザー操作（スワイプ・タップ・矢印）で自動送りを停止 */
+  function stop(){paused=true;}
+  function to(key,i){stop();move(key,i);}
+  function nav(key,d){
+    stop();
+    const t=list(key)[0];
+    if(t)move(key,index(t)+d);
+  }
+  function tick(){
+    if(paused)return;
+    ['sp','pc'].forEach(function(key){
+      const t=list(key)[0];
+      if(shown(t))move(key,index(t)+1);
+    });
+  }
+  /* ページ内アンカー：SP/PC 両ルートに同じ節が存在するため、表示中の方だけに id を付ける */
+  function anchors(){
+    document.querySelectorAll('[data-anchor]').forEach(function(el){
+      const name=el.getAttribute('data-anchor');
+      if(el.offsetParent!==null)el.id=name;
+      else if(el.id===name)el.removeAttribute('id');
+    });
+  }
+  function jump(name){
+    const el=Array.prototype.slice.call(document.querySelectorAll('[data-anchor="'+name+'"]'))
+      .filter(function(x){return x.offsetParent!==null;})[0];
+    if(!el)return false;
+    const y=el.getBoundingClientRect().top+window.scrollY-60;
+    window.scrollTo({top:Math.max(0,y),behavior:'smooth'});
+    return true;
+  }
+  /* バナーの遷移：'#' 単体＝ダミー／'#xxx'＝ページ内ディープリンク／それ以外＝通常遷移 */
+  function go(id){
+    const b=BANNERS.filter(function(x){return x.id===id;})[0];
+    if(!b)return;
+    stop();
+    const href=b.href||'#';
+    if(href==='#'){toast('準備中のコンテンツです');return;}
+    if(href.charAt(0)==='#'){
+      const name=href.slice(1);
+      if(jump(name))return;
+      /* 雑誌型トップにしか無い節（棚など）へのディープリンクは、トップに戻してから移動する */
+      if(!S.loggedIn&&S.guestFull){S.guestFull=false;render();if(jump(name))return;}
+      toast('準備中のコンテンツです');
+      return;
+    }
+    location.href=href;
+  }
+  /* 横方向のホイール／トラックパッド操作だけを「スワイプ」とみなす（縦スクロールでは止めない） */
+  function onWheel(e){if(Math.abs(e.deltaX)>Math.abs(e.deltaY))stop();}
+  function mount(){
+    anchors();
+    ['sp','pc'].forEach(function(key){
+      list(key).forEach(function(t){
+        t.addEventListener('scroll',function(){paint(key);},{passive:true});
+        t.addEventListener('pointerdown',stop,{passive:true});
+        t.addEventListener('touchstart',stop,{passive:true});
+        t.addEventListener('wheel',onWheel,{passive:true});
+      });
+      paint(key);
+    });
+    if(!timer)timer=setInterval(tick,5000);   /* 5秒で自動送り */
+  }
+  return {mount:mount,to:to,nav:nav,go:go,jump:jump,stop:stop};
+})();
+
+/* ================= ゲストトップ（雑誌型・未ログイン時のみ） =================
+   ヒーロー → バナー → ご利用の流れ → 今週のメニュー棚 → すべて見る の段階構成。 */
+function guestH2(sp,text){
+  return '<div style="display:flex;align-items:center;gap:9px;margin-bottom:'+(sp?'11px':'15px')+';">'
+    +'<span style="width:4px;height:'+(sp?'18px':'22px')+';border-radius:2px;background:#E50012;"></span>'
+    +'<h2 style="margin:0;font-family:\'Zen Maru Gothic\',sans-serif;font-size:'+(sp?'18px':'24px')+';font-weight:900;color:#3E3A34;letter-spacing:.01em;">'+text+'</h2>'
+    +'</div>';
+}
+/* ご利用の流れ：デザイン到着待ちのプレースホルダー帯（後日 図版に差し替え） */
+function guestFlowHTML(sp){
+  const inner=guestH2(sp,'ご利用の流れ')
+    +'<div class="ph-box" style="height:'+(sp?'156px':'210px')+';border-radius:14px;">'
+    +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg>'
+    +'<span>ご利用の流れ（デザイン準備中）</span>'
+    +'<span style="font-weight:500;font-size:11px;">ご注文からお届けまでの図版がここに入ります</span>'
+    +'</div>';
+  return '<section data-section="guest-flow" style="background:#fff;padding:'+(sp?'20px 16px 4px':'30px 24px 6px')+';">'
+    +(sp?inner:'<div style="max-width:1200px;margin:0 auto;">'+inner+'</div>')
+    +'</section>';
+}
+/* 今週のメニュー棚：現在週から6品を横スクロール。価格は見せる／ボタンは「詳しく見る」のみ（カート投入UIは置かない） */
+function guestShelfItems(){
+  const cs=SERIES[S.sub.smile]||SERIES[0];
+  const cards=wdates(S.week).map(function(m,i){
+    return {title:m.title,pill:cs.name,accent:cs.accent,price:m.price,note:m.date+'（'+m.dow+'）お届け',open:'A.openSer('+i+')'};
+  });
+  cards.push({title:MORE[0].title,pill:MORE[0].tag,accent:MORE[0].accent,price:MORE[0].price,
+              note:WEEKS[S.week].label+'週 お届け',open:'A.openMore(0)'});
+  return cards.slice(0,6);
+}
+function guestShelfHTML(sp){
+  const cards=guestShelfItems().map(function(c){
+    return '<div style="flex:0 0 '+(sp?'62%':'236px')+';scroll-snap-align:start;background:#fff;border-radius:14px;'
+      +'box-shadow:0 1px 7px rgba(0,0,0,.10);overflow:hidden;display:flex;flex-direction:column;">'
+      +'<div style="position:relative;height:'+(sp?'128px':'152px')+';">'+slot(c.title)
+      +'<span style="position:absolute;top:9px;left:9px;background:'+c.accent+';color:#fff;padding:3px 10px;border-radius:9px;font-size:11px;font-weight:700;">'+c.pill+'</span>'
+      +'</div>'
+      +'<div style="padding:11px 12px 13px;flex:1;display:flex;flex-direction:column;">'
+      +'<div style="font-size:11px;font-weight:700;color:#8a8578;">'+c.note+'</div>'
+      +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.45;margin-top:5px;">'+c.title+'</div>'
+      +'<div style="font-size:14.5px;font-weight:800;color:#2b2b2b;margin-top:auto;padding-top:9px;">2人用 '+c.price+'円〜</div>'
+      +'<button onclick="'+c.open+'" style="margin-top:10px;width:100%;border-radius:10px;padding:10px;font-size:13px;font-weight:800;'
+      +'color:#E50012;background:#FCEBEC;box-shadow:0 0 0 1.5px #F3C6CC inset;">詳しく見る</button>'
+      +'</div></div>';
+  }).join('');
+  const head=guestH2(sp,'今週のメニュー')
+    +'<div style="font-size:'+(sp?'12px':'13px')+';color:#7C6E58;margin:-4px 0 12px;">'+WEEKS[S.week].label+'週のお届け分から'+guestShelfItems().length+'品をご紹介します。</div>';
+  const track='<div class="hs" data-sc="shelf-'+(sp?'sp':'pc')+'" style="display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;padding:3px 0 8px;">'+cards+'</div>';
+  return '<section data-anchor="guest-shelf" data-section="guest-shelf" style="background:#fff;padding:'+(sp?'18px 0 4px':'26px 0 6px')+';scroll-margin-top:60px;">'
+    +'<div style="'+(sp?'padding:0 16px;':'max-width:1200px;margin:0 auto;padding:0 24px;')+'">'+head+track+'</div>'
+    +'</section>';
+}
+/* 「今週のメニューをすべて見る」→ フルメニュー（週タブ＋一覧）へリロードなしで切替 */
+function guestSeeAllHTML(sp){
+  return '<section data-section="guest-seeall" style="background:#fff;padding:'+(sp?'6px 16px 26px':'10px 24px 40px')+';text-align:center;">'
+    +'<button onclick="A.guestShowAll()" style="width:100%;max-width:'+(sp?'none':'440px')+';background:#E50012;color:#fff;'
+    +'font-size:'+(sp?'15.5px':'17px')+';font-weight:800;padding:'+(sp?'16px':'18px')+';border-radius:14px;'
+    +'box-shadow:0 4px 14px rgba(229,0,18,.25);display:inline-flex;align-items:center;justify-content:center;gap:7px;">'
+    +'今週のメニューをすべて見る'+IC.chevR(20,'#fff')+'</button>'
+    +'<div style="font-size:11.5px;color:#8a8578;margin-top:10px;">'+WEEKS[S.week].label+'週のメニュー一覧へ（締切：'+orderDeadline(WEEKS[S.week].label)+' 23:59）</div>'
+    +'</section>';
+}
+/* フルメニュー表示側の戻る導線 */
+function guestBackHTML(sp){
+  return '<div data-anchor="guest-full" data-section="guest-full" style="background:#fff;padding:'+(sp?'12px 16px 0':'18px 24px 0')+';scroll-margin-top:60px;">'
+    +'<div style="'+(sp?'':'max-width:1200px;margin:0 auto;')+'">'
+    +'<button onclick="A.guestBackTop()" style="display:inline-flex;align-items:center;gap:3px;color:#E50012;font-size:13.5px;font-weight:800;">'
+    +IC.back(18)+'トップに戻る</button>'
+    +'</div></div>';
+}
+
 /* SPヘッダーのハンバーガーメニュー（ログイン／はじめての方） */
 function spMenuHTML(){
   if(!S.menuOpen)return '';
@@ -1182,8 +1460,19 @@ function spHTML(){
   h+=spMenuHTML();
   h+='</div>';
 
-  /* ECヒーロー（未ログインのゲスト閲覧時のみ・ヘッダー直下） */
-  if(!S.loggedIn)h+=heroHTML();
+  /* ECヒーロー＋バナーカルーセル（未ログインのゲスト閲覧時のみ・ヘッダー直下）
+     フルメニューに切り替えた後もヒーローとカルーセルは上部に残す */
+  if(!S.loggedIn){h+=heroHTML();h+=bannerHTML(true);}
+
+  /* 未ログイントップ（雑誌型）：流れ → 今週のメニュー棚 → すべて見る */
+  const guestMag=!S.loggedIn&&!S.guestFull;
+  if(guestMag){
+    h+=guestFlowHTML(true);
+    h+=guestShelfHTML(true);
+    h+=guestSeeAllHTML(true);
+  }else{
+  /* 以下はフルメニュー表示（ログイン後 or ゲストが「すべて見る」を押した後）。既存構成のまま */
+  if(!S.loggedIn)h+=guestBackHTML(true);
 
   /* トグル行 */
   const segBase='flex:1;display:flex;align-items:center;gap:7px;justify-content:center;padding:9px 5px;font-size:12.5px;font-weight:700;line-height:1.25;text-align:left;';
@@ -1309,6 +1598,7 @@ function spHTML(){
         :emptyFilterHTML(true))
       +'</div>';
   }
+  } /* /雑誌型トップ以外（フルメニュー・ログイン後） */
   h+='</div>'; /* /メイン */
 
   /* ---- ボトムナビ ---- */
@@ -1636,11 +1926,21 @@ function pcHTML(){
   }
   h+='</div></header>';
 
-  /* ECヒーロー（未ログインのゲスト閲覧時のみ・ヘッダー直下） */
-  if(pg===null&&!S.loggedIn)h+=heroHTML();
+  /* ECヒーロー＋バナーカルーセル（未ログインのゲスト閲覧時のみ・ヘッダー直下）
+     フルメニューに切り替えた後もヒーローとカルーセルは上部に残す */
+  if(pg===null&&!S.loggedIn){h+=heroHTML();h+=bannerHTML(false);}
 
-  /* サブナビ（注文TOPのみ） */
-  if(pg===null){
+  /* 未ログイントップ（雑誌型）：流れ → 今週のメニュー棚 → すべて見る */
+  const guestMag=!S.loggedIn&&!S.guestFull;
+  if(pg===null&&guestMag){
+    h+=guestFlowHTML(false);
+    h+=guestShelfHTML(false);
+    h+=guestSeeAllHTML(false);
+  }
+  if(pg===null&&!guestMag&&!S.loggedIn)h+=guestBackHTML(false);
+
+  /* サブナビ（注文TOPのみ・雑誌型トップでは出さない） */
+  if(pg===null&&!guestMag){
     const segBaseD='display:flex;align-items:center;gap:9px;padding:11px 20px;font-size:14px;font-weight:700;line-height:1.2;';
     h+='<div style="background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.04);">'
       +'<div style="max-width:1200px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;">'
@@ -1661,9 +1961,9 @@ function pcHTML(){
   }
 
   /* メイン */
-  h+='<div style="max-width:1200px;margin:0 auto;padding:24px;">';
+  h+='<div style="max-width:1200px;margin:0 auto;padding:'+(pg===null&&guestMag?'0':'24px')+';">';
 
-  if(pg===null){
+  if(pg===null&&!guestMag){
     h+='<div style="display:flex;gap:24px;align-items:flex-start;">';
     h+='<div style="flex:1;min-width:0;">';
 
@@ -2064,6 +2364,7 @@ function render(){
     if(s){el.scrollTop=s.top;el.scrollLeft=s.left;}
   });
   window.scrollTo(0,winY);
+  Banner.mount();   /* カルーセルのイベント再バインド＋表示中ルートへのアンカー付与 */
 }
 
 /* ================= ログインフロー（yoshikei-login-flow.html より移植） ================= */
