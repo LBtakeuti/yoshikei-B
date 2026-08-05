@@ -740,6 +740,50 @@ function slot(label){
   return '<img src="assets/noimage.png" alt="'+label+'" style="width:100%;height:100%;object-fit:cover;display:block;">';
 }
 
+/* ================= メニュー実画像 ================= */
+/* シリーズ名 → 画像フォルダの2文字コード（画像登録マニュアルの「メニュー名2文字コード」準拠）。
+   お客様提供の実写真は AA・CC・DD の3セット（各6枚＝月〜土／581×400）のみのため、露出の多い主要シリーズに割り当てる。
+     AA … スタンダードミール（定番系）
+     CC … カットミール（カット野菜系）／＆more のプレミアム・カジュアルディッシュも同セットを共用
+           （雑誌型トップの棚6枚目が＆more枠のため。洋風メニューで画調が合う）
+     DD … スマイリーミール（既定表示シリーズ。棚・一覧・詳細で最も露出が多い）
+   ここに無いシリーズ（Lovyu・単品冷凍・特別販売など）は従来どおり noimage にフォールバックする。 */
+const MENU_IMG_MAP={
+  'スタンダードミール':'AA',
+  'カットミール':'CC',
+  'プレミアムディッシュ':'CC',
+  'カジュアルディッシュ':'CC',
+  'スマイリーミール':'DD',
+};
+/* 曜日文字 → 画像の連番（1=月〜6=土） */
+const MENU_IMG_DOW={'月':1,'火':2,'水':3,'木':4,'金':5,'土':6};
+/* 商品タイトル → 画像の連番。週次夕食は WEEK の並び（月〜金）、曜日を持たない商品は
+   定義順やタイトル末尾の連番から決定的に求め、同じ商品には常に同じ画像が出るようにする（ランダム禁止）。 */
+function menuDayOf(title){
+  const t=String(title||'');
+  const wi=WEEK.findIndex(m=>m.title===t);
+  if(wi>=0)return wi+1;
+  const mi=MORE.findIndex(m=>m.title===t);
+  if(mi>=0)return mi+1;
+  const n=t.match(/(\d+)\s*$/);
+  return n?((Number(n[1])-1)%6+6)%6+1:1;
+}
+/* シリーズ名＋曜日（'月'〜'土' または 1〜6）→ 実画像のURL。対応コードが無ければ null */
+function menuImg(seriesName,day){
+  const code=MENU_IMG_MAP[seriesBase(seriesName)];
+  if(!code)return null;
+  let d=MENU_IMG_DOW[String(day||'').trim()]||Number(day)||1;
+  d=(Math.max(1,Math.floor(d))-1)%6+1;
+  return 'assets/menu/'+code+'/'+code+d+'.jpg';
+}
+/* メニュー画像スロット：実画像があればそれを、無ければ従来の noimage を描画する。
+   day 省略時はタイトルから決定的に解決するため、差分描画で img が使い回されても src は変わらない。 */
+function mslot(title,seriesName,day){
+  const src=menuImg(seriesName,day||menuDayOf(title));
+  if(!src)return slot(title);
+  return '<img src="'+src+'" alt="'+String(title||'').replace(/"/g,'&quot;')+'" style="width:100%;height:100%;object-fit:cover;display:block;">';
+}
+
 /* ================= アクション ================= */
 const touchCart=()=>{lastCartChange=Date.now();};
 const A={
@@ -892,11 +936,12 @@ const A={
 
   openSer(wi){
     const cs=SERIES[S.sub.smile]||SERIES[0], m=wdates(S.week)[wi];
-    A._openProduct({title:m.title,seriesName:cs.name,accent:cs.accent,price:toNum(m.price),day:m.date});
+    A._openProduct({title:m.title,seriesName:cs.name,accent:cs.accent,price:toNum(m.price),day:m.date,dayNo:wi+1});
   },
   openSmile(i){
     const s=SERIES[SMILE[i].si];
-    A._openProduct({title:'てりやき親子丼 お揚げと野菜のおかず汁',seriesName:s.name,accent:s.accent,price:1350});
+    /* 配達日ビューから開くため、カード側と同じ配達日（月〜土）の画像を引き継ぐ */
+    A._openProduct({title:'てりやき親子丼 お揚げと野菜のおかず汁',seriesName:s.name,accent:s.accent,price:1350,dayNo:S.activeDay+1});
   },
   openMore(i){
     const c=MORE[i];
@@ -941,7 +986,7 @@ const A={
     if(n<=0){S.productOpen=false;render();return;}
     const unit=p.special?'':(t.s4?'4人用':(t.s3?'3人用':'2人用'));
     const cutLabel=p.special?'':(S.cut==='on'?'／カットあり':'／カットなし');
-    S.cartItems=[...S.cartItems,{id:'add-'+Date.now(),title:p.title||'商品',tag:(p.seriesName||'')+cutLabel,accent:p.accent||'#DB84AC',unit,price:p.price||1350,qty:n,week:WEEKS[S.week].label,day:p.day||WEEKS[S.week].label,cat:p.special?'special':catFor(p.seriesName)}];
+    S.cartItems=[...S.cartItems,{id:'add-'+Date.now(),title:p.title||'商品',tag:(p.seriesName||'')+cutLabel,accent:p.accent||'#DB84AC',unit,price:p.price||1350,qty:n,week:WEEKS[S.week].label,day:p.day||WEEKS[S.week].label,dayNo:p.dayNo||menuDayOf(p.title),cat:p.special?'special':catFor(p.seriesName)}];
     if(p.special&&p.limit){S.stock[p.specialId]=Math.max(0,(S.stock[p.specialId]||0)-n);}
     S.recMode=p.special?'menus':'goods';  // 特別商品のときは通常メニューをレコメンド
     S.productOpen=false;S.cartAddedOpen=true;S.recQty=[0,0,0];touchCart();render();
@@ -1109,12 +1154,12 @@ function coinPreviewHTML(){
 function recRowsHTML(){
   /* recMode=menus のとき（特別販売購入時）は通常メニューをレコメンド */
   const list=S.recMode==='menus'
-    ?wdates(S.week).slice(0,3).map(m=>({date:m.date+'（'+m.dow+'）お届け',tag:'スマイリーミール',tagColor:'#DB84AC',title:m.title,short:m.title,price:m.price}))
+    ?wdates(S.week).slice(0,3).map(m=>({date:m.date+'（'+m.dow+'）お届け',tag:'スマイリーミール',tagColor:'#DB84AC',title:m.title,short:m.title,dow:m.dow,price:m.price}))
     :REC;
   return list.map((r,i)=>{
     const q=S.recQty[i]||0;
     return '<div style="display:flex;gap:13px;padding:14px 0;border-top:1px solid #F0F0F0;">'
-      +'<div style="width:82px;height:70px;border-radius:8px;overflow:hidden;flex-shrink:0;">'+slot(r.short)+'</div>'
+      +'<div style="width:82px;height:70px;border-radius:8px;overflow:hidden;flex-shrink:0;">'+mslot(r.title,r.tag,r.dow)+'</div>'
       +'<div style="flex:1;min-width:0;">'
       +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">'
       +'<span style="border:1px solid #E3A8C0;color:#C4708F;border-radius:11px;padding:1px 8px;font-size:9.5px;font-weight:700;white-space:nowrap;">'+r.date+'</span>'
@@ -1144,7 +1189,7 @@ function bulkPriceHTML(){
 function bulkRowsHTML(){
   return wdates(S.week).map(m=>'<div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid #F0F0F0;">'
     +'<div style="width:46px;flex-shrink:0;text-align:center;padding:8px 0;border-radius:7px;background:#FBEDF3;color:#CE6A97;font-size:12px;font-weight:700;line-height:1.2;">'+m.date+'<br><span style="font-size:10px;">（'+m.dow+'）</span></div>'
-    +'<div style="width:56px;height:48px;border-radius:6px;overflow:hidden;flex-shrink:0;">'+slot(m.dow)+'</div>'
+    +'<div style="width:56px;height:48px;border-radius:6px;overflow:hidden;flex-shrink:0;">'+mslot(m.title,'スマイリーミール',m.dow)+'</div>'
     +'<div style="font-size:13px;line-height:1.4;color:#333;min-width:0;">'+m.title+'</div>'
     +'</div>').join('');
 }
@@ -1372,7 +1417,7 @@ function lastChanceHTML(sp){
     +'<div style="font-size:17px;font-weight:800;color:#2b2b2b;">もう一品いかがですか？</div>'
     +'<div style="font-size:12.5px;color:#666;margin-top:6px;line-height:1.6;">ご注文を確定する前に、人気の一品を追加できます。</div>'
     +'<div style="display:flex;gap:13px;margin-top:14px;background:#FBF7EE;border-radius:12px;padding:13px;">'
-    +'<div style="width:'+(sp?'86px':'96px')+';height:'+(sp?'70px':'78px')+';border-radius:8px;overflow:hidden;flex-shrink:0;">'+slot(r.short)+'</div>'
+    +'<div style="width:'+(sp?'86px':'96px')+';height:'+(sp?'70px':'78px')+';border-radius:8px;overflow:hidden;flex-shrink:0;">'+mslot(r.title,r.tag)+'</div>'
     +'<div style="flex:1;min-width:0;">'
     +'<span style="display:inline-block;padding:1px 9px;border-radius:11px;font-size:9.5px;font-weight:700;color:#fff;background:'+r.tagColor+';">'+r.tag+'</span>'
     +'<div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:5px;line-height:1.4;">'+r.title+'</div>'
@@ -1420,7 +1465,7 @@ function favListHTML(sp){
     inner='<div style="padding:22px 16px;text-align:center;font-size:12.5px;color:#999;">お気に入りはまだありません。<br>メニューの<span style="display:inline-flex;vertical-align:middle;margin:0 1px;">'+IC.heart(13,true)+'</span>から登録できます。</div>';
   }else{
     inner=S.favs.map((f,i)=>'<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid #F1F1F1;cursor:pointer;" onclick="A.openFav('+i+')">'
-      +'<div style="width:56px;height:46px;border-radius:7px;overflow:hidden;flex-shrink:0;">'+slot(f.title)+'</div>'
+      +'<div style="width:56px;height:46px;border-radius:7px;overflow:hidden;flex-shrink:0;">'+mslot(f.title,f.series)+'</div>'
       +'<div style="flex:1;min-width:0;">'
       +'<span style="display:inline-block;padding:1px 9px;border-radius:10px;font-size:9.5px;font-weight:700;color:#fff;background:'+f.accent+';">'+f.series+'</span>'
       +'<div style="font-size:12.5px;font-weight:700;color:#2b2b2b;margin-top:4px;line-height:1.4;">'+f.title+'</div>'
@@ -1649,7 +1694,7 @@ function calDetailHTML(sp){
     +'<button onclick="A.calClose()" style="margin-left:auto;color:#999;padding:4px;">'+IC.close(20)+'</button>'
     +'</div>'
     +'<div style="display:flex;gap:13px;margin-top:16px;background:#FBF7EE;border-radius:12px;padding:13px;'+(isCancelled?'opacity:.55;':'')+'">'
-    +'<div style="width:'+(sp?92:110)+'px;height:'+(sp?74:88)+'px;border-radius:8px;overflow:hidden;flex-shrink:0;">'+slot(mn.title)+'</div>'
+    +'<div style="width:'+(sp?92:110)+'px;height:'+(sp?74:88)+'px;border-radius:8px;overflow:hidden;flex-shrink:0;">'+mslot(mn.title,'スマイリーミール',del.dow)+'</div>'
     +'<div style="min-width:0;">'
     +'<span style="display:inline-block;padding:2px 10px;border-radius:11px;font-size:10px;font-weight:700;color:#fff;background:#DB84AC;white-space:nowrap;">スマイリーミール</span>'
     +'<div style="font-size:'+(sp?13.5:14.5)+'px;font-weight:700;color:#2b2b2b;line-height:1.45;margin-top:7px;">'+mn.title+'</div>'
@@ -1916,7 +1961,7 @@ function guestFlowHTML(sp){
 function guestShelfItems(){
   const cs=SERIES[S.sub.smile]||SERIES[0];
   const cards=wdates(S.week).map(function(m,i){
-    return {title:m.title,pill:cs.name,accent:cs.accent,price:m.price,note:m.date+'（'+m.dow+'）お届け',open:'A.openSer('+i+')'};
+    return {title:m.title,pill:cs.name,accent:cs.accent,price:m.price,dow:m.dow,note:m.date+'（'+m.dow+'）お届け',open:'A.openSer('+i+')'};
   });
   cards.push({title:MORE[0].title,pill:MORE[0].tag,accent:MORE[0].accent,price:MORE[0].price,
               note:WEEKS[S.week].label+'週 お届け',open:'A.openMore(0)'});
@@ -1926,7 +1971,7 @@ function guestShelfHTML(sp){
   const cards=guestShelfItems().map(function(c){
     return '<div style="flex:0 0 '+(sp?'62%':'236px')+';scroll-snap-align:start;background:#fff;border-radius:14px;'
       +'box-shadow:0 1px 7px rgba(0,0,0,.10);overflow:hidden;display:flex;flex-direction:column;">'
-      +'<div style="position:relative;height:'+(sp?'128px':'152px')+';">'+slot(c.title)
+      +'<div style="position:relative;height:'+(sp?'128px':'152px')+';">'+mslot(c.title,c.pill,c.dow)
       +'<span style="position:absolute;top:9px;left:9px;background:'+c.accent+';color:#fff;padding:3px 10px;border-radius:9px;font-size:11px;font-weight:700;">'+c.pill+'</span>'
       +'</div>'
       +'<div style="padding:11px 12px 13px;flex:1;display:flex;flex-direction:column;">'
@@ -2123,7 +2168,7 @@ function spHTML(){
               +'<div style="width:62px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:'+cs.tint+';color:'+cs.dark+';">'
               +'<span style="font-size:14px;font-weight:700;">'+m.date+'</span><span style="font-size:11px;">（'+m.dow+'）</span></div>'
               +'<div style="flex:1;min-width:0;padding:11px 13px 13px;">'
-              +'<div style="position:relative;height:145px;border-radius:10px;overflow:hidden;">'+favBtn(m.title,cs.name,cs.accent,toNum(m.price))+slot(m.title)+'</div>'
+              +'<div style="position:relative;height:145px;border-radius:10px;overflow:hidden;">'+favBtn(m.title,cs.name,cs.accent,toNum(m.price))+mslot(m.title,cs.name,m.dow)+'</div>'
               +'<div style="font-size:14.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:10px;">'+m.title+'</div>'
               +'<div style="font-size:15px;font-weight:800;color:#2b2b2b;margin-top:7px;">'+priceCardHTML(cs.name,m.price,'2人用 ')+'</div>'
               +'</div></div>').join('')
@@ -2140,7 +2185,7 @@ function spHTML(){
         +(gList.length
           ?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;">'
             +gList.map(({it,i})=>'<div onclick="A.openGrid('+i+')" style="text-align:left;display:flex;flex-direction:column;cursor:pointer;">'
-              +'<div style="position:relative;height:116px;border-radius:6px;overflow:hidden;width:100%;">'+favBtn(it.title,subName,cat.accent,toNum(it.price))+slot(it.title)+'</div>'
+              +'<div style="position:relative;height:116px;border-radius:6px;overflow:hidden;width:100%;">'+favBtn(it.title,subName,cat.accent,toNum(it.price))+mslot(it.title,subName)+'</div>'
               +'<span style="align-self:flex-start;margin:9px 0 0;padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:'+cat.accent+';">'+subName+'</span>'
               +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:6px;">'+it.title+'</div>'
               +'<div style="font-size:14px;font-weight:800;color:#2b2b2b;margin-top:6px;">'+priceCardHTML(subName,it.price)+'</div>'
@@ -2163,8 +2208,9 @@ function spHTML(){
       }).join('')+'</div></div>';
 
     /* Smile & table */
+    /* 配達日ビューのカードは選択中の配達日（月〜土）の画像を出す */
     const smileCard=(title,series,accent,onclick)=>'<button onclick="'+onclick+'" style="text-align:left;display:flex;flex-direction:column;">'
-      +'<div style="height:116px;border-radius:6px;overflow:hidden;width:100%;">'+slot(title)+'</div>'
+      +'<div style="height:116px;border-radius:6px;overflow:hidden;width:100%;">'+mslot(title,series,S.activeDay+1)+'</div>'
       +'<span style="align-self:flex-start;margin:9px 0 0;padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:'+accent+';">'+series+'</span>'
       +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:6px;">'+title+'</div>'
       +'<div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:6px;">'+priceCardHTML(series,'1,350','2人用 ')+'</div></button>';
@@ -2189,7 +2235,7 @@ function spHTML(){
         ?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;padding:14px 0 8px;">'
           +dMore.map(({c,i})=>{
             return '<button onclick="A.openMore('+i+')" style="text-align:left;display:flex;flex-direction:column;">'
-              +'<div style="height:116px;border-radius:6px;overflow:hidden;width:100%;">'+slot(c.title)+'</div>'
+              +'<div style="height:116px;border-radius:6px;overflow:hidden;width:100%;">'+mslot(c.title,c.tag)+'</div>'
               +'<span style="align-self:flex-start;margin:9px 0 0;padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:'+c.accent+';">'+c.tag+'</span>'
               +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:6px;">'+c.title+'</div>'
               +'<div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:6px;">'+priceCardHTML(c.tag,c.price,'2人用 ')+'</div></button>';
@@ -2353,7 +2399,7 @@ function spHTML(){
           +'<span style="font-size:11px;color:#999;">締切 '+orderDeadline(w.label)+' 23:59</span></div>'
           +'<div style="padding:6px 16px 0;display:flex;flex-direction:column;gap:12px;">'
           +items.map(c=>'<div style="background:#fff;border-radius:14px;box-shadow:0 1px 7px rgba(0,0,0,.09);padding:13px;display:flex;gap:12px;">'
-            +'<div style="width:86px;height:76px;border-radius:8px;overflow:hidden;flex-shrink:0;">'+slot(c.title)+'</div>'
+            +'<div style="width:86px;height:76px;border-radius:8px;overflow:hidden;flex-shrink:0;">'+mslot(c.title,c.tag,c.dayNo)+'</div>'
             +'<div style="flex:1;min-width:0;">'
             +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">'
             +'<span style="align-self:flex-start;padding:2px 10px;border-radius:11px;font-size:10px;font-weight:700;color:#fff;background:'+c.accent+';white-space:nowrap;">'+c.tag+'</span>'
@@ -2458,7 +2504,7 @@ function spHTML(){
       +'<button onclick="A.closeProduct()" style="margin-left:auto;display:flex;flex-direction:column;align-items:center;gap:2px;color:#555;">'+IC.close(19)+'<span style="font-size:8.5px;">閉じる</span></button>'
       +'</div>'
       +'<div class="hs" data-sc="sp-prod" style="flex:1;overflow-y:auto;">'
-      +'<div style="position:relative;height:236px;">'+favBtn(p.title,p.seriesName,p.accent,p.price,34)+slot(p.title)+'</div>'
+      +'<div style="position:relative;height:236px;">'+favBtn(p.title,p.seriesName,p.accent,p.price,34)+mslot(p.title,p.seriesName,p.dayNo)+'</div>'
       +'<div style="padding:15px 16px 8px;">'
       +'<div style="font-size:16px;font-weight:700;color:#2b2b2b;line-height:1.4;">'+p.title+'</div>'
       +cutHTML()
@@ -2604,7 +2650,7 @@ function pcHTML(){
         h+=(smListP.length
           ?'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:20px;">'
             +smListP.map(({m,wi})=>'<div onclick="A.openSer('+wi+')" style="text-align:left;background:#fff;border-radius:14px;box-shadow:0 1px 7px rgba(0,0,0,.09);overflow:hidden;display:flex;flex-direction:column;cursor:pointer;">'
-              +'<div style="position:relative;height:172px;">'+favBtn(m.title,cs.name,cs.accent,toNum(m.price),32)+slot(m.title)
+              +'<div style="position:relative;height:172px;">'+favBtn(m.title,cs.name,cs.accent,toNum(m.price),32)+mslot(m.title,cs.name,m.dow)
               +'<span style="position:absolute;top:10px;left:10px;background:'+cs.dark+';color:#fff;padding:4px 11px;border-radius:8px;font-size:12px;font-weight:700;">'+m.date+'（'+m.dow+'）</span></div>'
               +'<div style="padding:13px 14px 15px;flex:1;display:flex;flex-direction:column;">'
               +'<div style="font-size:14.5px;font-weight:700;color:#2b2b2b;line-height:1.45;">'+m.title+'</div>'
@@ -2620,7 +2666,7 @@ function pcHTML(){
           +(gListP.length
             ?'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;">'
               +gListP.map(({it,i})=>'<div onclick="A.openGrid('+i+')" style="text-align:left;display:flex;flex-direction:column;cursor:pointer;">'
-                +'<div style="position:relative;height:130px;border-radius:8px;overflow:hidden;width:100%;">'+favBtn(it.title,subName,cat.accent,toNum(it.price))+slot(it.title)+'</div>'
+                +'<div style="position:relative;height:130px;border-radius:8px;overflow:hidden;width:100%;">'+favBtn(it.title,subName,cat.accent,toNum(it.price))+mslot(it.title,subName)+'</div>'
                 +'<span style="align-self:flex-start;margin:9px 0 0;padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:'+cat.accent+';">'+subName+'</span>'
                 +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.45;margin-top:7px;">'+it.title+'</div>'
                 +'<div style="font-size:14.5px;font-weight:800;color:#2b2b2b;margin-top:6px;">'+priceCardHTML(subName,it.price)+'</div>'
@@ -2643,8 +2689,9 @@ function pcHTML(){
         }).join('')
         +'</div></div>';
 
-      const gridCard=(title,series,accent,price,onclick)=>'<button onclick="'+onclick+'" style="text-align:left;display:flex;flex-direction:column;">'
-        +'<div style="height:130px;border-radius:8px;overflow:hidden;width:100%;">'+slot(title)+'</div>'
+      /* day を渡した場合は選択中の配達日（月〜土）の画像、省略時は商品から決まる画像を出す */
+      const gridCard=(title,series,accent,price,onclick,day)=>'<button onclick="'+onclick+'" style="text-align:left;display:flex;flex-direction:column;">'
+        +'<div style="height:130px;border-radius:8px;overflow:hidden;width:100%;">'+mslot(title,series,day)+'</div>'
         +'<span style="align-self:flex-start;margin:9px 0 0;padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:'+accent+';">'+series+'</span>'
         +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.45;margin-top:7px;">'+title+'</div>'
         +'<div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:6px;">'+priceCardHTML(series,price,'2人用 ')+'</div></button>';
@@ -2654,7 +2701,7 @@ function pcHTML(){
         +'<span style="font-size:19px;font-weight:700;font-family:\'Zen Maru Gothic\',sans-serif;color:#2b2b2b;">Smile &amp; table</span></div>'
         +(dSmileP.length
           ?'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;padding:18px 0 6px;">'
-            +dSmileP.map(({c,i})=>{const s=SERIES[c.si];return gridCard('てりやき親子丼 お揚げと野菜のおかず汁',s.name,s.accent,'1,350','A.openSmile('+i+')');}).join('')
+            +dSmileP.map(({c,i})=>{const s=SERIES[c.si];return gridCard('てりやき親子丼 お揚げと野菜のおかず汁',s.name,s.accent,'1,350','A.openSmile('+i+')',S.activeDay+1);}).join('')
             +'</div>'
           :emptyFilterHTML(false));
 
@@ -2681,7 +2728,7 @@ function pcHTML(){
     if(S.cartItems.length){
       h+='<div class="ps" data-sc="pc-minicart" style="max-height:300px;overflow-y:auto;padding:0 16px;">'
         +S.cartItems.map(c=>'<div style="display:flex;gap:10px;padding:12px 0;border-top:1px solid #F2F2F2;">'
-          +'<div style="width:56px;height:48px;border-radius:7px;overflow:hidden;flex-shrink:0;">'+slot(c.title)+'</div>'
+          +'<div style="width:56px;height:48px;border-radius:7px;overflow:hidden;flex-shrink:0;">'+mslot(c.title,c.tag,c.dayNo)+'</div>'
           +'<div style="flex:1;min-width:0;">'
           +'<div style="font-size:11.5px;color:#333;line-height:1.4;">'+c.title+'</div>'
           +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">'
@@ -2829,7 +2876,7 @@ function pcHTML(){
           +'<span style="background:#FCEBEC;color:#E50012;font-size:12px;font-weight:800;padding:4px 13px;border-radius:12px;">'+w.label+'週のお届け</span>'
           +'<span style="font-size:12px;color:#999;">締切 '+orderDeadline(w.label)+' 23:59</span></div>'
           +items.map(c=>'<div style="background:#fff;border-radius:14px;box-shadow:0 1px 7px rgba(0,0,0,.09);padding:16px;display:flex;gap:16px;">'
-            +'<div style="width:120px;height:96px;border-radius:9px;overflow:hidden;flex-shrink:0;">'+slot(c.title)+'</div>'
+            +'<div style="width:120px;height:96px;border-radius:9px;overflow:hidden;flex-shrink:0;">'+mslot(c.title,c.tag,c.dayNo)+'</div>'
             +'<div style="flex:1;min-width:0;">'
             +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">'
             +'<span style="align-self:flex-start;padding:2px 10px;border-radius:11px;font-size:10px;font-weight:700;color:#fff;background:'+c.accent+';white-space:nowrap;">'+c.tag+'</span>'
@@ -2930,7 +2977,7 @@ function pcHTML(){
     const p=S.product;
     h+='<div onclick="A.closeProduct()" data-sc="pc-prod" data-mk="pcprod" style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:32px;overflow-y:auto;animation:rk-fade .18s ease;">'
       +'<div onclick="event.stopPropagation()" style="width:100%;max-width:860px;background:#fff;border-radius:18px;overflow:hidden;animation:rk-pop .22s ease;box-shadow:0 26px 66px rgba(0,0,0,.36);display:flex;">'
-      +'<div style="position:relative;width:400px;flex-shrink:0;background:#F4F4F4;min-height:420px;">'+favBtn(p.title,p.seriesName,p.accent,p.price,36)+slot(p.title)+'</div>'
+      +'<div style="position:relative;width:400px;flex-shrink:0;background:#F4F4F4;min-height:420px;">'+favBtn(p.title,p.seriesName,p.accent,p.price,36)+mslot(p.title,p.seriesName,p.dayNo)+'</div>'
       +'<div style="flex:1;min-width:0;display:flex;flex-direction:column;">'
       +'<div style="display:flex;align-items:center;gap:9px;padding:20px 22px 0;">'
       +'<span style="border:1px solid #E3A8C0;color:#C4708F;border-radius:13px;padding:4px 12px;font-size:11.5px;font-weight:700;white-space:nowrap;">'+p.dateLabel+'</span>'
@@ -3450,7 +3497,7 @@ const Search=(function(){
     results=dataset().filter(d=>d.title.indexOf(q)>=0||d.cat.indexOf(q)>=0).slice(0,30);
     if(!results.length){box.innerHTML='<div style="padding:26px;text-align:center;font-size:12.5px;color:#999;">「'+q+'」に一致する商品が見つかりませんでした</div>';return;}
     box.innerHTML=results.map((d,i)=>'<div onclick="Search.pick('+i+')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid #F4F4F4;cursor:pointer;">'
-      +'<div style="width:54px;height:44px;border-radius:7px;overflow:hidden;flex-shrink:0;">'+slot(d.title)+'</div>'
+      +'<div style="width:54px;height:44px;border-radius:7px;overflow:hidden;flex-shrink:0;">'+mslot(d.title,d.series)+'</div>'
       +'<div style="flex:1;min-width:0;">'
       +'<div style="font-size:10.5px;color:#999;">'+d.cat+'</div>'
       +'<div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:2px;">'+d.title+'</div>'
