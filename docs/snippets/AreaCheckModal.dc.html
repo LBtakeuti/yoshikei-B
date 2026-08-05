@@ -26,6 +26,7 @@
   <div style="position:sticky;top:0;z-index:200;background:#242424;padding:11px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;">
     <span style="color:#8C8C8C;font-size:12px;font-weight:700;">お届けエリア確認モーダル</span>
     <div style="display:flex;gap:7px;">
+      <button onClick="{{ goS }}" style="{{ tabS }}">案内</button>
       <button onClick="{{ goA }}" style="{{ tabA }}">A 入力</button>
       <button onClick="{{ goB }}" style="{{ tabB }}">B 配達可</button>
       <button onClick="{{ goC }}" style="{{ tabC }}">C 町名確認</button>
@@ -55,7 +56,14 @@
 
           <div style="{{ bodyCol }}">
 
-            <sc-if value="{{ isA }}" hint-placeholder-val="{{ true }}">
+            <sc-if value="{{ isS }}" hint-placeholder-val="{{ true }}">
+              <div style="{{ pane }}">
+                <h2 style="{{ title }}">お買い物には<br>会員登録が必要です</h2>
+                <p style="{{ lead }}">ヨシケイ楽楽webへの会員登録が必要です。<br>まずは配達可能かお調べします。</p>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isA }}" hint-placeholder-val="{{ false }}">
               <div style="{{ pane }}">
                 <h2 style="{{ title }}">お届けエリアを<br>確認します</h2>
                 <p style="{{ lead }}">郵便番号（ハイフンなしの7桁）を<br>入力して、配達エリアを確認してください。</p>
@@ -135,7 +143,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:980,&quot;height&quot;:880}}">
 class Component extends DCLogic {
-  state = { pc:false, open:true, step:'A', zip:'', town:'', pref:'', error:'' };
+  state = { pc:false, open:true, step:'S', zip:'', town:'', pref:'', error:'' };
 
   ZIP = {
     '9300000': { ok:true, pref:'富山県' },
@@ -186,27 +194,29 @@ class Component extends DCLogic {
     const zipKnown = this.ZIP[(this.state.zip||'').replace(/[^0-9]/g,'')];
     const towns = (zipKnown && zipKnown.towns) ? zipKnown.towns : this.ZIP['9391000'].towns;
 
-    const primaryLabel = st==='A' ? '確認する' : st==='B' ? '進む' : st==='C' ? '確認する' : '別の郵便番号を入力する';
-    const primaryAction = st==='A' ? this.submitZip : st==='C' ? this.submitTown
+    const primaryLabel = st==='S' ? '進む' : st==='A' ? '確認する' : st==='B' ? '進む' : st==='C' ? '確認する' : '別の郵便番号を入力する';
+    const primaryAction = st==='S' ? () => this.setState({ step:'A', error:'' })
+      : st==='A' ? this.submitZip : st==='C' ? this.submitTown
       : () => this.setState({ step:'A', zip:'', town:'', error:'' });
 
     return {
       setSP:()=>this.setState({pc:false}), setPC:()=>this.setState({pc:true}),
       spBtn:vbtn(!pc), pcBtn:vbtn(pc),
+      goS:()=>this.setState({open:true,step:'S',error:''}),
       goA:()=>this.setState({open:true,step:'A',error:''}),
       goB:()=>this.setState({open:true,step:'B',pref:this.state.pref||'富山県',error:''}),
       goC:()=>this.setState({open:true,step:'C',pref:'富山県',error:''}),
       goD:()=>this.setState({open:true,step:'D',error:''}),
-      tabA:tab(st==='A'), tabB:tab(st==='B'), tabC:tab(st==='C'), tabD:tab(st==='D'),
+      tabS:tab(st==='S'), tabA:tab(st==='A'), tabB:tab(st==='B'), tabC:tab(st==='C'), tabD:tab(st==='D'),
 
       open:()=>this.setState({open:true,step:'A',error:''}),
-      close:()=>this.setState({step:'A',zip:'',town:'',error:''}),
+      close:()=>this.setState({step:'S',zip:'',town:'',error:''}),
       retry:()=>this.setState({step:'A',zip:'',error:''}),
       onZip:(e)=>this.setState({zip:e.target.value.replace(/[^0-9]/g,'').slice(0,7),error:''}),
       onTown:(e)=>this.setState({town:e.target.value,error:''}),
       zip:this.state.zip, town:this.state.town, towns,
       pref:this.state.pref || '富山県', error:this.state.error,
-      isA:st==='A', isB:st==='B', isC:st==='C', isD:st==='D', notD:st!=='D',
+      isS:st==='S', isA:st==='A', isB:st==='B', isC:st==='C', isD:st==='D', notD:st!=='D',
       primaryLabel, primaryAction,
       closeIcon:this.svg('close'), caretIcon:this.svg('caret'), chevIcon:this.svg('chev'),
 

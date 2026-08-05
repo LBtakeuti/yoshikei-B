@@ -294,7 +294,7 @@
 </div>
 
 <!-- ======== お届けエリア確認モーダル（PC/SP共通・デザイン原本: docs/snippets/AreaCheckModal.dc.html） ========
-     A 郵便番号入力／B 配達可／C 町名確認／D エリア外 の4状態を Area モジュールが差し替える。
+     S 案内／A 郵便番号入力／B 配達可／C 町名確認／D エリア外 の5状態を Area モジュールが差し替える。
      入力欄を持つため再描画（render）対象外の静的DOMに置く（フォーカス維持のため）。 -->
 <div data-area-overlay class="ac-ov">
   <div class="ac-modal">
@@ -3368,7 +3368,8 @@ const Search=(function(){
    1つのモーダルを2つの動線から開く：
      (1) 未ログインでカートに入れる操作をした瞬間（エリア未確認のときだけ／確認済みなら二度と出さない）
      (2) エリア確認バナー（PC＝雑誌型トップのページ内／SP＝画面下部の追従バナー・ピル）
-   状態は A 郵便番号入力 → B 配達可 ／ C 町名確認 → B or D ／ D エリア外 の4つ。
+   状態は S 案内（カート投入起点のみ） → A 郵便番号入力 → B 配達可 ／ C 町名確認 → B or D ／ D エリア外。
+   Dの「別の郵便番号を入力する」で戻る先はA（Sには戻らない）。
    確認結果は localStorage（rk_area_checked / rk_area_zip）に保持し、確定した県は setRegion() へ渡して
    フッター・問い合わせ等の地域表示と連動させる。オーバーレイは静的DOMなので商品選択・カートの中身は保持される。 */
 const Area=(function(){
@@ -3383,6 +3384,13 @@ const Area=(function(){
   function checked(){try{return localStorage.getItem('rk_area_checked')==='1';}catch(e){return false;}}
   function markChecked(z){try{localStorage.setItem('rk_area_checked','1');localStorage.setItem('rk_area_zip',z||'');}catch(e){}}
 
+  /* S 案内（カート投入起点のときだけAの手前に挟む。買い物には会員登録が必要＝まずエリア確認、という説明） */
+  function paneS(){
+    return '<div class="ac-pane">'
+      +'<h2 class="ac-title">お買い物には<br>会員登録が必要です</h2>'
+      +'<p class="ac-lead">ヨシケイ楽楽webへの会員登録が必要です。<br>まずは配達可能かお調べします。</p>'
+      +'</div>';
+  }
   function paneA(){
     return '<div class="ac-pane'+(error?' ac-err':'')+'">'
       +'<h2 class="ac-title">お届けエリアを<br>確認します</h2>'
@@ -3429,10 +3437,11 @@ const Area=(function(){
   function paint(){
     const body=$('[data-area-body]');
     if(!body)return;
-    body.innerHTML=step==='B'?paneB():step==='C'?paneC():step==='D'?paneD():paneA();
+    body.innerHTML=step==='S'?paneS():step==='B'?paneB():step==='C'?paneC():step==='D'?paneD():paneA();
     $('[data-area-mascot]').src=step==='D'?'assets/mascot-bow.png':'assets/mascot-wave.png';
-    $('[data-area-primary]').textContent=step==='B'?'進む':step==='D'?'別の郵便番号を入力する':'確認する';
+    $('[data-area-primary]').textContent=(step==='S'||step==='B')?'進む':step==='D'?'別の郵便番号を入力する':'確認する';
   }
+  function focusZip(){const inp=$('[data-area-zip]');if(inp)setTimeout(()=>inp.focus(),60);}
 
   function submitZip(){
     const inp=$('[data-area-zip]');
@@ -3464,6 +3473,7 @@ const Area=(function(){
     if(next)next();
   }
   function primary(){
+    if(step==='S'){step='A';error='';paint();focusZip();return;}   /* S：進む → 郵便番号入力へ */
     if(step==='A'){submitZip();return;}
     if(step==='C'){submitTown();return;}
     if(step==='B'){proceed();return;}
@@ -3473,14 +3483,14 @@ const Area=(function(){
     ov().style.display='none';
     step='A';zip='';town='';error='';pending=null;
   }
-  /* after … 確認完了（状態Bの「進む」）後に続けて実行する処理（カート投入など） */
+  /* after … 確認完了（状態Bの「進む」）後に続けて実行する処理（カート投入など）
+     after がある＝カート投入起点なので案内Sから開始する。バナー・ピル起点（after なし）は従来どおりAから。 */
   function open(after){
     pending=typeof after==='function'?after:null;
-    step='A';zip='';town='';error='';
+    step=pending?'S':'A';zip='';town='';error='';
     paint();
     ov().style.display='flex';
-    const inp=$('[data-area-zip]');
-    if(inp)setTimeout(()=>inp.focus(),60);
+    focusZip();
   }
 
   ov().addEventListener('click',e=>{
