@@ -55,42 +55,49 @@
   .ph-box{background:#ebe9e4;border:1px dashed #c7c3ba;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#8a8578;font-size:12px;font-weight:700;text-align:center;line-height:1.4;overflow:hidden;box-sizing:border-box;padding:6px;}
   .ph-box svg{width:26px;height:26px;opacity:.65;flex:none;}
   .ph-box span{padding:0 6px;max-width:100%;}
-  /* ECトップ ヒーローセクション（未ログインのゲスト閲覧時のみ表示） */
-  .echero{position:relative;height:218px;background:#FBF7EE;display:flex;align-items:center;overflow:hidden}
-  .echero-photo{position:absolute;top:0;bottom:0;right:0;left:56%}
-  /* ヒーロー写真：実写2枚を重ね、CSSキーフレームだけでクロスフェードさせる（12秒ループ＝1枚あたり約6秒表示、
-     切り替わりは約1秒）。JSタイマーを使わないのは、描画がDOM差分更新（morph）でノードを使い回すため、
-     CSSアニメーションなら再描画の影響を受けず動き続けるから。
-     下段の hero-slide-2 は常時不透明の土台とし、上段の hero-slide-1 のopacityだけを動かす。
-     こうすると切り替わりの瞬間に背景色（#FBF7EE）が透けず、写真同士が溶け合う自然な重なりになる。 */
-  .hero-slide{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:50% 40%}
-  .hero-slide-2{object-position:66% 46%}
-  .hero-slide-1{animation:hero-xfade 12s linear infinite;will-change:opacity}
-  @keyframes hero-xfade{0%,42%{opacity:1}50%,92%{opacity:0}100%{opacity:1}}
-  /* スクリムは「写真を濁すため」ではなく「テキストの足場を作るため」だけに敷く。
-     写真領域（SPは左56%から右端まで）に入ったら一気に抜けきるので、被写体はほぼ素の写真として見える。
-     文字が写真に重なる細い帯だけは薄く残し、足りない分は下の text-shadow（クリーム色のハロー）で補う。
-     ＝写真を暗く／白くする方向ではなく、文字側で可読性を確保する。 */
-  .echero-scrim{position:absolute;inset:0;background:linear-gradient(90deg,#FBF7EE 0%,#FBF7EE 52%,rgba(251,247,238,.40) 60%,rgba(251,247,238,.08) 70%,rgba(251,247,238,0) 78%)}
-  .echero-inner{position:relative;z-index:2;padding-left:20px;display:flex;flex-direction:column;gap:14px;max-width:238px}
-  /* 写真の上に乗る文字は、背景色と同じクリーム色のハローで縁取って読ませる（写真自体は覆わない） */
-  .echero-catch{margin:0;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:26px;line-height:1.35;color:#3E3A34;letter-spacing:.01em;word-break:keep-all;text-shadow:0 1px 2px rgba(251,247,238,.95),0 0 10px rgba(251,247,238,.85)}
-  .echero-week{display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px}
-  .echero-badge{font-size:11.5px;font-weight:700;color:#fff;background:#E50012;border-radius:999px;padding:4px 11px;letter-spacing:.02em}
-  .echero-weektext{font-size:13.5px;font-weight:700;color:#3E3A34;font-family:'Zen Maru Gothic',sans-serif;word-break:keep-all;text-shadow:0 1px 2px rgba(251,247,238,.95),0 0 8px rgba(251,247,238,.85)}
-  .echero-deadline{font-size:12.5px;font-weight:500;color:#7C6E58;background:#fff;border-radius:8px;padding:5px 10px;border:1px solid #E7DCC7}
+  /* ECトップ ヒーローセクション（未ログインのゲスト閲覧時のみ表示）
+     フルブリード写真型：写真をヒーロー全面（SP・PC共通）に敷き、下部の暗いグラデーションの上に
+     白抜きの文字とCTAを左下へ置く。左クリーム＋右写真パネルの旧構造は廃止した。 */
+  .echero{position:relative;height:218px;background:#2B2B2B;overflow:hidden}
+  /* ヒーロー写真：実写4枚を重ね、CSSキーフレームだけで24秒かけて一巡させる
+     （1枚あたり約6秒表示・切り替わりは約1秒）。JSタイマーを使わないのは、描画がDOM差分更新（morph）で
+     ノードを使い回すため、CSSアニメーションなら再描画（カートに反映など）の影響を受けず動き続けるから。
+     重なり順は hero-1 → 2 → 3 → 4（4が最前面）。土台の hero-1 は常時不透明にし、上に重なる 2〜4 の
+     opacity だけを動かすので、切り替わりの瞬間に背景が透けず写真同士が溶け合う。
+     2と3は「その上の写真が完全に不透明になっている間」に一瞬で0へ戻す（見えないところで畳む）。
+     こうしておくと 24秒目に hero-4 がフェードアウトしたとき土台の hero-1 が現れ、そのまま次の周回に入れる。 */
+  .hero-slide{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover}
+  /* トリミング位置は写真ごとに調整（左下の文字と被写体が重ならないようにする）。
+     縦位置はヒーローが横長になるPCでのみ効く（SPは横方向だけが切り取られる）。 */
+  .hero-slide-1{object-position:50% 38%}
+  .hero-slide-2{object-position:52% 30%;animation:hero-fade2 24s linear infinite}
+  .hero-slide-3{object-position:0% 50%;animation:hero-fade3 24s linear infinite}
+  .hero-slide-4{object-position:56% 14%;animation:hero-fade4 24s linear infinite}
+  .hero-slide-2,.hero-slide-3,.hero-slide-4{opacity:0;will-change:opacity}
+  @keyframes hero-fade2{0%,25%{opacity:0}29.17%,58.33%{opacity:1}58.34%,100%{opacity:0}}
+  @keyframes hero-fade3{0%,50%{opacity:0}54.17%,83.33%{opacity:1}83.34%,100%{opacity:0}}
+  @keyframes hero-fade4{0%,75%{opacity:0}79.17%,95.83%{opacity:1}100%{opacity:0}}
+  /* アニメーションを控える設定では hero-1 で静止させる */
+  @media (prefers-reduced-motion: reduce){
+    .hero-slide-2,.hero-slide-3,.hero-slide-4{animation:none !important;opacity:0 !important}
+  }
+  /* 下部グラデーション：写真全体を濁さず、文字が乗る下半分だけを沈める。
+     足りない分は文字側の影（暗いハロー）で補う＝明るい写真（hero-3の木目）の上でも白文字が読める。 */
+  .echero-grad{position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.18) 38%,rgba(0,0,0,0) 62%)}
+  .echero-inner{position:absolute;left:18px;right:18px;bottom:14px;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+  .echero-badge{font-size:11px;font-weight:700;color:#fff;background:#E50012;border-radius:999px;padding:3.5px 10px;letter-spacing:.02em}
+  .echero-catch{margin:0;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:22px;line-height:1.3;color:#fff;letter-spacing:.01em;word-break:keep-all;text-shadow:0 1px 10px rgba(0,0,0,.35),0 2px 20px rgba(0,0,0,.55)}
+  .echero-sub{margin:0;font-size:12px;font-weight:500;line-height:1.45;color:rgba(255,255,255,.92);word-break:keep-all;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+  .echero-cta{display:inline-flex;align-items:center;gap:2px;margin-top:3px;background:#E50012;color:#fff;font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:13px;border-radius:999px;padding:10px 14px 10px 20px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+  .echero-deadline{font-size:11px;font-weight:500;color:rgba(255,255,255,.85);text-shadow:0 1px 8px rgba(0,0,0,.55)}
   @media (min-width:1024px){
-    .echero{height:270px}
-    .echero-photo{left:46%}
-    /* PCは写真領域が横長になるので、SPで効かせていた右寄せトリミングは戻す */
-    .hero-slide-2{object-position:50% 46%}
-    /* PCは写真の開始位置が左46%と早いので、抜けきる位置もその分だけ左に寄せる */
-    .echero-scrim{background:linear-gradient(90deg,#FBF7EE 0%,#FBF7EE 42%,rgba(251,247,238,.42) 50%,rgba(251,247,238,.08) 60%,rgba(251,247,238,0) 68%)}
-    .echero-inner{padding-left:56px;gap:20px;max-width:560px}
-    .echero-catch{font-size:44px}
+    .echero{height:360px}
+    .echero-inner{left:56px;right:56px;bottom:30px;gap:9px}
     .echero-badge{font-size:12.5px;padding:5px 13px}
-    .echero-weektext{font-size:16px}
-    .echero-deadline{font-size:13.5px;padding:6px 12px}
+    .echero-catch{font-size:34px}
+    .echero-sub{font-size:14px}
+    .echero-cta{font-size:15px;padding:13px 20px 13px 26px;margin-top:5px}
+    .echero-deadline{font-size:13px}
   }
   /* バナーカルーセル（未ログインのゲストトップ・ヒーロー直下）
      将来は管理画面から入稿した横長画像を .bnr-img に差し替える。img 未設定の間は
@@ -1735,23 +1742,24 @@ function calendarHTML(sp){
 /* ================= SP（モバイル）レンダリング ================= */
 /* ================= ECヒーロー（未ログインのゲスト閲覧時のみ・注文TOPの最上部） =================
    週表示・締切は選択中の週（WEEKS[S.week]）から生成する。
-   写真は実写2枚（hero-1/hero-2）をCSSキーフレームだけで約6秒ごとにクロスフェードさせる。 */
+   フルブリード写真型：実写4枚（hero-1〜4）をCSSキーフレームだけで約6秒ごとに切り替える（24秒で一巡）。
+   写真は重なり順が意味を持つので、hero-1 → 2 → 3 → 4 の順で並べる（最後が最前面）。 */
 function heroHTML(){
   const wk=WEEKS[S.week]||{label:''};
   const dl=orderDeadline(wk.label);
   return '<section class="echero" data-section="ec-hero">'
-    +'<div class="echero-photo">'
-    +'<img class="hero-slide hero-slide-2" src="assets/hero-2.png" alt="" decoding="async">'
     +'<img class="hero-slide hero-slide-1" src="assets/hero-1.png" alt="" decoding="async">'
-    +'</div>'
-    +'<div class="echero-scrim"></div>'
+    +'<img class="hero-slide hero-slide-2" src="assets/hero-2.png" alt="" decoding="async">'
+    +'<img class="hero-slide hero-slide-3" src="assets/hero-3.png" alt="" decoding="async">'
+    +'<img class="hero-slide hero-slide-4" src="assets/hero-4.png" alt="" decoding="async">'
+    +'<div class="echero-grad"></div>'
     +'<div class="echero-inner">'
-    +'<h1 class="echero-catch">つくる人から、<br>笑顔に。</h1>'
-    +'<div class="echero-week">'
-    +'<span class="echero-badge">受付中</span>'
-    +'<span class="echero-weektext">'+wk.label+'週のご注文受付中</span>'
-    +'<span class="echero-deadline">締切：'+dl+' 23:59</span>'
-    +'</div></div></section>';
+    +'<span class="echero-badge">'+wk.label+'週のご注文 受付中</span>'
+    +'<h1 class="echero-catch">つくる人から、笑顔に。</h1>'
+    +'<p class="echero-sub">管理栄養士監修の献立と食材を、毎日ご自宅へ。</p>'
+    +'<button class="echero-cta" onclick="A.guestShowAll()">今週のメニューを見る'+IC.chevR(17,'#fff')+'</button>'
+    +'<span class="echero-deadline">ご注文締切：'+dl+' 23:59</span>'
+    +'</div></section>';
 }
 
 /* ================= 簡易トースト（ダミー導線の案内用・ルート再描画の影響を受けないよう body 直下） ================= */
