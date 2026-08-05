@@ -406,7 +406,8 @@ const _now=new Date();
 let S={
   loggedIn:false, userName:null, lastOrder:null,
   guestFull:false,                  // 未ログイントップ：false=雑誌型トップ / true=フルメニュー（週タブ＋一覧）
-  coins:120,                        // eコイン残高（モック初期値）
+  coins:3240,                       // eコイン残高（モック初期値：使用UIの500刻み・地域別上限を確認できる値）
+  coinUse:0,                        // 支払いで使用するeコイン（0=使用しない／1000から500刻み）
   week:0,                           // 選択中の注文週（WEEKS のindex）
   mainTab:'dinner',                 // dinner=夕食献立メニュー | special=特別販売
   specialMode:'A',                  // 特別販売の表示案：A=タブ型（付随）| B=独立ページ型（デモ切替）
@@ -469,7 +470,8 @@ function cartDiscount(){
   });
   return Math.floor(base*0.05/10)*10;
 }
-const cartTotal=()=>cartSubtotal()+cartShip()-cartDiscount();
+/* 合計：通し割引に加え、選択中のeコイン利用分（1コイン=1円）を差し引く */
+const cartTotal=()=>Math.max(0,cartSubtotal()+cartShip()-cartDiscount()-coinUsed());
 
 /* 画像プレースホルダー（No Image画像） */
 function slot(label){
@@ -507,6 +509,8 @@ const A={
   toggleMenu(){S.menuOpen=!S.menuOpen;render();},
   /* デモ用：表示地域の切替（エリア確認を通らずに地域別表示を確認する） */
   setRegion(key){setRegion(key);render();},
+  /* eコイン使用（500刻みの選択） */
+  setCoinUse(v){S.coinUse=Number(v)||0;render();},
   logout(){S.loggedIn=false;S.userName=null;S.page=null;location.href='lp.html';},
 
   /* 未ログイントップ（雑誌型）⇄ フルメニューの切り替え（リロードなし・再描画のみ） */
@@ -577,12 +581,13 @@ const A={
       S.cartItems=[...S.cartItems,{id:'last-'+Date.now(),title:r.title,tag:r.tag,accent:r.tagColor,unit:'',price:toNum(r.price),qty:S.lastQty,week:WEEKS[S.week].label,day:WEEKS[S.week].label,cat:'tanpin'}];
     }
     const disc=cartDiscount();
-    const total=cartSubtotal()+cartShip()-disc;
+    const used=coinUsed();                       // 支払いに充当したeコイン
+    const total=Math.max(0,cartSubtotal()+cartShip()-disc-used);
     const pts=coinFor(coinBase());
-    S.coins+=pts;
-    S.orders=[{id:'o-'+Date.now(),week:WEEKS[S.week].label,count:cartCount(),total,discount:disc,coins:pts,status:'active'},...S.orders];
-    S.lastOrder={count:cartCount(),total,discount:disc,coins:pts,week:WEEKS[S.week].label};
-    S.cartItems=[];S.lastChanceOpen=false;S.lastQty=0;S.page='orderDone';
+    S.coins=Math.max(0,S.coins-used)+pts;
+    S.orders=[{id:'o-'+Date.now(),week:WEEKS[S.week].label,count:cartCount(),total,discount:disc,coins:pts,used,status:'active'},...S.orders];
+    S.lastOrder={count:cartCount(),total,discount:disc,coins:pts,used,week:WEEKS[S.week].label};
+    S.cartItems=[];S.coinUse=0;S.lastChanceOpen=false;S.lastQty=0;S.page='orderDone';
     touchCart();render();window.scrollTo(0,0);
   },
 
@@ -884,6 +889,44 @@ function cartCoinRowHTML(){
       :'<span style="font-size:11px;color:#9a8a60;">対象商品あと'+yen(Math.max(0,COIN_MIN-base))+'で対象</span>')
     +'</div>'
     +'<div style="font-size:10.5px;color:#9a8a60;line-height:1.5;margin-top:5px;padding:0 3px;">'+COIN_NOTE+'</div>';
+}
+/* eコイン使用（支払い・注文確認）：1,000コインから500コイン単位の選択式。
+   上限は地域マスタ参照＝富山・石川は2,000コインで止まり、岐阜は保有コイン残高まで選べる。 */
+function coinUseOptions(){
+  const cap=regionInfo().coinMax;
+  const lim=(cap===null||cap===undefined)?S.coins:Math.min(S.coins,cap);
+  const max=Math.floor(lim/500)*500;
+  const opts=[];
+  for(let v=1000;v<=max;v+=500)opts.push(v);
+  return opts;
+}
+/* 実際に使用するコイン数（選択肢に無い値＝地域切替で上限を超えた場合などは0に戻す） */
+function coinUsed(){
+  const opts=coinUseOptions();
+  return opts.indexOf(S.coinUse)>=0?S.coinUse:0;
+}
+function coinUseNote(){
+  const cap=regionInfo().coinMax;
+  return 'ご利用は1,000コインから500コイン単位です'
+    +(cap?'（上限'+cap.toLocaleString('ja-JP')+'コイン）':'');
+}
+function coinUseHTML(sp){
+  const opts=coinUseOptions();
+  const sel=coinUsed();
+  const fs=sp?12.5:13;
+  const optHTML='<option value="0">使用しない</option>'
+    +opts.map(v=>'<option value="'+v+'"'+(v===sel?' selected':'')+'>'+v.toLocaleString('ja-JP')+'コイン（-'+yen(v)+'）</option>').join('');
+  return '<div style="margin-top:11px;border:1px solid #F0E3C8;background:#FFFDF7;border-radius:9px;padding:10px 12px;">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">'
+    +'<span style="display:flex;align-items:center;gap:6px;font-size:'+fs+'px;font-weight:700;color:#7a5c1e;"><span style="color:#E0912C;">'+IC.coin(16)+'</span>eコインを使う</span>'
+    +'<span style="font-size:11px;color:#9a8a60;">保有 '+S.coins.toLocaleString('ja-JP')+'pt</span>'
+    +'</div>'
+    +'<select onchange="A.setCoinUse(this.value)" style="margin-top:8px;width:100%;font-family:inherit;font-size:'+(sp?'14px':'14.5px')+';font-weight:700;color:#2b2b2b;background:#fff;border:1px solid #E0D6BE;border-radius:8px;padding:10px 11px;"'
+    +(opts.length?'':' disabled')+'>'+optHTML+'</select>'
+    +'<div style="font-size:10.5px;color:#9a8a60;line-height:1.5;margin-top:6px;">'+coinUseNote()+'</div>'
+    +(opts.length?'':'<div style="font-size:10.5px;color:#9a8a60;line-height:1.5;margin-top:2px;">保有コインが1,000コインに満たないため、今回はご利用いただけません</div>')
+    +(sel?'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:8px;font-size:'+fs+'px;font-weight:700;color:#E0912C;"><span>eコイン利用</span><span style="font-size:'+(fs+2)+'px;font-weight:800;">-'+yen(sel)+'</span></div>':'')
+    +'</div>';
 }
 /* 週セレクタ（販売2週間分・大きく見やすく） */
 function weekChipsHTML(sp){
@@ -1941,6 +1984,7 @@ function spHTML(){
         +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;"><span>小計</span><span style="font-size:16px;font-weight:800;">'+yen(cartSubtotal())+'</span></div>'
         +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;margin-top:11px;"><span>送料</span><span style="font-size:16px;font-weight:800;">'+yen(cartShip())+'</span></div>'
         +discountRowHTML(13.5)
+        +coinUseHTML(true)
         +'<div style="border-top:1px solid #EEE;margin:13px 0;"></div>'
         +'<div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:14px;font-weight:700;color:#2b2b2b;">合計</span><span style="font-size:24px;font-weight:900;color:#E50012;">'+yen(cartTotal())+'</span></div>'
         +cartCoinRowHTML()
@@ -1970,6 +2014,7 @@ function spHTML(){
       +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;"><span>お届け週</span><span style="font-weight:700;">'+o.week+'週</span></div>'
       +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;margin-top:11px;"><span>ご注文点数</span><span style="font-weight:700;">'+o.count+'点</span></div>'
       +(o.discount?'<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:#E50012;font-weight:700;margin-top:11px;"><span>通し割引<span style="font-size:11px;font-weight:600;margin-left:5px;">（週5日以上）</span></span><span style="font-size:15px;font-weight:800;">-'+yen(o.discount)+'</span></div>':'')
+      +(o.used?'<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:#E0912C;font-weight:700;margin-top:11px;"><span>eコイン利用<span style="font-size:11px;font-weight:600;margin-left:5px;">（'+o.used.toLocaleString('ja-JP')+'コイン）</span></span><span style="font-size:15px;font-weight:800;">-'+yen(o.used)+'</span></div>':'')
       +'<div style="border-top:1px solid #EEE;margin:13px 0;"></div>'
       +'<div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:14px;font-weight:700;color:#2b2b2b;">お支払い合計</span><span style="font-size:24px;font-weight:900;color:#E50012;">'+yen(o.total)+'</span></div>'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:11px;background:#FFF7E8;border-radius:9px;padding:8px 12px;">'
@@ -2411,6 +2456,7 @@ function pcHTML(){
         +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;"><span>小計</span><span style="font-size:16px;font-weight:800;">'+yen(cartSubtotal())+'</span></div>'
         +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;margin-top:11px;"><span>送料</span><span style="font-size:16px;font-weight:800;">'+yen(cartShip())+'</span></div>'
         +discountRowHTML(13.5)
+        +coinUseHTML(false)
         +'<div style="border-top:1px solid #EEE;margin:14px 0;"></div>'
         +'<div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:14px;font-weight:700;color:#2b2b2b;">合計</span><span style="font-size:26px;font-weight:900;color:#E50012;">'+yen(cartTotal())+'</span></div>'
         +cartCoinRowHTML()
@@ -2439,6 +2485,7 @@ function pcHTML(){
       +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;"><span>お届け週</span><span style="font-weight:700;">'+o.week+'週</span></div>'
       +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;margin-top:11px;"><span>ご注文点数</span><span style="font-weight:700;">'+o.count+'点</span></div>'
       +(o.discount?'<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:#E50012;font-weight:700;margin-top:11px;"><span>通し割引<span style="font-size:11px;font-weight:600;margin-left:5px;">（週5日以上）</span></span><span style="font-size:15px;font-weight:800;">-'+yen(o.discount)+'</span></div>':'')
+      +(o.used?'<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:#E0912C;font-weight:700;margin-top:11px;"><span>eコイン利用<span style="font-size:11px;font-weight:600;margin-left:5px;">（'+o.used.toLocaleString('ja-JP')+'コイン）</span></span><span style="font-size:15px;font-weight:800;">-'+yen(o.used)+'</span></div>':'')
       +'<div style="border-top:1px solid #E8E4DE;margin:13px 0;"></div>'
       +'<div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:14px;font-weight:700;color:#2b2b2b;">お支払い合計</span><span style="font-size:26px;font-weight:900;color:#E50012;">'+yen(o.total)+'</span></div>'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:11px;background:#FFF7E8;border-radius:9px;padding:8px 12px;">'
