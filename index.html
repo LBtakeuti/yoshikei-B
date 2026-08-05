@@ -186,12 +186,23 @@
   .ac-telarea{font-size:12px;color:#4A443C;}
   .ac-telnum{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:21px;color:#E50012;line-height:1.25;}
   .ac-teldiv{width:100%;height:0;border-top:1px solid #EDE6DA;margin-top:9px;}
-  /* 常設「お届けエリアを確認する」バー（未ログインの注文TOPのみ・SPはボトムナビの上に置く） */
-  .ac-bar{position:fixed;left:0;right:0;bottom:66px;z-index:36;background:rgba(255,255,255,.94);border-top:1px solid #EFEAE0;padding:10px 16px 12px;}
-  .ac-bar-btn{display:block;width:100%;max-width:520px;margin:0 auto;min-height:50px;border-radius:10px;
-    border:1.5px solid #E50012;background:#fff;color:#E50012;font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:14px;}
-  .has-areabar{padding-bottom:64px;}
-  .has-areabar .demo-toggle{bottom:152px;}
+  /* エリア確認バナー（PC＝雑誌型トップのページ内／SP＝画面下部の追従バナー）
+     画像は 1774×887＝高さは幅のちょうど半分。エリア確認済み・ログイン済みでは出さない。 */
+  .abn-pc{background:#fff;padding:6px 24px 26px;}
+  .abn-pc-inner{max-width:1200px;margin:0 auto;}
+  .abn-btn{display:block;width:100%;border-radius:14px;overflow:hidden;cursor:pointer;}
+  .abn-btn img{display:block;width:100%;height:auto;}
+  .abn-sp{position:fixed;left:8px;right:8px;bottom:74px;z-index:36;}
+  .abn-sp .abn-btn{border-radius:12px;box-shadow:0 3px 14px rgba(0,0,0,.20);}
+  .abn-x{position:absolute;top:-11px;right:-11px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;z-index:2;}
+  .abn-x span{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;
+    background:#fff;color:#2b2b2b;box-shadow:0 1px 5px rgba(0,0,0,.28);}
+  .abn-pill{position:fixed;right:12px;bottom:76px;z-index:36;display:inline-flex;align-items:center;gap:6px;
+    min-height:40px;padding:0 16px;border-radius:999px;background:#E50012;color:#fff;
+    font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:13.5px;box-shadow:0 3px 12px rgba(229,0,18,.34);}
+  /* 追従バナー／ピルとデモ用トグルが重ならないよう退避（下端余白はSPメイン側で確保） */
+  .has-abn .demo-toggle{bottom:calc((100vw - 16px) / 2 + 90px);}
+  .has-abnpill .demo-toggle{bottom:126px;}
   @media (min-width:1024px){
     .ac-ov{padding:20px;}
     .ac-modal{width:480px;height:614px;padding:20px 26px 22px;}
@@ -216,9 +227,8 @@
     .ac-telarea{font-size:13px;}
     .ac-telnum{font-size:24px;}
     .ac-teldiv{margin-top:11px;}
-    .ac-bar{bottom:0;padding:12px 24px 14px;}
-    .ac-bar-btn{max-width:420px;font-size:15px;}
-    .has-areabar .demo-toggle{bottom:auto;}
+    /* PCでは追従バナーを使わないためトグル位置は既定（右上）に戻す */
+    .has-abn .demo-toggle,.has-abnpill .demo-toggle{bottom:auto;}
   }
 </style>
 </head>
@@ -769,6 +779,9 @@ const A={
   },
   logout(){S.loggedIn=false;S.userName=null;S.stage='guest';S.receiptNo=null;S.page=null;location.href='lp.html';},
 
+  /* エリア確認バナー（SP追従）を閉じる：ピル型ボタンに縮小し、セッション中は保持 */
+  areaBnClose(){try{sessionStorage.setItem(AREA_BN_MINKEY,'1');}catch(e){}render();},
+
   /* 未ログイントップ（雑誌型）⇄ フルメニューの切り替え（リロードなし・再描画のみ） */
   guestShowAll(){S.guestFull=true;S.page=null;render();Banner.jump('guest-full');},
   guestBackTop(){S.guestFull=false;S.page=null;render();window.scrollTo({top:0,behavior:'smooth'});},
@@ -1292,11 +1305,39 @@ function specialPageContentHTML(sp){
       +'</div>';
   }).join('');
 }
-/* 常設「お届けエリアを確認する」バー（未ログインの注文TOPのみ・SP/PC共通）
-   SPはボトムナビ（66px）の上に重ねる。サブページはオーバーレイ表示のため出さない。 */
-function areaBarHTML(){
-  if(S.loggedIn||S.page!==null)return '';
-  return '<div class="ac-bar"><button onclick="Area.open()" class="ac-bar-btn">お届けエリアを確認する</button></div>';
+/* ================= エリア確認バナー（エリア確認モーダルへの入口） =================
+   PC＝雑誌型トップの「ご利用の流れ」直後にページ内配置／SP＝画面下部の追従バナー。
+   未ログイン かつ エリア未確認（rk_area_checked）のときだけ出す。
+   SPは×で閉じるとピル型ボタンに縮小し、その状態はセッション中だけ保持する。 */
+const AREA_BN_MINKEY='rk_area_banner_min';
+function areaChecked(){try{return localStorage.getItem('rk_area_checked')==='1';}catch(e){return false;}}
+function areaBnMinimized(){try{return sessionStorage.getItem(AREA_BN_MINKEY)==='1';}catch(e){return false;}}
+/* バナーを出してよい場面か（未ログイン・注文TOP・エリア未確認） */
+function areaBnVisible(){return !S.loggedIn&&S.page===null&&!areaChecked();}
+const AREA_BN_ALT='お届け対象エリア内か確認する';
+const AREA_BN_X='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>';
+const AREA_BN_SEARCH='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.6-3.6"></path></svg>';
+/* PC：雑誌型トップのページ内バナー（コンテンツ幅いっぱい・中央寄せ） */
+function areaBannerPCHTML(){
+  if(!areaBnVisible())return '';
+  return '<section data-section="area-banner" class="abn-pc"><div class="abn-pc-inner">'
+    +'<div class="abn-btn" role="button" tabindex="0" onclick="Area.open()" title="'+AREA_BN_ALT+'">'
+    +'<img src="assets/area-banner-pc.png" alt="'+AREA_BN_ALT+'">'
+    +'</div></div></section>';
+}
+/* SP：画面下部の追従バナー（ボトムナビ66pxの上）。×で閉じたらピル型ボタンに縮小 */
+function areaBannerSPHTML(){
+  if(!areaBnVisible())return '';
+  if(areaBnMinimized()){
+    return '<button onclick="Area.open()" class="abn-pill" aria-label="'+AREA_BN_ALT+'">'
+      +AREA_BN_SEARCH+'エリアを確認</button>';
+  }
+  return '<div class="abn-sp">'
+    +'<div class="abn-btn" role="button" tabindex="0" onclick="Area.open()">'
+    +'<img src="assets/area-banner-sp.png" alt="'+AREA_BN_ALT+'">'
+    +'</div>'
+    +'<button onclick="A.areaBnClose()" class="abn-x" aria-label="バナーを閉じる"><span>'+AREA_BN_X+'</span></button>'
+    +'</div>';
 }
 /* デモ用：特別販売の表示案A/B切替ボタン（控えめ・画面右上に固定） */
 function demoToggleHTML(){
@@ -1974,8 +2015,13 @@ function spHTML(){
   /* 上部レッドバー */
   h+='<div style="height:4px;background:#E50012;position:fixed;top:0;left:0;right:0;z-index:60;"></div>';
 
-  /* ---- メイン（注文TOP） ---- */
-  h+='<div style="padding-top:4px;padding-bottom:80px;min-height:100vh;background:#fff;">';
+  /* ---- メイン（注文TOP） ----
+     下端余白はボトムナビ（66px）分＋エリア確認バナー（追従／ピル）分。
+     バナー画像は 1774×887＝高さが幅のちょうど半分なので calc で実寸ぶんを確保する。 */
+  const spPadBtm=!areaBnVisible()?'80px'
+    :areaBnMinimized()?'126px'
+    :'calc((100vw - 16px) / 2 + 90px)';
+  h+='<div style="padding-top:4px;padding-bottom:'+spPadBtm+';min-height:100vh;background:#fff;">';
 
   /* ロゴヘッダー（ログイン状態で切り替え。右端はハンバーガーメニュー） */
   const spIcoBtn='display:flex;flex-direction:column;align-items:center;gap:3px;color:#6f6f6f;';
@@ -2440,7 +2486,7 @@ function spHTML(){
   h+=profileSavedHTML();
   h+=howtoHTML();
   h+=filterPanelHTML(true);
-  h+=areaBarHTML();       /* 常設：お届けエリアを確認する（未ログインのみ） */
+  h+=areaBannerSPHTML();  /* 画面下部の追従バナー（未ログイン・エリア未確認のみ） */
   h+=demoToggleHTML();
 
   return h;
@@ -2494,6 +2540,7 @@ function pcHTML(){
   const guestMag=!S.loggedIn&&!S.guestFull;
   if(pg===null&&guestMag){
     h+=guestFlowHTML(false);
+    h+=areaBannerPCHTML();   /* エリア確認バナー（ご利用の流れ直後・メニュー棚の手前） */
     h+=guestShelfHTML(false);
     h+=guestSeeAllHTML(false);
   }
@@ -2919,7 +2966,6 @@ function pcHTML(){
   h+=profileSavedHTML();
   h+=howtoHTML();
   h+=filterPanelHTML(false);
-  h+=areaBarHTML();       /* 常設：お届けエリアを確認する（未ログインのみ） */
   h+=demoToggleHTML();
 
   return h;
@@ -2934,8 +2980,10 @@ function render(){
   });
   document.getElementById('sp-root').innerHTML=spHTML();
   document.getElementById('pc-root').innerHTML=pcHTML();
-  /* エリア確認バーの分だけ下端に余白を作る（デモ用トグルの退避位置も合わせる） */
-  document.body.classList.toggle('has-areabar',!S.loggedIn&&S.page===null);
+  /* SP追従バナー／ピルの分だけ下端に余白を作る（デモ用トグルの退避位置も合わせる） */
+  const abn=areaBnVisible(),abnMin=abn&&areaBnMinimized();
+  document.body.classList.toggle('has-abn',abn&&!abnMin);
+  document.body.classList.toggle('has-abnpill',abnMin);
   document.querySelectorAll('[data-sc]').forEach(el=>{
     const s=saved[el.getAttribute('data-sc')];
     if(s){el.scrollTop=s.top;el.scrollLeft=s.left;}
@@ -3319,7 +3367,7 @@ const Search=(function(){
 /* ================= お届けエリア確認モーダル（乖離No.2・デザイン原本 docs/snippets/AreaCheckModal.dc.html） =================
    1つのモーダルを2つの動線から開く：
      (1) 未ログインでカートに入れる操作をした瞬間（エリア未確認のときだけ／確認済みなら二度と出さない）
-     (2) 未ログイン時の画面下部固定バー「お届けエリアを確認する」
+     (2) エリア確認バナー（PC＝雑誌型トップのページ内／SP＝画面下部の追従バナー・ピル）
    状態は A 郵便番号入力 → B 配達可 ／ C 町名確認 → B or D ／ D エリア外 の4つ。
    確認結果は localStorage（rk_area_checked / rk_area_zip）に保持し、確定した県は setRegion() へ渡して
    フッター・問い合わせ等の地域表示と連動させる。オーバーレイは静的DOMなので商品選択・カートの中身は保持される。 */
