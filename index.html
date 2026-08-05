@@ -67,19 +67,25 @@
   .hero-slide-2{object-position:66% 46%}
   .hero-slide-1{animation:hero-xfade 12s linear infinite;will-change:opacity}
   @keyframes hero-xfade{0%,42%{opacity:1}50%,92%{opacity:0}100%{opacity:1}}
-  .echero-scrim{position:absolute;inset:0;background:linear-gradient(90deg,#FBF7EE 0%,#FBF7EE 56%,rgba(251,247,238,.72) 68%,rgba(251,247,238,0) 84%)}
+  /* スクリムは「写真を濁すため」ではなく「テキストの足場を作るため」だけに敷く。
+     写真領域（SPは左56%から右端まで）に入ったら一気に抜けきるので、被写体はほぼ素の写真として見える。
+     文字が写真に重なる細い帯だけは薄く残し、足りない分は下の text-shadow（クリーム色のハロー）で補う。
+     ＝写真を暗く／白くする方向ではなく、文字側で可読性を確保する。 */
+  .echero-scrim{position:absolute;inset:0;background:linear-gradient(90deg,#FBF7EE 0%,#FBF7EE 52%,rgba(251,247,238,.40) 60%,rgba(251,247,238,.08) 70%,rgba(251,247,238,0) 78%)}
   .echero-inner{position:relative;z-index:2;padding-left:20px;display:flex;flex-direction:column;gap:14px;max-width:238px}
-  .echero-catch{margin:0;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:26px;line-height:1.35;color:#3E3A34;letter-spacing:.01em;word-break:keep-all}
+  /* 写真の上に乗る文字は、背景色と同じクリーム色のハローで縁取って読ませる（写真自体は覆わない） */
+  .echero-catch{margin:0;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:26px;line-height:1.35;color:#3E3A34;letter-spacing:.01em;word-break:keep-all;text-shadow:0 1px 2px rgba(251,247,238,.95),0 0 10px rgba(251,247,238,.85)}
   .echero-week{display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px}
   .echero-badge{font-size:11.5px;font-weight:700;color:#fff;background:#E50012;border-radius:999px;padding:4px 11px;letter-spacing:.02em}
-  .echero-weektext{font-size:13.5px;font-weight:700;color:#3E3A34;font-family:'Zen Maru Gothic',sans-serif;word-break:keep-all}
+  .echero-weektext{font-size:13.5px;font-weight:700;color:#3E3A34;font-family:'Zen Maru Gothic',sans-serif;word-break:keep-all;text-shadow:0 1px 2px rgba(251,247,238,.95),0 0 8px rgba(251,247,238,.85)}
   .echero-deadline{font-size:12.5px;font-weight:500;color:#7C6E58;background:#fff;border-radius:8px;padding:5px 10px;border:1px solid #E7DCC7}
   @media (min-width:1024px){
     .echero{height:270px}
     .echero-photo{left:46%}
     /* PCは写真領域が横長になるので、SPで効かせていた右寄せトリミングは戻す */
     .hero-slide-2{object-position:50% 46%}
-    .echero-scrim{background:linear-gradient(90deg,#FBF7EE 0%,#FBF7EE 48%,rgba(251,247,238,.85) 58%,rgba(251,247,238,0) 74%)}
+    /* PCは写真の開始位置が左46%と早いので、抜けきる位置もその分だけ左に寄せる */
+    .echero-scrim{background:linear-gradient(90deg,#FBF7EE 0%,#FBF7EE 42%,rgba(251,247,238,.42) 50%,rgba(251,247,238,.08) 60%,rgba(251,247,238,0) 68%)}
     .echero-inner{padding-left:56px;gap:20px;max-width:560px}
     .echero-catch{font-size:44px}
     .echero-badge{font-size:12.5px;padding:5px 13px}
