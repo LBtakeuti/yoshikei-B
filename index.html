@@ -204,7 +204,7 @@
   .ac-telarea{font-size:12px;color:#4A443C;}
   .ac-telnum{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:21px;color:#E50012;line-height:1.25;}
   .ac-teldiv{width:100%;height:0;border-top:1px solid #EDE6DA;margin-top:9px;}
-  /* エリア確認バナー（PC＝雑誌型トップのページ内／SP＝画面下部の追従バナー）
+  /* エリア確認バナー（ヒーロー直下＝SP/PC共通／PC＝雑誌型トップのページ内／SP＝画面下部の追従バナー）
      画像は 1774×887＝高さは幅のちょうど半分。エリア確認済み・ログイン済みでは出さない。 */
   .abn-pc{background:#fff;padding:6px 24px 26px;}
   .abn-pc-inner{max-width:1200px;margin:0 auto;}
@@ -218,6 +218,15 @@
   .abn-pill{position:fixed;right:12px;bottom:76px;z-index:36;display:inline-flex;align-items:center;gap:6px;
     min-height:40px;padding:0 16px;border-radius:999px;background:#E50012;color:#fff;
     font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:13.5px;box-shadow:0 3px 12px rgba(229,0,18,.34);}
+  /* ヒーロー直下のエリア確認バナー（SP・PC共通・アスペクト比2:1のまま1/2サイズで表示）
+     SP＝コンテンツ幅いっぱい（左右14pxの既存padding内）／PC＝幅600pxで中央寄せ。 */
+  .abn-hero{background:#fff;padding:12px 14px 2px;}
+  .abn-hero .abn-btn{border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.10);}
+  .abn-hero .abn-btn img{aspect-ratio:2/1;object-fit:cover;}
+  @media (min-width:1024px){
+    .abn-hero{padding:18px 24px 2px;}
+    .abn-hero .abn-btn{width:600px;margin:0 auto;border-radius:14px;}
+  }
   /* 追従バナー／ピルとデモ用トグルが重ならないよう退避（下端余白はSPメイン側で確保） */
   .has-abn .demo-toggle{bottom:calc((100vw - 16px) / 2 + 90px);}
   .has-abnpill .demo-toggle{bottom:126px;}
@@ -1372,7 +1381,8 @@ function specialPageContentHTML(sp){
   }).join('');
 }
 /* ================= エリア確認バナー（エリア確認モーダルへの入口） =================
-   PC＝雑誌型トップの「ご利用の流れ」直後にページ内配置／SP＝画面下部の追従バナー。
+   ヒーロー直下＝SP/PC共通のページ内配置（1/2サイズ・2:1）／PC＝雑誌型トップの「ご利用の流れ」直後にも配置／
+   SP＝画面下部の追従バナー。
    未ログイン かつ エリア未確認（rk_area_checked）のときだけ出す。
    SPは×で閉じるとピル型ボタンに縮小し、その状態はセッション中だけ保持する。 */
 const AREA_BN_MINKEY='rk_area_banner_min';
@@ -1390,6 +1400,16 @@ function areaBannerPCHTML(){
     +'<div class="abn-btn" role="button" tabindex="0" onclick="Area.open()" title="'+AREA_BN_ALT+'">'
     +'<img src="assets/area-banner-pc.png" alt="'+AREA_BN_ALT+'">'
     +'</div></div></section>';
+}
+/* SP・PC共通：雑誌型トップのヒーロー直下バナー（バナーカルーセルの手前）
+   表示サイズは1/2（PC=幅600px中央寄せ／SP=コンテンツ幅いっぱい）でアスペクト比2:1を維持する。
+   出現/消滅で隣のセクションが巻き添えにならないよう data-mk を付ける。 */
+function areaBannerHeroHTML(sp){
+  if(!areaBnVisible())return '';
+  return '<section class="abn-hero" data-mk="abnhero">'
+    +'<div class="abn-btn" role="button" tabindex="0" onclick="Area.open()" title="'+AREA_BN_ALT+'">'
+    +'<img src="assets/area-banner-'+(sp?'sp':'pc')+'.png" alt="'+AREA_BN_ALT+'">'
+    +'</div></section>';
 }
 /* SP：画面下部の追従バナー（ボトムナビ66pxの上）。×で閉じたらピル型ボタンに縮小 */
 function areaBannerSPHTML(){
@@ -2118,9 +2138,9 @@ function spHTML(){
   /* 審査状況の更新通知（新規のみ・画面上部に1行） */
   h+=reviewNoticeHTML(true);
 
-  /* ECヒーロー＋バナーカルーセル（未ログインのゲスト閲覧時のみ・ヘッダー直下）
+  /* ECヒーロー＋エリア確認バナー＋バナーカルーセル（未ログインのゲスト閲覧時のみ・ヘッダー直下）
      フルメニューに切り替えた後もヒーローとカルーセルは上部に残す */
-  if(!S.loggedIn){h+=heroHTML();h+=bannerHTML(true);}
+  if(!S.loggedIn){h+=heroHTML();h+=areaBannerHeroHTML(true);h+=bannerHTML(true);}
 
   /* 未ログイントップ（雑誌型）：流れ → 今週のメニュー棚 → すべて見る */
   const guestMag=!S.loggedIn&&!S.guestFull;
@@ -2603,9 +2623,9 @@ function pcHTML(){
   /* 審査状況の更新通知（新規のみ・画面上部に1行） */
   h+=reviewNoticeHTML(false);
 
-  /* ECヒーロー＋バナーカルーセル（未ログインのゲスト閲覧時のみ・ヘッダー直下）
+  /* ECヒーロー＋エリア確認バナー＋バナーカルーセル（未ログインのゲスト閲覧時のみ・ヘッダー直下）
      フルメニューに切り替えた後もヒーローとカルーセルは上部に残す */
-  if(pg===null&&!S.loggedIn){h+=heroHTML();h+=bannerHTML(false);}
+  if(pg===null&&!S.loggedIn){h+=heroHTML();h+=areaBannerHeroHTML(false);h+=bannerHTML(false);}
 
   /* 未ログイントップ（雑誌型）：流れ → 今週のメニュー棚 → すべて見る */
   const guestMag=!S.loggedIn&&!S.guestFull;
