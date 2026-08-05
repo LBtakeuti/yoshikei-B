@@ -21,8 +21,9 @@
   @keyframes rk-fade{from{opacity:0;}to{opacity:1;}}
   @keyframes rk-pop{from{opacity:0;transform:scale(.96);}to{opacity:1;transform:scale(1);}}
   @keyframes rk-slide{from{opacity:0;transform:translateX(16px);}to{opacity:1;transform:translateX(0);}}
-  /* 再描画時のちらつき防止：開いたままの状態更新（カートに反映・数量変更など）では
-     ルートを丸ごと innerHTML で描き直しても登場アニメーションを再生させない。
+  /* 再描画時のちらつき防止の保険：描画は DOM 差分更新（morph）でノードを使い回すが、
+     構造が変わってノードが作り直された場合でも、開いたままの状態更新（カートに反映・数量変更など）
+     では登場アニメーションを再生させない。
      ユーザーが新しく開く／画面を切り替える操作のときだけ ANIM=true とし、このクラスを外す。 */
   .rk-noanim,.rk-noanim *{animation:none !important;}
   /* 子タブのドロップダウン（コンテンツに覆いかぶさるオーバーレイ） */
@@ -241,7 +242,7 @@
 <div id="pc-root"></div>
 
 <!-- ======== LPフッター用の野菜アイコン（lp.html と同一のシンボル定義） ========
-     sp-root / pc-root は innerHTML で描き替えるため、参照元のシンボルは静的に置く。 -->
+     sp-root / pc-root は再描画で書き替わるため、参照元のシンボルは静的に置く。 -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="ic-carrot" viewBox="0 0 100 100"><path d="M28 36c-5-3-8-10-6-15 6 2 11 7 12 13z" fill="#509146"></path><path d="M50 32c-2-6-1-14 3-18 5 4 5 13 2 19z" fill="#509146"></path><path d="M40 34c-4-5-6-13-3-18 5 3 8 12 7 18z" fill="#509146"></path><path d="M30 37 58 41 45 86c-1 4-4 4-5 0z" fill="#E50012"></path><g stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".55"><path d="M38 50 50 52"></path><path d="M37 62 47 64"></path><path d="M35 73 44 75"></path></g></symbol>
   <symbol id="ic-broccoli" viewBox="0 0 100 100"><rect x="44" y="48" width="12" height="36" rx="6" fill="#7cae5e"></rect><circle cx="38" cy="40" r="14" fill="#509146"></circle><circle cx="60" cy="38" r="15" fill="#509146"></circle><circle cx="50" cy="29" r="13" fill="#509146"></circle><circle cx="46" cy="47" r="12" fill="#509146"></circle><circle cx="63" cy="50" r="10" fill="#509146"></circle></symbol>
@@ -1336,10 +1337,10 @@ function areaBannerPCHTML(){
 function areaBannerSPHTML(){
   if(!areaBnVisible())return '';
   if(areaBnMinimized()){
-    return '<button onclick="Area.open()" class="abn-pill" aria-label="'+AREA_BN_ALT+'">'
+    return '<button onclick="Area.open()" class="abn-pill" data-mk="abn" aria-label="'+AREA_BN_ALT+'">'
       +AREA_BN_SEARCH+'エリアを確認</button>';
   }
-  return '<div class="abn-sp">'
+  return '<div class="abn-sp" data-mk="abn">'
     +'<div class="abn-btn" role="button" tabindex="0" onclick="Area.open()">'
     +'<img src="assets/area-banner-sp.png" alt="'+AREA_BN_ALT+'">'
     +'</div>'
@@ -1350,7 +1351,7 @@ function areaBannerSPHTML(){
 function demoToggleHTML(){
   const b=S.specialMode;
   const chip=(k,label)=>'<span style="background:'+(b===k?'#E50012':'rgba(255,255,255,.2)')+';padding:2px 7px;border-radius:6px;">'+label+'</span>';
-  return '<div class="demo-toggle">'
+  return '<div class="demo-toggle" data-mk="demotoggle">'
     +'<button onclick="A.toggleSpecialMode()" style="display:flex;align-items:center;gap:6px;background:rgba(55,55,55,.85);color:#fff;font-size:10.5px;font-weight:700;padding:7px 10px;border-radius:10px 0 0 10px;box-shadow:0 2px 8px rgba(0,0,0,.25);border:1px dashed rgba(255,255,255,.45);">'
     +'<span style="opacity:.7;">表示案</span>'+chip('A','A:タブ型')+chip('B','B:独立型')
     +'</button></div>';
@@ -1366,7 +1367,7 @@ function lastChanceHTML(sp){
   const box=sp
     ?'background:#fff;border-radius:18px 18px 0 0;padding:20px 18px 26px;animation:rk-up .22s ease;'
     :'width:100%;max-width:440px;background:#fff;border-radius:16px;padding:24px 22px;animation:rk-pop .2s ease;box-shadow:0 24px 60px rgba(0,0,0,.35);';
-  return '<div style="'+wrap+'">'
+  return '<div data-mk="lastchance" style="'+wrap+'">'
     +'<div onclick="event.stopPropagation()" style="'+box+'">'
     +'<div style="font-size:17px;font-weight:800;color:#2b2b2b;">もう一品いかがですか？</div>'
     +'<div style="font-size:12.5px;color:#666;margin-top:6px;line-height:1.6;">ご注文を確定する前に、人気の一品を追加できます。</div>'
@@ -1389,7 +1390,7 @@ function lastChanceHTML(sp){
 /* 確定お忘れリマインド */
 function remindHTML(){
   if(!S.remindOpen)return '';
-  return '<div style="position:fixed;inset:0;z-index:88;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:28px;animation:rk-fade .18s ease;">'
+  return '<div data-mk="remind" style="position:fixed;inset:0;z-index:88;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:28px;animation:rk-fade .18s ease;">'
     +'<div style="width:100%;max-width:380px;background:#fff;border-radius:16px;padding:24px 22px;text-align:center;animation:rk-pop .2s ease;box-shadow:0 24px 60px rgba(0,0,0,.35);">'
     +'<div style="width:50px;height:50px;margin:0 auto;border-radius:50%;background:#FCEBEC;color:#E50012;display:flex;align-items:center;justify-content:center;">'+IC.cart(26)+'</div>'
     +'<div style="font-size:16px;font-weight:800;color:#2b2b2b;margin-top:12px;">ご注文の確定がお済みでないようです</div>'
@@ -1403,7 +1404,7 @@ function histConfirmHTML(){
   const c=S.histConfirm;
   if(!c)return '';
   const msg=c.type==='all'?'すべての注文をキャンセルしますか？':'この注文をキャンセルしますか？';
-  return '<div style="position:fixed;inset:0;z-index:88;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:28px;animation:rk-fade .18s ease;">'
+  return '<div data-mk="histconfirm" style="position:fixed;inset:0;z-index:88;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:28px;animation:rk-fade .18s ease;">'
     +'<div style="width:100%;max-width:380px;background:#fff;border-radius:16px;padding:24px 22px;text-align:center;animation:rk-pop .2s ease;box-shadow:0 24px 60px rgba(0,0,0,.35);">'
     +'<div style="width:50px;height:50px;margin:0 auto;border-radius:50%;background:#FCEBEC;color:#E50012;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;">!</div>'
     +'<div style="font-size:16px;font-weight:800;color:#2b2b2b;margin-top:12px;">'+msg+'</div>'
@@ -1483,7 +1484,7 @@ function profileFormHTML(sp){
 /* 保存完了トースト */
 function profileSavedHTML(){
   if(!S.profileSaved)return '';
-  return '<div style="position:fixed;inset:0;z-index:92;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:28px;animation:rk-fade .15s ease;">'
+  return '<div data-mk="profilesaved" style="position:fixed;inset:0;z-index:92;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:28px;animation:rk-fade .15s ease;">'
     +'<div style="width:100%;max-width:320px;background:#fff;border-radius:16px;padding:26px 22px;text-align:center;animation:rk-pop .2s ease;box-shadow:0 24px 60px rgba(0,0,0,.35);">'
     +'<div style="width:48px;height:48px;margin:0 auto;border-radius:50%;background:#E50012;color:#fff;display:flex;align-items:center;justify-content:center;">'+IC.check(24)+'</div>'
     +'<div style="font-size:16px;font-weight:800;color:#2b2b2b;margin-top:12px;">登録情報を保存しました</div>'
@@ -1499,7 +1500,7 @@ function howtoHTML(){
     {ic:IC.chop(24),t:'メニューを選んで数量を入れる',d:'気になる料理を開き、人数と数量を決めます。'},
     {ic:IC.cart(24),t:'カートで注文を確定する',d:'カートで内容を確認し、締切前に確定します。'},
   ];
-  return '<div onclick="A.closeHowto()" style="position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:24px;animation:rk-fade .18s ease;">'
+  return '<div onclick="A.closeHowto()" data-mk="howto" style="position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:24px;animation:rk-fade .18s ease;">'
     +'<div onclick="event.stopPropagation()" style="width:100%;max-width:420px;background:#fff;border-radius:18px;padding:24px 22px;animation:rk-pop .2s ease;box-shadow:0 24px 60px rgba(0,0,0,.35);">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;">'
     +'<div style="font-size:18px;font-weight:800;color:#2b2b2b;">かんたんな使い方</div>'
@@ -1535,7 +1536,7 @@ function filterPanelHTML(sp){
   const box=sp
     ?'background:#fff;border-radius:18px 18px 0 0;padding:20px 18px 24px;max-height:84vh;overflow-y:auto;animation:rk-up .22s ease;'
     :'width:100%;max-width:440px;background:#fff;border-radius:16px;padding:24px 22px;max-height:84vh;overflow-y:auto;animation:rk-pop .2s ease;box-shadow:0 24px 60px rgba(0,0,0,.35);';
-  return '<div onclick="A.closeFilter()" style="'+wrap+'">'
+  return '<div onclick="A.closeFilter()" data-mk="filter" style="'+wrap+'">'
     +'<div onclick="event.stopPropagation()" data-sc="filter-'+(sp?'sp':'pc')+'" style="'+box+'">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;">'
     +'<div style="font-size:17px;font-weight:800;color:#2b2b2b;display:flex;align-items:center;gap:8px;"><span style="color:#E50012;">'+IC.filter(20)+'</span>絞り込み</div>'
@@ -1624,7 +1625,7 @@ function calDetailHTML(sp){
   const isCancelled=!!S.cancelled[key];
   /* キャンセル警告モーダル（最前面） */
   if(S.calCancelConfirm){
-    return '<div style="position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:28px;animation:rk-fade .18s ease;">'
+    return '<div data-mk="calcancel" style="position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:28px;animation:rk-fade .18s ease;">'
       +'<div style="width:100%;max-width:380px;background:#fff;border-radius:16px;padding:24px 22px;text-align:center;animation:rk-pop .2s ease;box-shadow:0 24px 60px rgba(0,0,0,.35);">'
       +'<div style="width:50px;height:50px;margin:0 auto;border-radius:50%;background:#FCEBEC;color:#E50012;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;">!</div>'
       +'<div style="font-size:16px;font-weight:800;color:#2b2b2b;margin-top:12px;">'+sel.m+'/'+sel.d+'（'+DOWJ[del.dow]+'）の注文を<br>キャンセルしますか？</div>'
@@ -1640,7 +1641,7 @@ function calDetailHTML(sp){
   const box=sp
     ?'background:#fff;border-radius:18px 18px 0 0;padding:20px 18px 28px;animation:rk-up .22s ease;'
     :'width:100%;max-width:460px;background:#fff;border-radius:16px;padding:22px 22px 24px;animation:rk-pop .2s ease;box-shadow:0 24px 60px rgba(0,0,0,.35);';
-  return '<div onclick="A.calClose()" style="'+wrap+'">'
+  return '<div onclick="A.calClose()" data-mk="caldetail" style="'+wrap+'">'
     +'<div onclick="event.stopPropagation()" style="'+box+'">'
     +'<div style="display:flex;align-items:center;gap:9px;">'
     +'<span style="background:'+(isCancelled?'#888':'#E50012')+';color:#fff;font-size:12px;font-weight:700;padding:4px 12px;border-radius:12px;white-space:nowrap;">'+sel.m+'/'+sel.d+'（'+DOWJ[del.dow]+'）</span>'
@@ -1771,7 +1772,8 @@ function bannerHTML(sp){
 }
 
 /* カルーセルの挙動（スナップ位置・ドット・自動送り・矢印・ディープリンク）。
-   ルート再描画で DOM が作り直されるため、render() の最後に mount() で貼り直す。 */
+   差分更新でトラックが作り直された場合に備え、render() の最後に mount() を呼ぶ
+   （使い回されたトラックには __bnrBound が残るので二重バインドされない）。 */
 const Banner=(function(){
   let paused=false, timer=null;
   const list=(key)=>Array.prototype.slice.call(document.querySelectorAll('[data-banner="'+key+'"]'));
@@ -1875,6 +1877,9 @@ const Banner=(function(){
     if(!bound){window.addEventListener('resize',onResize);bound=true;}
     ['sp','pc'].forEach(function(key){
       list(key).forEach(function(t){
+        /* 差分更新ではトラックのDOMが使い回されるため、二重バインドを防ぐ */
+        if(t.__bnrBound)return;
+        t.__bnrBound=true;
         t.addEventListener('scroll',function(){paint(key);},{passive:true});
         t.addEventListener('pointerdown',stop,{passive:true});
         t.addEventListener('touchstart',stop,{passive:true});
@@ -2220,7 +2225,7 @@ function spHTML(){
     +'</nav>';
 
   /* ---- サブページ（オーバーレイ） ---- */
-  const pageShell=(title,inner)=>'<div class="hs" data-sc="sp-page" style="position:fixed;top:4px;left:0;right:0;bottom:0;z-index:28;background:#F4F4F4;overflow-y:auto;overflow-x:hidden;padding-bottom:82px;animation:rk-slide .2s ease;">'
+  const pageShell=(title,inner)=>'<div class="hs" data-sc="sp-page" data-mk="sppage-'+pg+'" style="position:fixed;top:4px;left:0;right:0;bottom:0;z-index:28;background:#F4F4F4;overflow-y:auto;overflow-x:hidden;padding-bottom:82px;animation:rk-slide .2s ease;">'
     +'<div style="position:sticky;top:0;z-index:5;background:#fff;display:flex;align-items:center;padding:13px 12px;box-shadow:0 1px 0 rgba(0,0,0,.06);">'
     +'<button onclick="A.goHome()" style="display:flex;align-items:center;gap:1px;color:#E50012;font-size:13px;font-weight:700;position:relative;z-index:2;">'+IC.back(20)+'戻る</button>'
     +'<span style="position:absolute;left:0;right:0;text-align:center;font-size:16px;font-weight:700;color:#2b2b2b;">'+title+'</span>'
@@ -2422,7 +2427,7 @@ function spHTML(){
 
   /* ---- まとめて購入モーダル ---- */
   if(S.bulkOpen){
-    h+='<div onclick="A.closeBulk()" data-sc="sp-bulk" style="position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:64px 16px 20px;overflow-y:auto;animation:rk-fade .18s ease;">'
+    h+='<div onclick="A.closeBulk()" data-sc="sp-bulk" data-mk="spbulk" style="position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:64px 16px 20px;overflow-y:auto;animation:rk-fade .18s ease;">'
       +'<div onclick="event.stopPropagation()" style="width:100%;max-width:344px;background:#fff;border-radius:16px;padding:22px 18px 20px;animation:rk-pop .2s ease;box-shadow:0 22px 54px rgba(0,0,0,.32);">'
       +'<div style="display:flex;gap:14px;align-items:flex-start;">'
       +'<div style="position:relative;flex-shrink:0;"><div style="width:54px;height:54px;background:#E50012;border-radius:50%;color:#fff;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;">お得!</div>'
@@ -2438,7 +2443,7 @@ function spHTML(){
   /* ---- 商品詳細（フルスクリーン） ---- */
   if(S.productOpen&&S.product){
     const p=S.product;
-    h+='<div style="position:fixed;inset:0;z-index:45;background:#fff;display:flex;flex-direction:column;animation:rk-up .22s ease;">'
+    h+='<div data-mk="spprod" style="position:fixed;inset:0;z-index:45;background:#fff;display:flex;flex-direction:column;animation:rk-up .22s ease;">'
       +'<div style="height:4px;background:#E50012;"></div>'
       +'<div style="background:#fff;padding:10px 14px 6px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 0 rgba(0,0,0,.05);">'
       +'<img src="assets/logo.svg" alt="ヨシケイ楽楽web" style="height:26px;width:auto;display:block;">'
@@ -2471,7 +2476,7 @@ function spHTML(){
 
   /* ---- カート追加後（ボトムシート） ---- */
   if(S.cartAddedOpen){
-    h+='<div onclick="A.skipRec()" style="position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.42);display:flex;flex-direction:column;justify-content:flex-end;animation:rk-fade .18s ease;">'
+    h+='<div onclick="A.skipRec()" data-mk="sprec" style="position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.42);display:flex;flex-direction:column;justify-content:flex-end;animation:rk-fade .18s ease;">'
       +'<div onclick="event.stopPropagation()" style="background:#fff;border-radius:18px 18px 0 0;max-height:84%;display:flex;flex-direction:column;animation:rk-up .24s ease;">'
       +'<div style="padding:18px 18px 10px;">'
       +'<div style="display:flex;align-items:center;gap:9px;"><span style="width:23px;height:23px;border-radius:50%;background:#E50012;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+IC.check(14)+'</span>'
@@ -2908,7 +2913,7 @@ function pcHTML(){
 
   /* ---- まとめて購入モーダル ---- */
   if(S.bulkOpen){
-    h+='<div onclick="A.closeBulk()" data-sc="pc-bulk" style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:32px;overflow-y:auto;animation:rk-fade .18s ease;">'
+    h+='<div onclick="A.closeBulk()" data-sc="pc-bulk" data-mk="pcbulk" style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:32px;overflow-y:auto;animation:rk-fade .18s ease;">'
       +'<div onclick="event.stopPropagation()" style="width:100%;max-width:420px;background:#fff;border-radius:16px;padding:26px 24px 24px;animation:rk-pop .2s ease;box-shadow:0 24px 60px rgba(0,0,0,.35);">'
       +'<div style="display:flex;gap:15px;align-items:flex-start;">'
       +'<div style="width:56px;height:56px;background:#E50012;border-radius:50%;color:#fff;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">お得!</div>'
@@ -2923,7 +2928,7 @@ function pcHTML(){
   /* ---- 商品詳細モーダル ---- */
   if(S.productOpen&&S.product){
     const p=S.product;
-    h+='<div onclick="A.closeProduct()" data-sc="pc-prod" style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:32px;overflow-y:auto;animation:rk-fade .18s ease;">'
+    h+='<div onclick="A.closeProduct()" data-sc="pc-prod" data-mk="pcprod" style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:32px;overflow-y:auto;animation:rk-fade .18s ease;">'
       +'<div onclick="event.stopPropagation()" style="width:100%;max-width:860px;background:#fff;border-radius:18px;overflow:hidden;animation:rk-pop .22s ease;box-shadow:0 26px 66px rgba(0,0,0,.36);display:flex;">'
       +'<div style="position:relative;width:400px;flex-shrink:0;background:#F4F4F4;min-height:420px;">'+favBtn(p.title,p.seriesName,p.accent,p.price,36)+slot(p.title)+'</div>'
       +'<div style="flex:1;min-width:0;display:flex;flex-direction:column;">'
@@ -2949,7 +2954,7 @@ function pcHTML(){
 
   /* ---- カート追加後モーダル ---- */
   if(S.cartAddedOpen){
-    h+='<div onclick="A.skipRec()" data-sc="pc-rec" style="position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:32px;overflow-y:auto;animation:rk-fade .18s ease;">'
+    h+='<div onclick="A.skipRec()" data-sc="pc-rec" data-mk="pcrec" style="position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:32px;overflow-y:auto;animation:rk-fade .18s ease;">'
       +'<div onclick="event.stopPropagation()" style="width:100%;max-width:460px;background:#fff;border-radius:16px;overflow:hidden;animation:rk-pop .22s ease;box-shadow:0 24px 60px rgba(0,0,0,.35);">'
       +'<div style="padding:22px 22px 12px;">'
       +'<div style="display:flex;align-items:center;gap:10px;"><span style="width:24px;height:24px;border-radius:50%;background:#E50012;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+IC.check(14)+'</span>'
@@ -2978,11 +2983,101 @@ function pcHTML(){
   return h;
 }
 
+/* ================= DOM差分更新（morph・軽量morphdom方式） =================
+   ルートを innerHTML で全置換すると、変わっていない要素（特に img）まで作り直されて
+   再ペイントの瞬間が見える＝画面全体がちらつく。そこで新しい HTML を template に流し込み、
+   既存 DOM と突き合わせて「変わった部分だけ」を書き換える。
+   ・同位置・同種のノード → 属性と子だけ同期（ノードは使い回す＝img は再読み込みされない）
+   ・種類が違う → replaceWith 相当で作り直し（＝登場アニメーションが再生されるべき場面）
+   ・data-mk（morph key）／data-section を持つ要素は、キーが一致する相手としか対応づけない。
+     ページ・モーダル等の出現／消滅で並びがずれても、隣の要素が巻き添えで作り直されない。 */
+const mkOf=(n)=>(n&&n.nodeType===1)?(n.getAttribute('data-mk')||n.getAttribute('data-section')):null;
+function morph(rootEl,html){
+  const tpl=document.createElement('template');
+  tpl.innerHTML=html;
+  morphChildren(rootEl,tpl.content);
+}
+/* 同じノードとして扱えるか（SVGは大文字小文字が意味を持つので nodeName と名前空間で比較） */
+function morphSame(a,b){
+  return a.nodeType===b.nodeType&&a.nodeName===b.nodeName&&a.namespaceURI===b.namespaceURI;
+}
+/* start以降から data-mk が k の要素を探す（並びがずれたキー付き要素の引き当て） */
+function morphFindKeyed(parent,k,start){
+  const cs=parent.childNodes;
+  for(let i=start;i<cs.length;i++){if(mkOf(cs[i])===k)return cs[i];}
+  return null;
+}
+function morphChildren(from,to){
+  const tArr=Array.prototype.slice.call(to.childNodes);
+  for(let i=0;i<tArr.length;i++){
+    const t=tArr[i];
+    let f=from.childNodes[i];
+    if(!f){from.appendChild(t);continue;}          /* 新側が多い → 追加 */
+    const tk=mkOf(t);
+    if(tk!==mkOf(f)){
+      const m=tk?morphFindKeyed(from,tk,i):null;
+      if(m){from.insertBefore(m,f);f=m;}           /* 既存のキー付き要素を正しい位置へ移す */
+      else{from.insertBefore(t,f);continue;}       /* 引き当て先が無い → 新規挿入 */
+    }
+    if(!morphSame(f,t)){from.replaceChild(t,f);continue;}
+    morphNode(f,t);
+  }
+  while(from.childNodes.length>tArr.length)from.removeChild(from.lastChild);  /* 旧側が多い → 末尾から削除 */
+}
+function morphNode(f,t){
+  if(f.nodeType===3||f.nodeType===8){                /* テキスト・コメント */
+    if(f.nodeValue!==t.nodeValue)f.nodeValue=t.nodeValue;
+    return;
+  }
+  if(f.nodeType!==1)return;
+  const tag=f.nodeName;
+  const isForm=tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||tag==='OPTION';
+  const prevVal=isForm?f.getAttribute('value'):null;
+  morphAttrs(f,t);
+  morphChildren(f,t);
+  if(isForm)morphFormState(f,prevVal);
+}
+/* 属性の同期。値が同じものは触らない（img の src が同じなら再読み込みが起きない） */
+function morphAttrs(el,nel){
+  const na=nel.attributes;
+  for(let i=0;i<na.length;i++){
+    const a=na[i];
+    if(el.getAttribute(a.name)!==a.value){
+      if(a.namespaceURI)el.setAttributeNS(a.namespaceURI,a.name,a.value);
+      else el.setAttribute(a.name,a.value);
+    }
+  }
+  const ea=el.attributes;
+  for(let i=ea.length-1;i>=0;i--){
+    const n=ea[i].name;
+    if(!nel.hasAttribute(n))el.removeAttribute(n);
+  }
+}
+/* 入力系はプロパティ（実際の値）も合わせる。ただし入力中の欄は絶対に上書きしない。 */
+function morphFormState(el,prevVal){
+  if(el===document.activeElement)return;
+  const tag=el.nodeName;
+  if(tag==='INPUT'||tag==='TEXTAREA'){
+    const v=el.getAttribute('value');
+    if(v!==null&&v!==prevVal&&el.value!==v)el.value=v;   /* value属性が変わったときだけ反映 */
+    return;
+  }
+  if(tag==='OPTION'){el.selected=el.hasAttribute('selected');return;}
+  if(tag==='SELECT'){
+    const o=el.querySelector('option[selected]');
+    const v=o?o.value:(el.options[0]?el.options[0].value:'');
+    if(el.value!==v)el.value=v;
+  }
+}
+
 /* ================= レンダリング（スクロール位置保持付き） =================
    ANIM … 次の render() で登場アニメーションを再生してよいか。
    モーダルやページを「新しく開く／切り替える」操作の先頭でだけ true を立てる（anim() を呼ぶ）。
    開いたまま状態だけ変わる再描画（カートに反映・数量変更など）は false のままなので、
-   ルートに .rk-noanim が付き、スライドイン等が再生されない＝ちらつかない。 */
+   ルートに .rk-noanim が付き、スライドイン等が再生されない。
+   描画自体は morph（DOM差分更新）なので通常はノードが作り直されないが、
+   構造が変わってノードが再生成された場合の保険としてこの仕組みは残している。
+   スクロール位置の保存・復元も、ノードを使い回すため通常は不要だが既存機構として残す。 */
 let ANIM=true;
 const anim=()=>{ANIM=true;};
 function render(){
@@ -2994,8 +3089,8 @@ function render(){
   const sp=document.getElementById('sp-root'),pc=document.getElementById('pc-root');
   sp.classList.toggle('rk-noanim',!ANIM);
   pc.classList.toggle('rk-noanim',!ANIM);
-  sp.innerHTML=spHTML();
-  pc.innerHTML=pcHTML();
+  morph(sp,spHTML());   /* innerHTML の全置換ではなく差分更新（ちらつき防止の本体） */
+  morph(pc,pcHTML());
   ANIM=false;
   /* SP追従バナー／ピルの分だけ下端に余白を作る（デモ用トグルの退避位置も合わせる） */
   const abn=areaBnVisible(),abnMin=abn&&areaBnMinimized();
