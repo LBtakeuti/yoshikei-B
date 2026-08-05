@@ -126,6 +126,9 @@
   .lpft-logo{display:flex;align-items:center;margin-bottom:20px;}
   .lpft-logo img{height:26px;width:auto;display:block;}
   .lpft-icons{display:flex;gap:3px;flex-wrap:wrap;max-width:280px;}
+  .lpft-tel{margin-top:18px;display:flex;flex-direction:column;gap:3px;}
+  .lpft-tel-lbl{font-size:12px;color:#8a8578;font-weight:700;}
+  .lpft-tel-num{font-size:16px;font-weight:800;color:#E50012;line-height:1.5;}
   .lpft-nav{display:flex;flex-direction:column;gap:16px;font-size:15px;font-weight:500;color:#333;}
   .lpft-sub{display:flex;flex-direction:column;gap:14px;font-size:13px;color:#777;}
   .lpft-gap{height:8px;}
@@ -341,6 +344,63 @@ const HELPCATS=[
   {i:'会',name:'会員情報'},{i:'定',name:'定期便'},{i:'他',name:'その他'},
 ];
 
+/* ================= 地域（REGION）：エリア確認で確定した県を全画面で使う器 =================
+   エリア判定（郵便番号）の結果から REGION を確定し localStorage に保持する。未確定時は null。
+   県ごとに異なる表示（フリーダイヤル・お支払い方法・eコイン使用上限）は REGION_MASTER に集約し、
+   画面側は必ず regionInfo() 経由で参照する（各画面への直書きは行わない）。 */
+const REGION_KEYS=['toyama','ishikawa','gifu'];
+const REGION_MASTER={
+  toyama:{key:'toyama',name:'富山',label:'富山県',tel:'0120-25-3711',
+          pay:'口座振替（隔週火曜に2週分をお引き落とし）',coinMax:2000},
+  ishikawa:{key:'ishikawa',name:'石川',label:'石川県',tel:'0120-25-3711',
+          pay:'口座振替（隔週火曜に2週分をお引き落とし）',coinMax:2000},
+  gifu:{key:'gifu',name:'岐阜',label:'岐阜県',tel:'0120-85-4441',
+          pay:'口座振替（郵便局は隔週・銀行は毎月27日）／クレジットカード（ニコス）もご利用いただけます',coinMax:null},
+};
+/* REGION 未確定（エリア確認前）に出す3県共通表記＝従来の表示 */
+const REGION_COMMON={key:null,name:null,label:'富山県・石川県・岐阜県',
+  tel:'0120-25-3711（富山・石川）／0120-85-4441（岐阜）',
+  pay:'口座振替（お住まいの地域により引き落とし日が異なります）',coinMax:2000};
+let REGION=null;
+try{const _rg=localStorage.getItem('rk_region');if(REGION_KEYS.indexOf(_rg)>=0)REGION=_rg;}catch(e){}
+/* 地域マスタの参照口（未確定なら3県共通表記を返す） */
+function regionInfo(){return (REGION&&REGION_MASTER[REGION])||REGION_COMMON;}
+function setRegion(key){
+  REGION=REGION_KEYS.indexOf(key)>=0?key:null;
+  try{if(REGION)localStorage.setItem('rk_region',REGION);else localStorage.removeItem('rk_region');}catch(e){}
+}
+/* 問い合わせ表示（フリーダイヤル）：地域が確定していれば県名を添える */
+function regionTelHTML(sp){
+  const r=regionInfo();
+  return '<div style="background:#FCEBEC;border-radius:10px;padding:'+(sp?'11px 13px':'13px 16px')+';">'
+    +'<div style="font-size:'+(sp?'11.5px':'12px')+';font-weight:700;color:#8a5b60;">'
+    +(r.key?r.label+'のお客様のお問い合わせ先':'お問い合わせ先（'+r.label+'）')+'</div>'
+    +'<div style="font-size:'+(sp?'15px':'17px')+';font-weight:800;color:#E50012;margin-top:4px;line-height:1.5;">フリーダイヤル '+r.tel+'</div>'
+    +'</div>';
+}
+/* お支払い方法の説明文（地域マスタ参照） */
+function regionPayHTML(sp){
+  const r=regionInfo();
+  return '<div style="margin-top:'+(sp?'12px':'14px')+';border-top:1px solid #EEE;padding-top:'+(sp?'12px':'14px')+';">'
+    +'<div style="font-size:'+(sp?'12.5px':'13px')+';font-weight:700;color:#2b2b2b;">お支払い方法</div>'
+    +'<div style="font-size:'+(sp?'11.5px':'12px')+';color:#777;line-height:1.6;margin-top:4px;">'+r.pay+'</div>'
+    +'</div>';
+}
+/* デモ用：表示地域の切替（開発用と分かる控えめな見た目・フッター付近に置く） */
+function regionDemoHTML(sp){
+  const chip=(k,label)=>{
+    const on=REGION===k;
+    return '<button onclick="A.setRegion('+(k?'\''+k+'\'':'null')+')" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;'
+      +'color:'+(on?'#fff':'#6a6a6a')+';background:'+(on?'#7a7a7a':'#fff')+';box-shadow:0 0 0 1px #C9C9C9 inset;">'+label+'</button>';
+  };
+  return '<div data-section="region-demo" style="'+(sp?'padding:14px 16px 20px;':'max-width:1200px;margin:0 auto;padding:14px 24px 24px;')+'">'
+    +'<div style="border:1px dashed #BDBDBD;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#FAFAFA;">'
+    +'<span style="font-size:10.5px;font-weight:800;color:#9a9a9a;letter-spacing:.04em;">開発用</span>'
+    +'<span style="font-size:11.5px;color:#6a6a6a;">表示地域</span>'
+    +chip(null,'未確定')+chip('toyama','富山')+chip('ishikawa','石川')+chip('gifu','岐阜')
+    +'</div></div>';
+}
+
 /* ================= 状態（PC/SP共通） ================= */
 const _now=new Date();
 let S={
@@ -445,6 +505,8 @@ const A={
   /* 「はじめての方」＝ログインモーダル内の仮登録フロー入口と同じ処理を直接起動 */
   openSignup(){S.menuOpen=false;render();Login.signup();},
   toggleMenu(){S.menuOpen=!S.menuOpen;render();},
+  /* デモ用：表示地域の切替（エリア確認を通らずに地域別表示を確認する） */
+  setRegion(key){setRegion(key);render();},
   logout(){S.loggedIn=false;S.userName=null;S.page=null;location.href='lp.html';},
 
   /* 未ログイントップ（雑誌型）⇄ フルメニューの切り替え（リロードなし・再描画のみ） */
@@ -1506,6 +1568,11 @@ function lpFooterHTML(){
     +'<div class="lpft-logo"><img src="assets/logo.svg" alt="ヨシケイ楽楽web"></div>'
     +'<div class="lpft-icons">'
     +lpftIcons(34,['carrot','ladle','orange','eggplant','leaf','mushroom','tomato','corn','pea','broccoli','pepper','pot'])
+    +'</div>'
+    /* 地域別の問い合わせ先（REGION_MASTER 参照・未確定時は3県共通表記） */
+    +'<div class="lpft-tel">'
+    +'<span class="lpft-tel-lbl">'+(regionInfo().key?regionInfo().label+'のお客様':'お問い合わせ（'+regionInfo().label+'）')+'</span>'
+    +'<span class="lpft-tel-num">フリーダイヤル '+regionInfo().tel+'</span>'
     +'</div></div>'
     +'<div class="lpft-nav">'+navLinks+'</div>'
     +'<div class="lpft-sub">'+subLinks+'</div>'
@@ -1708,6 +1775,7 @@ function spHTML(){
 
   /* LPフッター：未ログインのトップのみ（雑誌型・フルメニューの両方）。ログイン済みは現状維持で出さない */
   if(!S.loggedIn&&S.page===null)h+=lpFooterHTML();
+  h+=regionDemoHTML(true);   /* デモ用：表示地域の切替（フッター付近） */
 
   h+='</div>'; /* /メイン */
 
@@ -1732,7 +1800,7 @@ function spHTML(){
     +'<div style="position:sticky;top:0;z-index:5;background:#fff;display:flex;align-items:center;padding:13px 12px;box-shadow:0 1px 0 rgba(0,0,0,.06);">'
     +'<button onclick="A.goHome()" style="display:flex;align-items:center;gap:1px;color:#E50012;font-size:13px;font-weight:700;position:relative;z-index:2;">'+IC.back(20)+'戻る</button>'
     +'<span style="position:absolute;left:0;right:0;text-align:center;font-size:16px;font-weight:700;color:#2b2b2b;">'+title+'</span>'
-    +'</div>'+inner+'</div>';
+    +'</div>'+inner+regionDemoHTML(true)+'</div>';
 
   if(pg==='help'){
     const cats=[
@@ -1793,6 +1861,7 @@ function spHTML(){
       +'<div style="background:#fff;border-radius:9px;box-shadow:0 0 0 1.5px #E0E0E0 inset;padding:13px;font-size:13.5px;color:#b3b3b3;">'+ph+'</div></div>';
     h+=pageShell('お問い合わせ',
       '<div style="padding:16px 16px 0;"><div style="font-size:13px;color:#555;line-height:1.7;">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<br>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</div></div>'
+      +'<div style="padding:14px 16px 0;">'+regionTelHTML(true)+'</div>'
       +'<div style="padding:16px;display:flex;flex-direction:column;gap:16px;">'
       +field('お名前','xxxxxxxxxxxx')
       +field('メールアドレス','xxxxxxxx@xxxxx.xx')
@@ -1875,6 +1944,7 @@ function spHTML(){
         +'<div style="border-top:1px solid #EEE;margin:13px 0;"></div>'
         +'<div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:14px;font-weight:700;color:#2b2b2b;">合計</span><span style="font-size:24px;font-weight:900;color:#E50012;">'+yen(cartTotal())+'</span></div>'
         +cartCoinRowHTML()
+        +regionPayHTML(true)
         +'</div></div>'
         +'<div style="padding:16px;"><button onclick="A.orderComplete()" style="width:100%;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:16px;border-radius:11px;display:flex;align-items:center;justify-content:center;gap:8px;">注文を確定する'+IC.chevR(19,'#fff')+'</button></div>';
     }else{
@@ -2249,6 +2319,7 @@ function pcHTML(){
     h+='<div style="max-width:680px;margin:0 auto;">'+backBtn
       +'<div style="font-size:24px;font-weight:700;color:#2b2b2b;">お問い合わせ</div>'
       +'<div style="font-size:13px;color:#555;line-height:1.7;margin-top:12px;">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<br>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</div>'
+      +'<div style="margin-top:16px;">'+regionTelHTML(false)+'</div>'
       +'<div style="background:#fff;border-radius:14px;box-shadow:0 1px 7px rgba(0,0,0,.08);padding:24px;margin-top:18px;display:flex;flex-direction:column;gap:18px;">'
       +field('お名前','xxxxxxxxxxxx')
       +field('メールアドレス','xxxxxxxx@xxxxx.xx')
@@ -2343,6 +2414,7 @@ function pcHTML(){
         +'<div style="border-top:1px solid #EEE;margin:14px 0;"></div>'
         +'<div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:14px;font-weight:700;color:#2b2b2b;">合計</span><span style="font-size:26px;font-weight:900;color:#E50012;">'+yen(cartTotal())+'</span></div>'
         +cartCoinRowHTML()
+        +regionPayHTML(false)
         +'<button onclick="A.orderComplete()" style="margin-top:18px;width:100%;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:16px;border-radius:11px;display:flex;align-items:center;justify-content:center;gap:8px;">注文を確定する'+IC.chevR(19,'#fff')+'</button>'
         +'</div></div>';
     }else{
@@ -2386,6 +2458,7 @@ function pcHTML(){
       +'</div></div>';
   }
 
+  h+=regionDemoHTML(false);   /* デモ用：表示地域の切替（フッター付近） */
   h+='</div>'; /* /main */
 
   /* LPフッター：未ログインのトップのみ（雑誌型・フルメニューの両方）。ログイン済みは現状維持で出さない */
@@ -2496,17 +2569,17 @@ const Login=(function(){
 
   // お届けエリア判定用ダミーデータ（本番は郵便番号＋町名で判定するため、町名粒度に差し替えられるよう判定ロジックと分離して保持）
   const AREA_ZIPS=[
-    {prefix:'000',office:'富山営業所'}, // デモ用：0000000＝エリア内（1111111などはエリア外）
-    {prefix:'930',office:'富山営業所'},
-    {prefix:'933',office:'高岡営業所'},
-    {prefix:'920',office:'金沢営業所'},
-    {prefix:'921',office:'金沢南営業所'},
-    {prefix:'500',office:'岐阜営業所'},
-    {prefix:'501',office:'岐阜西営業所'},
+    {prefix:'000',office:'富山営業所',   region:'toyama'}, // デモ用：0000000＝エリア内（1111111などはエリア外）
+    {prefix:'930',office:'富山営業所',   region:'toyama'},
+    {prefix:'933',office:'高岡営業所',   region:'toyama'},
+    {prefix:'920',office:'金沢営業所',   region:'ishikawa'},
+    {prefix:'921',office:'金沢南営業所', region:'ishikawa'},
+    {prefix:'500',office:'岐阜営業所',   region:'gifu'},
+    {prefix:'501',office:'岐阜西営業所', region:'gifu'},
   ];
-  const findOffice=(zip)=>{const hit=AREA_ZIPS.find(a=>zip.indexOf(a.prefix)===0);return hit?hit.office:null;};
+  const findArea=(zip)=>AREA_ZIPS.find(a=>zip.indexOf(a.prefix)===0)||null;
   // 判定結果の保持（後続画面から window.area_state で参照できる）
-  const area_state={zip:null,office:null};
+  const area_state={zip:null,office:null,region:null};
   window.area_state=area_state;
 
   const QUESTIONS=[
@@ -2550,6 +2623,7 @@ const Login=(function(){
       +'<div style="border:2px solid #E50012;background:#fdf0f1;border-radius:14px;padding:22px 18px;text-align:center;margin-bottom:24px;">'
         +'<div style="width:46px;height:46px;margin:0 auto 12px;border-radius:50%;background:#E50012;color:#fff;display:flex;align-items:center;justify-content:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l5 5 10-11" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
         +'<div style="font-size:16px;font-weight:700;color:#3a3a3a;line-height:1.6;">お住まいの地域はお届けエリア内です</div>'
+        +(REGION?'<div style="font-size:12.5px;color:#8a5b60;font-weight:700;margin-top:8px;">担当：'+regionInfo().label+'（'+(area_state.office||'')+'）</div>':'')
       +'</div>'
       +'<button data-zip-next style="width:100%;border:none;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:12px;">質問に進む</button>'
       +'<div style="text-align:center;margin-top:18px;"><button data-zip-retry style="border:none;background:transparent;color:#999;font-size:13px;font-weight:700;text-decoration:underline;">郵便番号を入力し直す</button></div>'
@@ -2564,19 +2638,22 @@ const Login=(function(){
       +'<div class="onboard-q-title"><span>申し訳ございません。ご入力の地域は当社のお届けエリア外です</span></div>'
       +'<p style="font-size:14px;color:#666;line-height:1.9;margin:0 0 24px;">お住まいの地域は別のヨシケイが担当している場合があります。お近くのヨシケイは以下からご確認いただけます</p>'
       +'<a href="#" data-zip-find style="display:block;text-align:center;background:#E50012;color:#fff;font-size:15px;font-weight:700;padding:15px;border-radius:12px;text-decoration:none;">お近くのヨシケイを探す</a>'
-      +'<p style="font-size:12.5px;color:#999;line-height:1.8;margin:16px 0 0;">ご不明な場合はフリーダイヤル 0120-XXX-XXX へお問い合わせください</p>'
+      +'<p style="font-size:12.5px;color:#999;line-height:1.8;margin:16px 0 0;">ご不明な場合はフリーダイヤル '+regionInfo().tel+' へお問い合わせください</p>'
       +'<div style="text-align:center;margin-top:22px;"><button data-zip-retry style="border:none;background:transparent;color:#999;font-size:13px;font-weight:700;text-decoration:underline;">郵便番号を入力し直す</button></div>'
       +'</div>';
   }
   function checkZip(){
     if(zipValue.length!==7)return;
-    const office=findOffice(zipValue);
+    const area=findArea(zipValue);
     area_state.zip=zipValue;
-    area_state.office=office;
-    if(office){
-      S.office=office;
+    area_state.office=area?area.office:null;
+    area_state.region=area?area.region:null;
+    if(area){
+      S.office=area.office;
+      setRegion(area.region);   // 以降の画面（フッター・問い合わせ・支払方法・eコイン上限）は REGION を参照する
       phase='zipOk';
       renderStep();
+      render();
     }else{
       phase='zipNg';
       renderStep();
