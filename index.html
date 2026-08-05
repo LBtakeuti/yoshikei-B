@@ -21,6 +21,10 @@
   @keyframes rk-fade{from{opacity:0;}to{opacity:1;}}
   @keyframes rk-pop{from{opacity:0;transform:scale(.96);}to{opacity:1;transform:scale(1);}}
   @keyframes rk-slide{from{opacity:0;transform:translateX(16px);}to{opacity:1;transform:translateX(0);}}
+  /* 再描画時のちらつき防止：開いたままの状態更新（カートに反映・数量変更など）では
+     ルートを丸ごと innerHTML で描き直しても登場アニメーションを再生させない。
+     ユーザーが新しく開く／画面を切り替える操作のときだけ ANIM=true とし、このクラスを外す。 */
+  .rk-noanim,.rk-noanim *{animation:none !important;}
   /* 子タブのドロップダウン（コンテンツに覆いかぶさるオーバーレイ） */
   .dd-anchor{position:relative;}
   .dd-menu{
@@ -738,22 +742,23 @@ function slot(label){
 /* ================= アクション ================= */
 const touchCart=()=>{lastCartChange=Date.now();};
 const A={
-  goSeries(){S.topMode='series';render();},
-  goDelivery(){S.topMode='delivery';render();},
+  goSeries(){anim();S.topMode='series';render();},
+  goDelivery(){anim();S.topMode='delivery';render();},
   setDay(i){S.activeDay=i;render();},
-  goHome(){S.page=null;render();},
-  openHelp(){S.page='help';render();},
-  openSpecialPage(){S.page='specialPage';render();},
+  goHome(){anim();S.page=null;render();},
+  openHelp(){anim();S.page='help';render();},
+  openSpecialPage(){anim();S.page='specialPage';render();},
   toggleSpecialMode(){
+    anim();
     S.specialMode=S.specialMode==='A'?'B':'A';
     if(S.specialMode==='A'&&S.page==='specialPage')S.page=null; // 独立ページは案B専用
     render();
   },
-  openNews(){S.page='news';render();},
-  openContact(){S.page='contact';render();},
-  openMypage(){if(!S.loggedIn){Login.open();return;}S.page='mypage';render();},
-  openCart(){S.page='cart';render();},
-  openProfile(){S.page='profile';render();},
+  openNews(){anim();S.page='news';render();},
+  openContact(){anim();S.page='contact';render();},
+  openMypage(){if(!S.loggedIn){Login.open();return;}anim();S.page='mypage';render();},
+  openCart(){anim();S.page='cart';render();},
+  openProfile(){anim();S.page='profile';render();},
   profileSave(){
     const el=document.querySelector('[data-prof-name]');
     if(el&&el.value.trim())S.userName=el.value.trim();
@@ -763,7 +768,7 @@ const A={
   openLogin(){S.menuOpen=false;render();Login.open();},
   /* 「はじめての方」＝ログインモーダル内の仮登録フロー入口と同じ処理を直接起動 */
   openSignup(){S.menuOpen=false;render();Login.signup();},
-  toggleMenu(){S.menuOpen=!S.menuOpen;render();},
+  toggleMenu(){S.menuOpen=!S.menuOpen;if(S.menuOpen)anim();render();},
   /* デモ用：表示地域の切替（エリア確認を通らずに地域別表示を確認する） */
   setRegion(key){setRegion(key);render();},
   /* eコイン使用（500刻みの選択） */
@@ -783,17 +788,18 @@ const A={
   areaBnClose(){try{sessionStorage.setItem(AREA_BN_MINKEY,'1');}catch(e){}render();},
 
   /* 未ログイントップ（雑誌型）⇄ フルメニューの切り替え（リロードなし・再描画のみ） */
-  guestShowAll(){S.guestFull=true;S.page=null;render();Banner.jump('guest-full');},
-  guestBackTop(){S.guestFull=false;S.page=null;render();window.scrollTo({top:0,behavior:'smooth'});},
+  guestShowAll(){anim();S.guestFull=true;S.page=null;render();Banner.jump('guest-full');},
+  guestBackTop(){anim();S.guestFull=false;S.page=null;render();window.scrollTo({top:0,behavior:'smooth'});},
 
   /* 週の切り替え（複数週にわたり同一画面で注文可能） */
   setWeek(i){S.week=i;render();},
-  nextWeek(){if(S.week<WEEKS.length-1)S.week++;S.page=null;render();window.scrollTo(0,0);},
+  nextWeek(){anim();if(S.week<WEEKS.length-1)S.week++;S.page=null;render();window.scrollTo(0,0);},
 
   /* タブ（親／子／孫） */
-  setMainTab(t){S.mainTab=t;S.ddOpen=null;render();},
-  toggleDD(key){S.ddOpen=S.ddOpen===key?null:key;render();},
+  setMainTab(t){anim();S.mainTab=t;S.ddOpen=null;render();},
+  toggleDD(key){S.ddOpen=S.ddOpen===key?null:key;if(S.ddOpen)anim();render();},
   setChild(key,idx){
+    anim();
     if(SPECIAL_TABS.some(t=>t.key===key)){S.specialChild=key;}
     else{S.child=key;}
     if(idx!==undefined)S.sub[key]=idx;
@@ -803,7 +809,7 @@ const A={
   /* カレンダー */
   calPrev(){S.calM--;if(S.calM<1){S.calM=12;S.calY--;}S.calSel=null;render();},
   calNext(){S.calM++;if(S.calM>12){S.calM=1;S.calY++;}S.calSel=null;render();},
-  calSelect(d){S.calSel={y:S.calY,m:S.calM,d};S.calCancelConfirm=false;render();},
+  calSelect(d){anim();S.calSel={y:S.calY,m:S.calM,d};S.calCancelConfirm=false;render();},
   calClose(){S.calSel=null;S.calCancelConfirm=false;render();},
   calCancelAsk(){S.calCancelConfirm=true;render();},
   calCancelNo(){S.calCancelConfirm=false;render();},
@@ -841,7 +847,7 @@ const A={
   orderComplete(){
     if(!S.loggedIn){Login.open();return;}
     if(!S.cartItems.length){return;}
-    S.lastChanceOpen=true;S.lastQty=0;render();
+    anim();S.lastChanceOpen=true;S.lastQty=0;render();
   },
   lastQtyChange(d){S.lastQty=Math.max(0,S.lastQty+d);render();},
   finalizeOrder(withExtra){
@@ -858,16 +864,16 @@ const A={
     S.orders=[{id:'o-'+Date.now(),week:WEEKS[S.week].label,count:cartCount(),total,discount:disc,camp,coins:pts,used,status:'active'},...S.orders];
     S.lastOrder={count:cartCount(),total,discount:disc,camp,coins:pts,used,week:WEEKS[S.week].label};
     S.cartItems=[];S.coinUse=0;S.lastChanceOpen=false;S.lastQty=0;S.page='orderDone';
-    touchCart();render();window.scrollTo(0,0);
+    anim();touchCart();render();window.scrollTo(0,0);
   },
 
   /* 確定お忘れリマインド（閉じてから30秒後に再表示） */
   remindClose(){S.remindOpen=false;touchCart();render();},
-  remindGoCart(){S.remindOpen=false;S.page='cart';touchCart();render();},
+  remindGoCart(){anim();S.remindOpen=false;S.page='cart';touchCart();render();},
 
-  openHowto(){S.howtoOpen=true;render();},
+  openHowto(){anim();S.howtoOpen=true;render();},
   closeHowto(){S.howtoOpen=false;render();},
-  openFilter(){S.filterOpen=true;render();},
+  openFilter(){anim();S.filterOpen=true;render();},
   closeFilter(){S.filterOpen=false;render();},
   toggleFilter(axis,val){
     const arr=S.filters[axis];const i=arr.indexOf(val);
@@ -875,7 +881,7 @@ const A={
     render();
   },
   clearFilter(){S.filters={series:[],category:[],kodawari:[]};render();},
-  openBulk(){S.bulkOpen=true;render();},
+  openBulk(){anim();S.bulkOpen=true;render();},
   closeBulk(){S.bulkOpen=false;render();},
   confirmBulk(){
     const now=Date.now();
@@ -910,9 +916,10 @@ const A={
   },
   gotoRequired(){
     /* 条件商品の「対象メニューを見る」：夕食献立のスマイリーミールへ誘導 */
-    S.mainTab='dinner';S.child='smile';S.sub.smile=0;S.ddOpen=null;render();window.scrollTo(0,0);
+    anim();S.mainTab='dinner';S.child='smile';S.sub.smile=0;S.ddOpen=null;render();window.scrollTo(0,0);
   },
   _openProduct(p){
+    anim();
     S.product={...p,dateLabel:WEEKS[S.week].label+'週 お届け'};
     S.productOpen=true;S.qty={s2:p.special?1:1,s3:0,s4:0};S.cut='on';render();
   },
@@ -1529,7 +1536,7 @@ function filterPanelHTML(sp){
     ?'background:#fff;border-radius:18px 18px 0 0;padding:20px 18px 24px;max-height:84vh;overflow-y:auto;animation:rk-up .22s ease;'
     :'width:100%;max-width:440px;background:#fff;border-radius:16px;padding:24px 22px;max-height:84vh;overflow-y:auto;animation:rk-pop .2s ease;box-shadow:0 24px 60px rgba(0,0,0,.35);';
   return '<div onclick="A.closeFilter()" style="'+wrap+'">'
-    +'<div onclick="event.stopPropagation()" style="'+box+'">'
+    +'<div onclick="event.stopPropagation()" data-sc="filter-'+(sp?'sp':'pc')+'" style="'+box+'">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;">'
     +'<div style="font-size:17px;font-weight:800;color:#2b2b2b;display:flex;align-items:center;gap:8px;"><span style="color:#E50012;">'+IC.filter(20)+'</span>絞り込み</div>'
     +'<button onclick="A.closeFilter()" style="color:#999;padding:4px;">'+IC.close(20)+'</button></div>'
@@ -1845,7 +1852,7 @@ const Banner=(function(){
       const name=href.slice(1);
       if(jump(name))return;
       /* 雑誌型トップにしか無い節（棚など）へのディープリンクは、トップに戻してから移動する */
-      if(!S.loggedIn&&S.guestFull){S.guestFull=false;render();if(jump(name))return;}
+      if(!S.loggedIn&&S.guestFull){anim();S.guestFull=false;render();if(jump(name))return;}
       toast('準備中のコンテンツです');
       return;
     }
@@ -2415,7 +2422,7 @@ function spHTML(){
 
   /* ---- まとめて購入モーダル ---- */
   if(S.bulkOpen){
-    h+='<div onclick="A.closeBulk()" style="position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:64px 16px 20px;overflow-y:auto;animation:rk-fade .18s ease;">'
+    h+='<div onclick="A.closeBulk()" data-sc="sp-bulk" style="position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:64px 16px 20px;overflow-y:auto;animation:rk-fade .18s ease;">'
       +'<div onclick="event.stopPropagation()" style="width:100%;max-width:344px;background:#fff;border-radius:16px;padding:22px 18px 20px;animation:rk-pop .2s ease;box-shadow:0 22px 54px rgba(0,0,0,.32);">'
       +'<div style="display:flex;gap:14px;align-items:flex-start;">'
       +'<div style="position:relative;flex-shrink:0;"><div style="width:54px;height:54px;background:#E50012;border-radius:50%;color:#fff;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;">お得!</div>'
@@ -2901,7 +2908,7 @@ function pcHTML(){
 
   /* ---- まとめて購入モーダル ---- */
   if(S.bulkOpen){
-    h+='<div onclick="A.closeBulk()" style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:32px;overflow-y:auto;animation:rk-fade .18s ease;">'
+    h+='<div onclick="A.closeBulk()" data-sc="pc-bulk" style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:32px;overflow-y:auto;animation:rk-fade .18s ease;">'
       +'<div onclick="event.stopPropagation()" style="width:100%;max-width:420px;background:#fff;border-radius:16px;padding:26px 24px 24px;animation:rk-pop .2s ease;box-shadow:0 24px 60px rgba(0,0,0,.35);">'
       +'<div style="display:flex;gap:15px;align-items:flex-start;">'
       +'<div style="width:56px;height:56px;background:#E50012;border-radius:50%;color:#fff;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">お得!</div>'
@@ -2916,7 +2923,7 @@ function pcHTML(){
   /* ---- 商品詳細モーダル ---- */
   if(S.productOpen&&S.product){
     const p=S.product;
-    h+='<div onclick="A.closeProduct()" style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:32px;overflow-y:auto;animation:rk-fade .18s ease;">'
+    h+='<div onclick="A.closeProduct()" data-sc="pc-prod" style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:32px;overflow-y:auto;animation:rk-fade .18s ease;">'
       +'<div onclick="event.stopPropagation()" style="width:100%;max-width:860px;background:#fff;border-radius:18px;overflow:hidden;animation:rk-pop .22s ease;box-shadow:0 26px 66px rgba(0,0,0,.36);display:flex;">'
       +'<div style="position:relative;width:400px;flex-shrink:0;background:#F4F4F4;min-height:420px;">'+favBtn(p.title,p.seriesName,p.accent,p.price,36)+slot(p.title)+'</div>'
       +'<div style="flex:1;min-width:0;display:flex;flex-direction:column;">'
@@ -2942,7 +2949,7 @@ function pcHTML(){
 
   /* ---- カート追加後モーダル ---- */
   if(S.cartAddedOpen){
-    h+='<div onclick="A.skipRec()" style="position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:32px;overflow-y:auto;animation:rk-fade .18s ease;">'
+    h+='<div onclick="A.skipRec()" data-sc="pc-rec" style="position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:32px;overflow-y:auto;animation:rk-fade .18s ease;">'
       +'<div onclick="event.stopPropagation()" style="width:100%;max-width:460px;background:#fff;border-radius:16px;overflow:hidden;animation:rk-pop .22s ease;box-shadow:0 24px 60px rgba(0,0,0,.35);">'
       +'<div style="padding:22px 22px 12px;">'
       +'<div style="display:flex;align-items:center;gap:10px;"><span style="width:24px;height:24px;border-radius:50%;background:#E50012;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+IC.check(14)+'</span>'
@@ -2971,15 +2978,25 @@ function pcHTML(){
   return h;
 }
 
-/* ================= レンダリング（スクロール位置保持付き） ================= */
+/* ================= レンダリング（スクロール位置保持付き） =================
+   ANIM … 次の render() で登場アニメーションを再生してよいか。
+   モーダルやページを「新しく開く／切り替える」操作の先頭でだけ true を立てる（anim() を呼ぶ）。
+   開いたまま状態だけ変わる再描画（カートに反映・数量変更など）は false のままなので、
+   ルートに .rk-noanim が付き、スライドイン等が再生されない＝ちらつかない。 */
+let ANIM=true;
+const anim=()=>{ANIM=true;};
 function render(){
   const winY=window.scrollY;
   const saved={};
   document.querySelectorAll('[data-sc]').forEach(el=>{
     saved[el.getAttribute('data-sc')]={top:el.scrollTop,left:el.scrollLeft};
   });
-  document.getElementById('sp-root').innerHTML=spHTML();
-  document.getElementById('pc-root').innerHTML=pcHTML();
+  const sp=document.getElementById('sp-root'),pc=document.getElementById('pc-root');
+  sp.classList.toggle('rk-noanim',!ANIM);
+  pc.classList.toggle('rk-noanim',!ANIM);
+  sp.innerHTML=spHTML();
+  pc.innerHTML=pcHTML();
+  ANIM=false;
   /* SP追従バナー／ピルの分だけ下端に余白を作る（デモ用トグルの退避位置も合わせる） */
   const abn=areaBnVisible(),abnMin=abn&&areaBnMinimized();
   document.body.classList.toggle('has-abn',abn&&!abnMin);
@@ -3214,7 +3231,7 @@ const Login=(function(){
   // ログイン成立でサイト本体へ（PC/SP共通の状態を更新。表示中ページは維持）
   // stage：'provisional'＝仮登録（受付番号あり・本登録前）／'member'＝既存会員のログイン
   function completeLogin(name,stage){
-    S.loggedIn=true;S.userName=name;S.stage=stage||'member';render();
+    anim();S.loggedIn=true;S.userName=name;S.stage=stage||'member';render();
     try{history.replaceState(null,'',location.pathname);}catch(e){}
     try{console.log('[login_flow] taste_profile =',taste_profile);}catch(e){}
   }
@@ -3522,7 +3539,7 @@ setInterval(()=>{
   if(S.cartItems.length&&S.page!=='cart'
      &&!S.productOpen&&!S.cartAddedOpen&&!S.lastChanceOpen&&!S.remindOpen&&!S.bulkOpen
      &&Date.now()-lastCartChange>30000){
-    S.remindOpen=true;touchCart();render();
+    anim();S.remindOpen=true;touchCart();render();
   }
 },3000);
 
