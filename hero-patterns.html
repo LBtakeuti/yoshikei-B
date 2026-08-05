@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ヒーローセクション パターン比較（2026-08-05）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Zen Kaku Gothic New',sans-serif;background:#F3F0EA;color:#2b2b2b;padding-bottom:80px;}
+  .maru{font-family:'Zen Maru Gothic',sans-serif;}
+  .head{position:sticky;top:0;z-index:50;background:#242424;color:#fff;padding:12px 18px;font-size:13px;font-weight:700;display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+  .head a{color:#B5B0A8;text-decoration:none;font-size:12px;}
+  .head a:hover{color:#fff;}
+  .sec{max-width:1100px;margin:34px auto 0;padding:0 16px;}
+  .label{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;}
+  .label .no{font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:22px;color:#E50012;}
+  .label .nm{font-weight:700;font-size:16px;}
+  .label .memo{font-size:12px;color:#6f6f6f;}
+  .frame{border-radius:16px;overflow:hidden;border:1px solid #E4DED3;background:#fff;}
+
+  /* 共通：クロスフェード（本番と同じ12秒ループ） */
+  .xf{position:absolute;inset:0;}
+  .xf img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  .xf .top{animation:xfade 12s infinite;}
+  @keyframes xfade{0%,42%{opacity:1;}50%,92%{opacity:0;}100%{opacity:1;}}
+
+  .badge{display:inline-block;background:#E50012;color:#fff;font-weight:700;font-size:11.5px;border-radius:999px;padding:4px 12px;}
+  .catch{font-family:'Zen Maru Gothic',sans-serif;font-weight:900;line-height:1.5;}
+  .sub{font-size:13px;line-height:1.8;}
+  .cta{display:inline-block;background:#E50012;color:#fff;font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:14.5px;border-radius:999px;padding:13px 26px;text-decoration:none;}
+  .cta2{display:inline-block;background:#fff;color:#E50012;border:1.5px solid #E50012;font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:14.5px;border-radius:999px;padding:12px 24px;text-decoration:none;}
+  .dead{font-size:11.5px;color:#6f6f6f;}
+
+  /* 現行（参考）：左クリーム＋右写真パネル */
+  .p0{position:relative;height:340px;background:#FBF7EE;}
+  .p0 .ph{position:absolute;top:0;bottom:0;left:46%;right:0;}
+  .p0 .scrim{position:absolute;inset:0;background:linear-gradient(90deg,#FBF7EE 0%,#FBF7EE 42%,rgba(251,247,238,.42) 50%,rgba(251,247,238,.08) 60%,rgba(251,247,238,0) 68%);}
+  .p0 .tx{position:relative;z-index:2;max-width:420px;padding:52px 0 0 44px;}
+  .p0 .catch{font-size:30px;margin:12px 0 8px;}
+
+  /* パターン1：フルブリード写真＋下部グラデ */
+  .p1{position:relative;height:400px;}
+  .p1 .grad{position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.18) 38%,rgba(0,0,0,0) 62%);}
+  .p1 .tx{position:absolute;left:36px;bottom:32px;z-index:2;color:#fff;}
+  .p1 .catch{font-size:32px;color:#fff;text-shadow:0 1px 10px rgba(0,0,0,.35);margin:10px 0 6px;}
+  .p1 .sub{color:rgba(255,255,255,.92);}
+  .p1 .dead{color:rgba(255,255,255,.85);}
+  .p1 .cta{margin-top:14px;}
+
+  /* パターン2：スプリット50/50（境界カーブ） */
+  .p2{position:relative;height:380px;display:flex;background:#FBF7EE;}
+  .p2 .left{width:50%;display:flex;flex-direction:column;justify-content:center;padding:0 40px 0 44px;position:relative;z-index:2;}
+  .p2 .catch{font-size:30px;margin:12px 0 10px;}
+  .p2 .right{position:absolute;top:0;bottom:0;left:50%;right:0;}
+  .p2 .curve{position:absolute;top:0;bottom:0;left:-59px;width:60px;z-index:2;}
+  .p2 .curve svg{height:100%;width:100%;display:block;}
+  .p2 .btns{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap;}
+
+  /* パターン3：白カードフロート */
+  .p3{position:relative;height:400px;}
+  .p3 .card{position:absolute;left:36px;top:50%;transform:translateY(-50%);z-index:2;background:rgba(255,255,255,.94);border-radius:16px;padding:26px 28px;max-width:400px;box-shadow:0 18px 44px rgba(0,0,0,.16);}
+  .p3 .catch{font-size:26px;margin:10px 0 8px;}
+  .p3 .cta{margin-top:14px;}
+
+  /* パターン4：雑誌型（赤ライン＋大角丸写真） */
+  .p4{position:relative;background:#FBF7EE;padding:36px 36px 36px 44px;display:flex;gap:34px;align-items:center;min-height:360px;}
+  .p4 .tx{flex:0 0 340px;border-left:5px solid #E50012;padding-left:22px;}
+  .p4 .catch{font-size:29px;margin:12px 0 10px;}
+  .p4 .ph{position:relative;flex:1;height:300px;border-radius:24px;overflow:hidden;box-shadow:0 14px 34px rgba(0,0,0,.12);}
+  .p4 .cta{margin-top:16px;}
+
+  @media(max-width:760px){
+    .p0 .tx{padding:34px 0 0 20px;max-width:250px;}
+    .p0 .catch{font-size:22px;}
+    .p1{height:340px;} .p1 .tx{left:18px;bottom:22px;} .p1 .catch{font-size:24px;}
+    .p2{flex-direction:column;height:auto;}
+    .p2 .left{width:100%;padding:26px 20px;}
+    .p2 .right{position:relative;left:0;height:210px;}
+    .p2 .curve{display:none;}
+    .p3 .card{left:14px;right:14px;max-width:none;padding:20px;}
+    .p3 .catch{font-size:21px;}
+    .p4{flex-direction:column;padding:24px 18px;gap:18px;}
+    .p4 .tx{flex:none;width:100%;}
+    .p4 .ph{width:100%;height:210px;flex:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="head">
+  <span>ヒーローセクション パターン比較</span>
+  <span style="color:#8C8C8C;font-weight:400;">写真は全パターン共通で6秒クロスフェード／ウィンドウを狭めるとSP表示</span>
+  <a href="index.html" style="margin-left:auto;">← モック本体へ戻る</a>
+</div>
+
+<!-- 現行 -->
+<div class="sec">
+  <div class="label"><span class="no">現行</span><span class="nm">左テキスト＋右写真パネル</span><span class="memo">いまのモック（スクリム軽減後）。比較の基準</span></div>
+  <div class="frame p0">
+    <div class="ph"><div class="xf"><img src="assets/hero-2.png" alt=""><img class="top" src="assets/hero-1.png" alt=""></div></div>
+    <div class="scrim"></div>
+    <div class="tx">
+      <span class="badge">今週のご注文 受付中</span>
+      <div class="catch">つくる人から、<br>笑顔に。</div>
+      <div class="sub">管理栄養士監修の献立と食材を、毎日ご自宅へ。</div>
+      <div style="margin-top:14px;"><a class="cta" href="#">今週のメニューを見る</a></div>
+      <div class="dead" style="margin-top:10px;">ご注文締切：前週水曜 23:59</div>
+    </div>
+  </div>
+</div>
+
+<!-- 1 -->
+<div class="sec">
+  <div class="label"><span class="no">1</span><span class="nm">フルブリード写真型</span><span class="memo">写真を全面に。ECの王道・写真の力を最大化。文字は下部の暗グラデに白抜き</span></div>
+  <div class="frame p1">
+    <div class="xf"><img src="assets/hero-2.png" alt=""><img class="top" src="assets/hero-1.png" alt=""></div>
+    <div class="grad"></div>
+    <div class="tx">
+      <span class="badge">今週のご注文 受付中</span>
+      <div class="catch">つくる人から、笑顔に。</div>
+      <div class="sub">管理栄養士監修の献立と食材を、毎日ご自宅へ。</div>
+      <a class="cta" href="#">今週のメニューを見る</a>
+      <div class="dead" style="margin-top:10px;">ご注文締切：前週水曜 23:59</div>
+    </div>
+  </div>
+</div>
+
+<!-- 2 -->
+<div class="sec">
+  <div class="label"><span class="no">2</span><span class="nm">スプリット型（50/50＋カーブ境界）</span><span class="memo">写真に一切かぶせない。テキスト領域が広く、CTAを2つ置ける。丸い境界でヨシケイらしい柔らかさ</span></div>
+  <div class="frame p2">
+    <div class="left">
+      <span class="badge" style="align-self:flex-start;">今週のご注文 受付中</span>
+      <div class="catch">つくる人から、<br>笑顔に。</div>
+      <div class="sub">管理栄養士監修の献立と食材を、毎日ご自宅へ。<br>初めての方も、まずはお届けエリアの確認から。</div>
+      <div class="btns">
+        <a class="cta" href="#">今週のメニューを見る</a>
+        <a class="cta2" href="#">エリアを確認する</a>
+      </div>
+      <div class="dead" style="margin-top:12px;">ご注文締切：前週水曜 23:59</div>
+    </div>
+    <div class="right">
+      <div class="xf"><img src="assets/hero-2.png" alt=""><img class="top" src="assets/hero-1.png" alt=""></div>
+      <div class="curve"><svg viewBox="0 0 60 400" preserveAspectRatio="none"><path d="M60 0 C 10 120, 10 280, 60 400 L 0 400 L 0 0 Z" fill="#FBF7EE"/></svg></div>
+    </div>
+  </div>
+</div>
+
+<!-- 3 -->
+<div class="sec">
+  <div class="label"><span class="no">3</span><span class="nm">白カードフロート型</span><span class="memo">写真全面＋左に浮かぶ白カード。写真も文字もはっきり。締切や受付週などの情報を整理して載せやすい</span></div>
+  <div class="frame p3">
+    <div class="xf"><img src="assets/hero-2.png" alt=""><img class="top" src="assets/hero-1.png" alt=""></div>
+    <div class="card">
+      <span class="badge">今週のご注文 受付中</span>
+      <div class="catch">つくる人から、<br>笑顔に。</div>
+      <div class="sub">管理栄養士監修の献立と食材を、毎日ご自宅へ。</div>
+      <a class="cta" href="#">今週のメニューを見る</a>
+      <div class="dead" style="margin-top:10px;">ご注文締切：前週水曜 23:59</div>
+    </div>
+  </div>
+</div>
+
+<!-- 4 -->
+<div class="sec">
+  <div class="label"><span class="no">4</span><span class="nm">雑誌型（赤ライン＋大角丸写真）</span><span class="memo">余白で品よく見せる誌面風。雑誌型トップの世界観と統一感が出る。写真は角丸カードで浮かせる</span></div>
+  <div class="frame p4">
+    <div class="tx">
+      <span class="badge">今週のご注文 受付中</span>
+      <div class="catch">つくる人から、<br>笑顔に。</div>
+      <div class="sub">管理栄養士監修の献立と食材を、毎日ご自宅へ。</div>
+      <a class="cta" href="#">今週のメニューを見る</a>
+      <div class="dead" style="margin-top:10px;">ご注文締切：前週水曜 23:59</div>
+    </div>
+    <div class="ph">
+      <div class="xf"><img src="assets/hero-2.png" alt=""><img class="top" src="assets/hero-1.png" alt=""></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
