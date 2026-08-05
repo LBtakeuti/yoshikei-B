@@ -230,7 +230,7 @@ const WEEKS=[{label:'5/11'},{label:'5/18'}].map(w=>({label:w.label,deadline:orde
    img … 入稿画像のURL（null の間はテーマ色のプレースホルダー帯を描画）
    href … '#xxx' はページ内アンカーへスムーズスクロール（ディープリンク）／'#' 単体はダミー／それ以外は通常遷移 */
 const BANNERS=[
-  {id:'trial',  img:null, label:'初回限定 お試しキャンペーン実施中', sub:'対象コースが最大50%OFF', href:'lp.html#trial-campaign', theme:'red'},
+  {id:'trial',  img:null, label:'初回限定 お試しキャンペーン実施中', sub:'対象コースが最大50%OFF', href:'#campaign',              theme:'red'},
   {id:'shelf',  img:null, label:'今週のメニューをのぞいてみる',     sub:'管理栄養士監修の献立',   href:'#guest-shelf',           theme:'green'},
   {id:'coin',   img:null, label:'eコインでおトクに続ける',          sub:'週2,160円以上で貯まる',  href:'#',                      theme:'gold'}
 ];
@@ -401,10 +401,134 @@ function regionDemoHTML(sp){
     +'</div></div>';
 }
 
+/* ================= 新規向け割引キャンペーン（デモ実装・乖離No.6） =================
+   管理画面から「地域 × コース × 割引率」を入稿する想定のダミーデータ。この形がそのまま入稿データの器になる。
+   適用対象は「新規（受付番号あり・本登録前）」で閲覧しているユーザーのみ。単品・特別販売は対象外。 */
+const CAMPAIGN={
+  enabled:true,
+  title:'はじめての方限定 お試しキャンペーン',
+  conds:[
+    '受付番号の発行後、本登録が完了するまでのご注文が対象です',
+    'おひとり様1回・対象コースの初回お届け分のみに適用されます',
+    '過去にご利用履歴がある場合は適用対象外です',
+  ],
+  /* 地域キー（未確定は _default）→ コース名 → 割引率（%）。_default はその地域のその他コース */
+  rates:{
+    toyama:  {'スタンダードミール':50,_default:30},
+    ishikawa:{'スマイリーミール':40,  _default:30},
+    gifu:    {'カットミール':50,      _default:20},
+    _default:{'スタンダードミール':50,_default:30},
+  },
+};
+function campaignRates(){return CAMPAIGN.rates[REGION||'_default']||CAMPAIGN.rates._default;}
+/* 新規（受付番号あり・本登録前）のユーザーか */
+function isNewMember(){return S.stage==='provisional';}
+/* いま割引価格を表示してよいか（デモ切替で対象外にした場合は false） */
+function campaignOn(){return !!CAMPAIGN.enabled&&isNewMember()&&!S.campaignExcluded;}
+/* コース（シリーズ）ごとの割引率。ミールキット系のコースのみ対象（単品・特別販売は0） */
+function campRate(series){
+  if(!campaignOn())return 0;
+  const cat=catFor(series);
+  if(cat!=='smile'&&cat!=='more'&&cat!=='lovyu')return 0;
+  const r=campaignRates();
+  return r[seriesBase(series)]||r._default||0;
+}
+/* 割引後価格（10円未満切り捨て） */
+function campPrice(base,rate){return Math.floor(base*(100-rate)/100/10)*10;}
+const CAMP_NOTE='※新規特典は本人確認後に確定します';
+const CAMP_NG_NOTE='ご利用履歴が確認されたため、新規特典は適用対象外です';
+/* 商品カードの価格表示：対象コースなら 通常価格（打ち消し線）→割引価格（赤）を併記する */
+function priceCardHTML(series,priceStr,prefix,suffix){
+  prefix=prefix||'';
+  suffix=(suffix===undefined)?'円〜':suffix;
+  const rate=campRate(series);
+  if(!rate)return prefix+priceStr+suffix;
+  const base=toNum(priceStr), d=campPrice(base,rate);
+  return '<span style="display:block;">'
+    +'<span style="display:inline-block;font-size:10px;font-weight:800;color:#fff;background:#E50012;padding:2px 8px;border-radius:9px;vertical-align:middle;">はじめての方限定</span>'
+    +'<span style="display:inline-block;font-size:11px;font-weight:800;color:#E50012;margin-left:5px;vertical-align:middle;">'+rate+'%OFF</span></span>'
+    +'<span style="display:block;margin-top:3px;">'
+    +'<span style="font-size:.8em;font-weight:600;color:#9a9a9a;text-decoration:line-through;">'+prefix+base.toLocaleString('ja-JP')+'円</span>'
+    +'<span style="color:#E50012;margin-left:6px;">'+d.toLocaleString('ja-JP')+suffix+'</span></span>'
+    +'<span style="display:block;font-size:10px;font-weight:600;color:#8a8578;margin-top:3px;line-height:1.45;">'+CAMP_NOTE+'</span>';
+}
+/* カート内の1行の価格表示（単位付き・対象コースなら併記） */
+function cartPriceHTML(c,fs){
+  const rate=campRate(c.tag);
+  const unit=c.unit?c.unit+' ':'';
+  if(!rate)return '<span style="font-size:'+fs+'px;font-weight:800;color:#2b2b2b;">'+unit+yen(c.price)+'</span>';
+  return '<span style="display:flex;flex-direction:column;gap:2px;">'
+    +'<span style="font-size:10px;font-weight:800;color:#fff;background:#E50012;padding:2px 8px;border-radius:9px;align-self:flex-start;">はじめての方限定 '+rate+'%OFF</span>'
+    +'<span><span style="font-size:'+(fs-3)+'px;font-weight:600;color:#9a9a9a;text-decoration:line-through;">'+unit+yen(c.price)+'</span>'
+    +'<span style="font-size:'+fs+'px;font-weight:800;color:#E50012;margin-left:6px;">'+yen(campPrice(c.price,rate))+'</span></span></span>';
+}
+/* カート内の新規特典割引の合計額 */
+function campDiscount(){
+  if(!campaignOn())return 0;
+  return S.cartItems.reduce(function(a,c){
+    const rate=campRate(c.tag);
+    return rate?a+(c.price-campPrice(c.price,rate))*c.qty:a;
+  },0);
+}
+/* カート集計の新規特典行（対象外デモ時は適用対象外の案内を出す） */
+function campCartRowHTML(fs){
+  fs=fs||13.5;
+  if(isNewMember()&&S.campaignExcluded){
+    return '<div style="margin-top:11px;background:#F5F3EF;border-radius:9px;padding:9px 12px;font-size:'+(fs-2)+'px;color:#7a7368;line-height:1.6;">'+CAMP_NG_NOTE+'</div>';
+  }
+  const d=campDiscount();
+  if(!d)return '';
+  return '<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:'+fs+'px;color:#E50012;font-weight:700;margin-top:11px;">'
+    +'<span>はじめての方限定割引</span><span style="font-size:'+(fs+2)+'px;font-weight:800;">-'+yen(d)+'</span></div>'
+    +'<div style="font-size:10.5px;color:#8a8578;line-height:1.5;margin-top:4px;">'+CAMP_NOTE+'</div>';
+}
+/* キャンペーン説明のページ内セクション（カルーセルのバナーからディープリンクで飛ぶ先） */
+function campaignSectionHTML(sp){
+  if(!CAMPAIGN.enabled)return '';
+  const r=campaignRates();
+  const names=Object.keys(r).filter(function(k){return k!=='_default';});
+  const rows=names.map(function(n){
+    return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px dashed #F0DADD;">'
+      +'<span style="font-size:'+(sp?'13px':'14px')+';font-weight:700;color:#2b2b2b;">'+n+'</span>'
+      +'<span style="font-size:'+(sp?'16px':'18px')+';font-weight:900;color:#E50012;">'+r[n]+'%OFF</span></div>';
+  }).join('')
+  +'<div style="display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;">'
+  +'<span style="font-size:'+(sp?'13px':'14px')+';font-weight:700;color:#2b2b2b;">その他の対象コース</span>'
+  +'<span style="font-size:'+(sp?'16px':'18px')+';font-weight:900;color:#E50012;">'+r._default+'%OFF</span></div>';
+  const conds=CAMPAIGN.conds.map(function(c){
+    return '<li style="font-size:'+(sp?'12px':'13px')+';color:#5a5145;line-height:1.75;">'+c+'</li>';
+  }).join('');
+  const demoChip=(ex,label)=>{
+    const on=(!!S.campaignExcluded)===ex;
+    return '<button onclick="A.setCampaignDemo('+(ex?'true':'false')+')" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;'
+      +'color:'+(on?'#fff':'#6a6a6a')+';background:'+(on?'#7a7a7a':'#fff')+';box-shadow:0 0 0 1px #C9C9C9 inset;">'+label+'</button>';
+  };
+  const inner=guestH2(sp,CAMPAIGN.title)
+    +'<div style="background:#FCEBEC;border-radius:14px;padding:'+(sp?'14px 16px':'20px 24px')+';">'
+    +'<div style="font-size:'+(sp?'12.5px':'13.5px')+';color:#8a5b60;font-weight:700;">'+regionInfo().label+'の対象コースと割引率</div>'
+    +'<div style="margin-top:8px;">'+rows+'</div>'
+    +'<div style="font-size:'+(sp?'12.5px':'13.5px')+';font-weight:800;color:#2b2b2b;margin-top:14px;">適用条件</div>'
+    +'<ul style="margin:6px 0 0;padding-left:18px;">'+conds+'</ul>'
+    +'<div style="font-size:11.5px;color:#8a5b60;margin-top:10px;line-height:1.6;">'+CAMP_NOTE+'</div>'
+    +'</div>'
+    +'<div style="border:1px dashed #BDBDBD;border-radius:10px;padding:10px 12px;margin-top:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#FAFAFA;">'
+    +'<span style="font-size:10.5px;font-weight:800;color:#9a9a9a;letter-spacing:.04em;">開発用</span>'
+    +'<span style="font-size:11.5px;color:#6a6a6a;">新規特典の判定</span>'
+    +demoChip(false,'対象（新規）')+demoChip(true,'対象外（利用履歴あり）')
+    +'<span style="font-size:10.5px;color:#9a9a9a;">'+(isNewMember()?'いまは新規（受付番号あり）として表示中':'仮登録すると価格表示に反映されます')+'</span>'
+    +'</div>';
+  return '<section data-anchor="campaign" data-section="campaign" style="background:#fff;padding:'+(sp?'18px 16px 6px':'28px 24px 8px')+';scroll-margin-top:60px;">'
+    +(sp?inner:'<div style="max-width:1200px;margin:0 auto;">'+inner+'</div>')
+    +'</section>';
+}
+
 /* ================= 状態（PC/SP共通） ================= */
 const _now=new Date();
 let S={
   loggedIn:false, userName:null, lastOrder:null,
+  stage:'guest',                    // guest=未ログイン | provisional=新規（受付番号あり・本登録前） | member=既存会員
+  receiptNo:null,                   // 仮登録で発行された受付番号
+  campaignExcluded:false,           // 新規特典の対象外（二重登録パターン②想定・デモ切替）
   guestFull:false,                  // 未ログイントップ：false=雑誌型トップ / true=フルメニュー（週タブ＋一覧）
   coins:3240,                       // eコイン残高（モック初期値：使用UIの500刻み・地域別上限を確認できる値）
   coinUse:0,                        // 支払いで使用するeコイン（0=使用しない／1000から500刻み）
@@ -470,8 +594,8 @@ function cartDiscount(){
   });
   return Math.floor(base*0.05/10)*10;
 }
-/* 合計：通し割引に加え、選択中のeコイン利用分（1コイン=1円）を差し引く */
-const cartTotal=()=>Math.max(0,cartSubtotal()+cartShip()-cartDiscount()-coinUsed());
+/* 合計：通し割引・新規特典割引に加え、選択中のeコイン利用分（1コイン=1円）を差し引く */
+const cartTotal=()=>Math.max(0,cartSubtotal()+cartShip()-cartDiscount()-campDiscount()-coinUsed());
 
 /* 画像プレースホルダー（No Image画像） */
 function slot(label){
@@ -511,7 +635,13 @@ const A={
   setRegion(key){setRegion(key);render();},
   /* eコイン使用（500刻みの選択） */
   setCoinUse(v){S.coinUse=Number(v)||0;render();},
-  logout(){S.loggedIn=false;S.userName=null;S.page=null;location.href='lp.html';},
+  /* デモ用：新規特典の対象／対象外の切替（第2弾の二重登録デモ＝パターン②の代替） */
+  setCampaignDemo(excluded){
+    S.campaignExcluded=!!excluded;
+    if(S.stage!=='provisional'){S.stage='provisional';S.receiptNo=S.receiptNo||'R-260730-001';}
+    render();
+  },
+  logout(){S.loggedIn=false;S.userName=null;S.stage='guest';S.receiptNo=null;S.page=null;location.href='lp.html';},
 
   /* 未ログイントップ（雑誌型）⇄ フルメニューの切り替え（リロードなし・再描画のみ） */
   guestShowAll(){S.guestFull=true;S.page=null;render();Banner.jump('guest-full');},
@@ -581,12 +711,13 @@ const A={
       S.cartItems=[...S.cartItems,{id:'last-'+Date.now(),title:r.title,tag:r.tag,accent:r.tagColor,unit:'',price:toNum(r.price),qty:S.lastQty,week:WEEKS[S.week].label,day:WEEKS[S.week].label,cat:'tanpin'}];
     }
     const disc=cartDiscount();
+    const camp=campDiscount();                   // 新規特典（はじめての方限定）の割引
     const used=coinUsed();                       // 支払いに充当したeコイン
-    const total=Math.max(0,cartSubtotal()+cartShip()-disc-used);
+    const total=Math.max(0,cartSubtotal()+cartShip()-disc-camp-used);
     const pts=coinFor(coinBase());
     S.coins=Math.max(0,S.coins-used)+pts;
-    S.orders=[{id:'o-'+Date.now(),week:WEEKS[S.week].label,count:cartCount(),total,discount:disc,coins:pts,used,status:'active'},...S.orders];
-    S.lastOrder={count:cartCount(),total,discount:disc,coins:pts,used,week:WEEKS[S.week].label};
+    S.orders=[{id:'o-'+Date.now(),week:WEEKS[S.week].label,count:cartCount(),total,discount:disc,camp,coins:pts,used,status:'active'},...S.orders];
+    S.lastOrder={count:cartCount(),total,discount:disc,camp,coins:pts,used,week:WEEKS[S.week].label};
     S.cartItems=[];S.coinUse=0;S.lastChanceOpen=false;S.lastQty=0;S.page='orderDone';
     touchCart();render();window.scrollTo(0,0);
   },
@@ -1555,7 +1686,7 @@ function guestShelfHTML(sp){
       +'<div style="padding:11px 12px 13px;flex:1;display:flex;flex-direction:column;">'
       +'<div style="font-size:11px;font-weight:700;color:#8a8578;">'+c.note+'</div>'
       +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.45;margin-top:5px;">'+c.title+'</div>'
-      +'<div style="font-size:14.5px;font-weight:800;color:#2b2b2b;margin-top:auto;padding-top:9px;">2人用 '+c.price+'円〜</div>'
+      +'<div style="font-size:14.5px;font-weight:800;color:#2b2b2b;margin-top:auto;padding-top:9px;">'+priceCardHTML(c.pill,c.price,'2人用 ')+'</div>'
       +'<button onclick="'+c.open+'" style="margin-top:10px;width:100%;border-radius:10px;padding:10px;font-size:13px;font-weight:800;'
       +'color:#E50012;background:#FCEBEC;box-shadow:0 0 0 1.5px #F3C6CC inset;">詳しく見る</button>'
       +'</div></div>';
@@ -1741,7 +1872,7 @@ function spHTML(){
               +'<div style="flex:1;min-width:0;padding:11px 13px 13px;">'
               +'<div style="position:relative;height:145px;border-radius:10px;overflow:hidden;">'+favBtn(m.title,cs.name,cs.accent,toNum(m.price))+slot(m.title)+'</div>'
               +'<div style="font-size:14.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:10px;">'+m.title+'</div>'
-              +'<div style="font-size:15px;font-weight:800;color:#2b2b2b;margin-top:7px;">2人用 '+m.price+'円〜</div>'
+              +'<div style="font-size:15px;font-weight:800;color:#2b2b2b;margin-top:7px;">'+priceCardHTML(cs.name,m.price,'2人用 ')+'</div>'
               +'</div></div>').join('')
             +'</div>'
           :emptyFilterHTML(true))
@@ -1759,7 +1890,7 @@ function spHTML(){
               +'<div style="position:relative;height:116px;border-radius:6px;overflow:hidden;width:100%;">'+favBtn(it.title,subName,cat.accent,toNum(it.price))+slot(it.title)+'</div>'
               +'<span style="align-self:flex-start;margin:9px 0 0;padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:'+cat.accent+';">'+subName+'</span>'
               +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:6px;">'+it.title+'</div>'
-              +'<div style="font-size:14px;font-weight:800;color:#2b2b2b;margin-top:6px;">'+it.price+'円〜</div>'
+              +'<div style="font-size:14px;font-weight:800;color:#2b2b2b;margin-top:6px;">'+priceCardHTML(subName,it.price)+'</div>'
               +'</div>').join('')
             +'</div>'
           :emptyFilterHTML(true))
@@ -1783,7 +1914,7 @@ function spHTML(){
       +'<div style="height:116px;border-radius:6px;overflow:hidden;width:100%;">'+slot(title)+'</div>'
       +'<span style="align-self:flex-start;margin:9px 0 0;padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:'+accent+';">'+series+'</span>'
       +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:6px;">'+title+'</div>'
-      +'<div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:6px;">2人用 1,350円〜</div></button>';
+      +'<div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:6px;">'+priceCardHTML(series,'1,350','2人用 ')+'</div></button>';
 
     const dSmile=SMILE.map((c,i)=>({c,i})).filter(x=>passFilter(itemFacet('てりやき親子丼 お揚げと野菜のおかず汁',SERIES[x.c.si].name,'主菜')));
     h+='<div style="padding:10px 14px 0;">'
@@ -1808,7 +1939,7 @@ function spHTML(){
               +'<div style="height:116px;border-radius:6px;overflow:hidden;width:100%;">'+slot(c.title)+'</div>'
               +'<span style="align-self:flex-start;margin:9px 0 0;padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:'+c.accent+';">'+c.tag+'</span>'
               +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.4;margin-top:6px;">'+c.title+'</div>'
-              +'<div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:6px;">2人用 '+c.price+'円〜</div></button>';
+              +'<div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:6px;">'+priceCardHTML(c.tag,c.price,'2人用 ')+'</div></button>';
           }).join('')
           +'</div>'
         :emptyFilterHTML(true))
@@ -1817,6 +1948,8 @@ function spHTML(){
   } /* /雑誌型トップ以外（フルメニュー・ログイン後） */
 
   /* LPフッター：未ログインのトップのみ（雑誌型・フルメニューの両方）。ログイン済みは現状維持で出さない */
+  /* 新規向け割引キャンペーンの説明（カルーセルのバナーからのディープリンク先） */
+  if(S.page===null)h+=campaignSectionHTML(true);
   if(!S.loggedIn&&S.page===null)h+=lpFooterHTML();
   h+=regionDemoHTML(true);   /* デモ用：表示地域の切替（フッター付近） */
 
@@ -1972,7 +2105,7 @@ function spHTML(){
             +'<button onclick="A.removeCart(\''+c.id+'\')" style="color:#b8b8b8;flex-shrink:0;padding:2px;">'+IC.close(17)+'</button></div>'
             +'<div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:6px;line-height:1.4;">'+c.title+'</div>'
             +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;">'
-            +'<span style="font-size:16px;font-weight:800;color:#2b2b2b;">'+(c.unit?c.unit+' ':'')+yen(c.price)+'</span>'
+            +cartPriceHTML(c,16)
             +'<div style="display:flex;align-items:center;gap:10px;">'
             +'<button onclick="A.cartQty(\''+c.id+'\',-1)" style="'+minusBtnStyle(c.qty>1)+'">'+IC.minus(14)+'</button>'
             +'<span style="min-width:14px;text-align:center;font-weight:700;color:#2b2b2b;">'+c.qty+'</span>'
@@ -1984,6 +2117,7 @@ function spHTML(){
         +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;"><span>小計</span><span style="font-size:16px;font-weight:800;">'+yen(cartSubtotal())+'</span></div>'
         +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;margin-top:11px;"><span>送料</span><span style="font-size:16px;font-weight:800;">'+yen(cartShip())+'</span></div>'
         +discountRowHTML(13.5)
+        +campCartRowHTML(13.5)
         +coinUseHTML(true)
         +'<div style="border-top:1px solid #EEE;margin:13px 0;"></div>'
         +'<div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:14px;font-weight:700;color:#2b2b2b;">合計</span><span style="font-size:24px;font-weight:900;color:#E50012;">'+yen(cartTotal())+'</span></div>'
@@ -2014,6 +2148,7 @@ function spHTML(){
       +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;"><span>お届け週</span><span style="font-weight:700;">'+o.week+'週</span></div>'
       +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;margin-top:11px;"><span>ご注文点数</span><span style="font-weight:700;">'+o.count+'点</span></div>'
       +(o.discount?'<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:#E50012;font-weight:700;margin-top:11px;"><span>通し割引<span style="font-size:11px;font-weight:600;margin-left:5px;">（週5日以上）</span></span><span style="font-size:15px;font-weight:800;">-'+yen(o.discount)+'</span></div>':'')
+      +(o.camp?'<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:#E50012;font-weight:700;margin-top:11px;"><span>はじめての方限定割引</span><span style="font-size:15px;font-weight:800;">-'+yen(o.camp)+'</span></div>':'')
       +(o.used?'<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:#E0912C;font-weight:700;margin-top:11px;"><span>eコイン利用<span style="font-size:11px;font-weight:600;margin-left:5px;">（'+o.used.toLocaleString('ja-JP')+'コイン）</span></span><span style="font-size:15px;font-weight:800;">-'+yen(o.used)+'</span></div>':'')
       +'<div style="border-top:1px solid #EEE;margin:13px 0;"></div>'
       +'<div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:14px;font-weight:700;color:#2b2b2b;">お支払い合計</span><span style="font-size:24px;font-weight:900;color:#E50012;">'+yen(o.total)+'</span></div>'
@@ -2214,7 +2349,7 @@ function pcHTML(){
               +'<span style="position:absolute;top:10px;left:10px;background:'+cs.dark+';color:#fff;padding:4px 11px;border-radius:8px;font-size:12px;font-weight:700;">'+m.date+'（'+m.dow+'）</span></div>'
               +'<div style="padding:13px 14px 15px;flex:1;display:flex;flex-direction:column;">'
               +'<div style="font-size:14.5px;font-weight:700;color:#2b2b2b;line-height:1.45;">'+m.title+'</div>'
-              +'<div style="font-size:15px;font-weight:800;color:#2b2b2b;margin-top:auto;padding-top:10px;">2人用 '+m.price+'円〜</div>'
+              +'<div style="font-size:15px;font-weight:800;color:#2b2b2b;margin-top:auto;padding-top:10px;">'+priceCardHTML(cs.name,m.price,'2人用 ')+'</div>'
               +'</div></div>').join('')
             +'</div>'
           :emptyFilterHTML(false));
@@ -2229,7 +2364,7 @@ function pcHTML(){
                 +'<div style="position:relative;height:130px;border-radius:8px;overflow:hidden;width:100%;">'+favBtn(it.title,subName,cat.accent,toNum(it.price))+slot(it.title)+'</div>'
                 +'<span style="align-self:flex-start;margin:9px 0 0;padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:'+cat.accent+';">'+subName+'</span>'
                 +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.45;margin-top:7px;">'+it.title+'</div>'
-                +'<div style="font-size:14.5px;font-weight:800;color:#2b2b2b;margin-top:6px;">'+it.price+'円〜</div>'
+                +'<div style="font-size:14.5px;font-weight:800;color:#2b2b2b;margin-top:6px;">'+priceCardHTML(subName,it.price)+'</div>'
                 +'</div>').join('')
               +'</div>'
             :emptyFilterHTML(false));
@@ -2253,7 +2388,7 @@ function pcHTML(){
         +'<div style="height:130px;border-radius:8px;overflow:hidden;width:100%;">'+slot(title)+'</div>'
         +'<span style="align-self:flex-start;margin:9px 0 0;padding:3px 11px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;background:'+accent+';">'+series+'</span>'
         +'<div style="font-size:13.5px;font-weight:700;color:#2b2b2b;line-height:1.45;margin-top:7px;">'+title+'</div>'
-        +'<div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:6px;">2人用 '+price+'円〜</div></button>';
+        +'<div style="font-size:13px;font-weight:700;color:#2b2b2b;margin-top:6px;">'+priceCardHTML(series,price,'2人用 ')+'</div></button>';
 
       const dSmileP=SMILE.map((c,i)=>({c,i})).filter(x=>passFilter(itemFacet('てりやき親子丼 お揚げと野菜のおかず汁',SERIES[x.c.si].name,'主菜')));
       h+='<div style="display:flex;align-items:center;gap:9px;border-bottom:2px solid #333;padding-bottom:8px;margin:26px 0 0;">'+IC.chop(20,'#333')
@@ -2440,7 +2575,7 @@ function pcHTML(){
             +'<button onclick="A.removeCart(\''+c.id+'\')" style="color:#b8b8b8;flex-shrink:0;padding:2px;">'+IC.close(18)+'</button></div>'
             +'<div style="font-size:14.5px;font-weight:700;color:#2b2b2b;margin-top:8px;line-height:1.45;">'+c.title+'</div>'
             +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">'
-            +'<span style="font-size:17px;font-weight:800;color:#2b2b2b;">'+(c.unit?c.unit+' ':'')+yen(c.price)+'</span>'
+            +cartPriceHTML(c,17)
             +'<div style="display:flex;align-items:center;gap:12px;">'
             +'<button onclick="A.cartQty(\''+c.id+'\',-1)" style="'+minusBtnStyle(c.qty>1,31)+'">'+IC.minus(15)+'</button>'
             +'<span style="min-width:16px;text-align:center;font-weight:700;font-size:16px;color:#2b2b2b;">'+c.qty+'</span>'
@@ -2456,6 +2591,7 @@ function pcHTML(){
         +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;"><span>小計</span><span style="font-size:16px;font-weight:800;">'+yen(cartSubtotal())+'</span></div>'
         +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;margin-top:11px;"><span>送料</span><span style="font-size:16px;font-weight:800;">'+yen(cartShip())+'</span></div>'
         +discountRowHTML(13.5)
+        +campCartRowHTML(13.5)
         +coinUseHTML(false)
         +'<div style="border-top:1px solid #EEE;margin:14px 0;"></div>'
         +'<div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:14px;font-weight:700;color:#2b2b2b;">合計</span><span style="font-size:26px;font-weight:900;color:#E50012;">'+yen(cartTotal())+'</span></div>'
@@ -2485,6 +2621,7 @@ function pcHTML(){
       +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;"><span>お届け週</span><span style="font-weight:700;">'+o.week+'週</span></div>'
       +'<div style="display:flex;justify-content:space-between;font-size:13.5px;color:#444;margin-top:11px;"><span>ご注文点数</span><span style="font-weight:700;">'+o.count+'点</span></div>'
       +(o.discount?'<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:#E50012;font-weight:700;margin-top:11px;"><span>通し割引<span style="font-size:11px;font-weight:600;margin-left:5px;">（週5日以上）</span></span><span style="font-size:15px;font-weight:800;">-'+yen(o.discount)+'</span></div>':'')
+      +(o.camp?'<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:#E50012;font-weight:700;margin-top:11px;"><span>はじめての方限定割引</span><span style="font-size:15px;font-weight:800;">-'+yen(o.camp)+'</span></div>':'')
       +(o.used?'<div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:#E0912C;font-weight:700;margin-top:11px;"><span>eコイン利用<span style="font-size:11px;font-weight:600;margin-left:5px;">（'+o.used.toLocaleString('ja-JP')+'コイン）</span></span><span style="font-size:15px;font-weight:800;">-'+yen(o.used)+'</span></div>':'')
       +'<div style="border-top:1px solid #E8E4DE;margin:13px 0;"></div>'
       +'<div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:14px;font-weight:700;color:#2b2b2b;">お支払い合計</span><span style="font-size:26px;font-weight:900;color:#E50012;">'+yen(o.total)+'</span></div>'
@@ -2505,6 +2642,8 @@ function pcHTML(){
       +'</div></div>';
   }
 
+  /* 新規向け割引キャンペーンの説明（カルーセルのバナーからのディープリンク先） */
+  if(pg===null)h+=campaignSectionHTML(false);
   h+=regionDemoHTML(false);   /* デモ用：表示地域の切替（フッター付近） */
   h+='</div>'; /* /main */
 
@@ -2782,6 +2921,8 @@ const Login=(function(){
     }
     const nm=$('[data-su-name]');
     regName=(nm&&nm.value.trim())||'会員';
+    S.receiptNo='R-260730-001';   // 受付番号（モック固定値）
+    S.reviewStep=0;               // 審査ステータス：申込受付
     phase='done';renderStep();
   }
 
@@ -2794,7 +2935,7 @@ const Login=(function(){
       +'<div style="width:56px;height:56px;margin:8px auto 18px;border-radius:50%;background:#E50012;display:flex;align-items:center;justify-content:center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l5 5 10-11" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
       +'<div style="font-size:22px;font-weight:800;color:#3a3a3a;margin-bottom:22px;">仮登録が完了しました</div>'
       +'<div style="font-size:13px;color:#888;margin-bottom:6px;">受付番号</div>'
-      +'<div style="font-size:30px;font-weight:800;color:#E50012;letter-spacing:.06em;margin-bottom:24px;">R-260730-001</div>'
+      +'<div style="font-size:30px;font-weight:800;color:#E50012;letter-spacing:.06em;margin-bottom:24px;">'+(S.receiptNo||'R-260730-001')+'</div>'
       +'<p style="font-size:13.5px;color:#666;line-height:1.95;margin:0 0 26px;">担当営業所で確認後、本登録のご案内をお送りします<br>いまから仮のご注文が可能です。お届けは本登録完了後に確定します</p>'
       +'<button data-su-menu style="width:100%;border:none;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:12px;">メニューを見る</button>'
       +'</div>';
@@ -2828,8 +2969,9 @@ const Login=(function(){
   }
 
   // ログイン成立でサイト本体へ（PC/SP共通の状態を更新。表示中ページは維持）
-  function completeLogin(name){
-    S.loggedIn=true;S.userName=name;render();
+  // stage：'provisional'＝仮登録（受付番号あり・本登録前）／'member'＝既存会員のログイン
+  function completeLogin(name,stage){
+    S.loggedIn=true;S.userName=name;S.stage=stage||'member';render();
     try{history.replaceState(null,'',location.pathname);}catch(e){}
     try{console.log('[login_flow] taste_profile =',taste_profile);}catch(e){}
   }
@@ -2865,7 +3007,7 @@ const Login=(function(){
       setTimeout(()=>{
         removeOverlay();
         if(wel.parentNode)wel.parentNode.removeChild(wel);
-        completeLogin(name);
+        completeLogin(name,'provisional');   // 仮登録直後＝受付番号あり・本登録前
       },1400);
       return;
     }
@@ -2880,7 +3022,7 @@ const Login=(function(){
       setTimeout(()=>{
         removeOverlay();
         if(wel.parentNode)wel.parentNode.removeChild(wel);
-        completeLogin(name);
+        completeLogin(name,'provisional');   // 仮登録直後＝受付番号あり・本登録前
         circle.style.transition='opacity .5s ease';
         circle.style.opacity='0';
         setTimeout(()=>{if(circle.parentNode)circle.parentNode.removeChild(circle);},520);
