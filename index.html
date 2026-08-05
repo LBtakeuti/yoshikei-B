@@ -24,8 +24,10 @@
   /* 再描画時のちらつき防止の保険：描画は DOM 差分更新（morph）でノードを使い回すが、
      構造が変わってノードが作り直された場合でも、開いたままの状態更新（カートに反映・数量変更など）
      では登場アニメーションを再生させない。
-     ユーザーが新しく開く／画面を切り替える操作のときだけ ANIM=true とし、このクラスを外す。 */
-  .rk-noanim,.rk-noanim *{animation:none !important;}
+     ユーザーが新しく開く／画面を切り替える操作のときだけ ANIM=true とし、このクラスを外す。
+     ただしヒーローの写真クロスフェード（.hero-slide）は「登場アニメーション」ではなく常時ループの
+     演出なので、このルールの対象から除外する（除外しないと再描画のたびに写真が切り替わらなくなる）。 */
+  .rk-noanim,.rk-noanim *:not(.hero-slide){animation:none !important;}
   /* 子タブのドロップダウン（コンテンツに覆いかぶさるオーバーレイ） */
   .dd-anchor{position:relative;}
   .dd-menu{
@@ -56,6 +58,15 @@
   /* ECトップ ヒーローセクション（未ログインのゲスト閲覧時のみ表示） */
   .echero{position:relative;height:218px;background:#FBF7EE;display:flex;align-items:center;overflow:hidden}
   .echero-photo{position:absolute;top:0;bottom:0;right:0;left:56%}
+  /* ヒーロー写真：実写2枚を重ね、CSSキーフレームだけでクロスフェードさせる（12秒ループ＝1枚あたり約6秒表示、
+     切り替わりは約1秒）。JSタイマーを使わないのは、描画がDOM差分更新（morph）でノードを使い回すため、
+     CSSアニメーションなら再描画の影響を受けず動き続けるから。
+     下段の hero-slide-2 は常時不透明の土台とし、上段の hero-slide-1 のopacityだけを動かす。
+     こうすると切り替わりの瞬間に背景色（#FBF7EE）が透けず、写真同士が溶け合う自然な重なりになる。 */
+  .hero-slide{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:50% 40%}
+  .hero-slide-2{object-position:66% 46%}
+  .hero-slide-1{animation:hero-xfade 12s linear infinite;will-change:opacity}
+  @keyframes hero-xfade{0%,42%{opacity:1}50%,92%{opacity:0}100%{opacity:1}}
   .echero-scrim{position:absolute;inset:0;background:linear-gradient(90deg,#FBF7EE 0%,#FBF7EE 56%,rgba(251,247,238,.72) 68%,rgba(251,247,238,0) 84%)}
   .echero-inner{position:relative;z-index:2;padding-left:20px;display:flex;flex-direction:column;gap:14px;max-width:238px}
   .echero-catch{margin:0;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:26px;line-height:1.35;color:#3E3A34;letter-spacing:.01em;word-break:keep-all}
@@ -66,6 +77,8 @@
   @media (min-width:1024px){
     .echero{height:270px}
     .echero-photo{left:46%}
+    /* PCは写真領域が横長になるので、SPで効かせていた右寄せトリミングは戻す */
+    .hero-slide-2{object-position:50% 46%}
     .echero-scrim{background:linear-gradient(90deg,#FBF7EE 0%,#FBF7EE 48%,rgba(251,247,238,.85) 58%,rgba(251,247,238,0) 74%)}
     .echero-inner{padding-left:56px;gap:20px;max-width:560px}
     .echero-catch{font-size:44px}
@@ -1745,15 +1758,15 @@ function calendarHTML(sp){
 
 /* ================= SP（モバイル）レンダリング ================= */
 /* ================= ECヒーロー（未ログインのゲスト閲覧時のみ・注文TOPの最上部） =================
-   週表示・締切は選択中の週（WEEKS[S.week]）から生成する。写真は既存のプレースホルダー方式。 */
+   週表示・締切は選択中の週（WEEKS[S.week]）から生成する。
+   写真は実写2枚（hero-1/hero-2）をCSSキーフレームだけで約6秒ごとにクロスフェードさせる。 */
 function heroHTML(){
   const wk=WEEKS[S.week]||{label:''};
   const dl=orderDeadline(wk.label);
   return '<section class="echero" data-section="ec-hero">'
     +'<div class="echero-photo">'
-    +'<div class="ph-box" style="position:absolute;inset:0;width:100%;height:100%">'
-    +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.6"/><path d="M4 17l4.5-5 3.5 3.5L15.5 11 20 16.5"/></svg>'
-    +'<span>ヒーロー用の料理写真</span></div>'
+    +'<img class="hero-slide hero-slide-2" src="assets/hero-2.png" alt="" decoding="async">'
+    +'<img class="hero-slide hero-slide-1" src="assets/hero-1.png" alt="" decoding="async">'
     +'</div>'
     +'<div class="echero-scrim"></div>'
     +'<div class="echero-inner">'
