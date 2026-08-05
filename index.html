@@ -148,6 +148,78 @@
   @media (max-width:768px){
     .lpft{padding-left:18px;padding-right:18px;}
   }
+  /* ======== お届けエリア確認モーダル（デザイン原本: docs/snippets/AreaCheckModal.dc.html） ========
+     原本（React風のデザインコンポーネント）のスタイル値をそのままバニラCSSへ移植したもの。
+     値を変える場合は原本と必ず合わせる。SP＝既定値／PC＝1024px以上のメディアクエリ。 */
+  .ac-ov{position:fixed;inset:0;z-index:420;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:14px;}
+  .ac-modal{position:relative;width:343px;max-width:100%;height:572px;max-height:calc(100vh - 28px);
+    display:flex;flex-direction:column;align-items:center;text-align:center;
+    background:#fff;border-radius:16px;overflow:hidden;padding:14px 18px 18px;
+    font-family:'Zen Kaku Gothic New',sans-serif;}
+  .ac-close{position:absolute;top:8px;right:8px;z-index:2;width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#2b2b2b;}
+  .ac-mascotbox{display:flex;align-items:flex-end;justify-content:center;height:108px;flex-shrink:0;margin-top:20px;}
+  .ac-mascot{height:100%;width:auto;display:block;}
+  .ac-body{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;justify-content:flex-start;overflow-y:auto;}
+  .ac-pane{display:flex;flex-direction:column;align-items:center;width:100%;}
+  .ac-foot{width:100%;flex-shrink:0;padding-top:11px;}
+  .ac-title{margin:10px 0 0;font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:19px;color:#2b2b2b;line-height:1.45;}
+  .ac-title-ok{font-size:21px;color:#509146;}
+  .ac-lead{margin:8px 0 0;font-size:12.5px;color:#4A443C;line-height:1.75;}
+  .ac-okbox{width:100%;display:flex;flex-direction:column;align-items:center;gap:2px;background:#EEF6EC;border-radius:10px;padding:11px 14px 12px;margin-top:10px;}
+  .ac-oklabel{font-size:12px;color:#4A443C;}
+  .ac-okpref{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:22px;color:#509146;line-height:1.3;}
+  .ac-field{width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:13px;text-align:left;}
+  .ac-label{font-size:12.5px;font-weight:700;color:#2b2b2b;}
+  .ac-input{width:100%;min-height:52px;padding:0 15px;font-size:15px;color:#2b2b2b;background:#fff;border:1px solid #DCD5C9;border-radius:10px;outline:none;}
+  .ac-selwrap{position:relative;width:100%;display:flex;}
+  .ac-select{width:100%;min-height:52px;padding:0 44px 0 15px;font-size:14.5px;color:#2b2b2b;background:#fff;border:1px solid #DCD5C9;border-radius:10px;appearance:none;-webkit-appearance:none;outline:none;}
+  .ac-caret{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;color:#6E675D;pointer-events:none;}
+  .ac-errmsg{font-size:12.5px;font-weight:700;color:#E50012;line-height:1.6;display:none;}
+  .ac-err .ac-errmsg{display:block;}
+  .ac-err .ac-input,.ac-err .ac-select{border-color:#E50012;}
+  .ac-primary{width:100%;min-height:52px;border-radius:10px;background:#E50012;color:#fff;font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:15.5px;}
+  .ac-outbtn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:58px;margin-top:11px;padding:10px 13px;border-radius:10px;background:#FCEBEC;text-align:left;}
+  .ac-outbtn-text{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:13.5px;line-height:1.6;color:#2b2b2b;}
+  .ac-outbtn-arrow{display:flex;color:#E50012;flex-shrink:0;}
+  .ac-tellead{margin:11px 0 0;font-size:11.5px;color:#4A443C;line-height:1.7;}
+  .ac-telblock{display:flex;flex-direction:column;align-items:center;gap:1px;margin-top:6px;}
+  .ac-telarea{font-size:12px;color:#4A443C;}
+  .ac-telnum{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:21px;color:#E50012;line-height:1.25;}
+  .ac-teldiv{width:100%;height:0;border-top:1px solid #EDE6DA;margin-top:9px;}
+  /* 常設「お届けエリアを確認する」バー（未ログインの注文TOPのみ・SPはボトムナビの上に置く） */
+  .ac-bar{position:fixed;left:0;right:0;bottom:66px;z-index:36;background:rgba(255,255,255,.94);border-top:1px solid #EFEAE0;padding:10px 16px 12px;}
+  .ac-bar-btn{display:block;width:100%;max-width:520px;margin:0 auto;min-height:50px;border-radius:10px;
+    border:1.5px solid #E50012;background:#fff;color:#E50012;font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:14px;}
+  .has-areabar{padding-bottom:64px;}
+  .has-areabar .demo-toggle{bottom:152px;}
+  @media (min-width:1024px){
+    .ac-ov{padding:20px;}
+    .ac-modal{width:480px;height:614px;padding:20px 26px 22px;}
+    .ac-close{top:10px;right:10px;}
+    .ac-mascotbox{height:122px;margin-top:26px;}
+    .ac-foot{padding-top:13px;}
+    .ac-title{margin:12px 0 0;font-size:22px;}
+    .ac-title-ok{font-size:24px;}
+    .ac-lead{margin:10px 0 0;font-size:13.5px;}
+    .ac-okbox{padding:12px 16px 14px;margin-top:12px;}
+    .ac-oklabel{font-size:13px;}
+    .ac-okpref{font-size:25px;}
+    .ac-field{margin-top:15px;}
+    .ac-label{font-size:13.5px;}
+    .ac-input{font-size:16px;}
+    .ac-select{font-size:15.5px;}
+    .ac-primary{font-size:17px;}
+    .ac-outbtn{margin-top:13px;padding:11px 15px;}
+    .ac-outbtn-text{font-size:14.5px;}
+    .ac-tellead{margin:13px 0 0;font-size:12.5px;}
+    .ac-telblock{margin-top:7px;}
+    .ac-telarea{font-size:13px;}
+    .ac-telnum{font-size:24px;}
+    .ac-teldiv{margin-top:11px;}
+    .ac-bar{bottom:0;padding:12px 24px 14px;}
+    .ac-bar-btn{max-width:420px;font-size:15px;}
+    .has-areabar .demo-toggle{bottom:auto;}
+  }
 </style>
 </head>
 <body>
@@ -208,6 +280,20 @@
       <button data-search-close style="width:28px;height:28px;border-radius:50%;background:#F2EFEA;color:#666;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;">×</button>
     </div>
     <div data-search-results class="ps" style="flex:1;overflow-y:auto;"></div>
+  </div>
+</div>
+
+<!-- ======== お届けエリア確認モーダル（PC/SP共通・デザイン原本: docs/snippets/AreaCheckModal.dc.html） ========
+     A 郵便番号入力／B 配達可／C 町名確認／D エリア外 の4状態を Area モジュールが差し替える。
+     入力欄を持つため再描画（render）対象外の静的DOMに置く（フォーカス維持のため）。 -->
+<div data-area-overlay class="ac-ov">
+  <div class="ac-modal">
+    <button data-area-close class="ac-close" aria-label="閉じる">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg>
+    </button>
+    <div class="ac-mascotbox"><img data-area-mascot src="assets/mascot-wave.png" alt="" class="ac-mascot"></div>
+    <div data-area-body class="ac-body"></div>
+    <div class="ac-foot"><button data-area-primary class="ac-primary">確認する</button></div>
   </div>
 </div>
 
@@ -368,6 +454,41 @@ function regionInfo(){return (REGION&&REGION_MASTER[REGION])||REGION_COMMON;}
 function setRegion(key){
   REGION=REGION_KEYS.indexOf(key)>=0?key:null;
   try{if(REGION)localStorage.setItem('rk_region',REGION);else localStorage.removeItem('rk_region');}catch(e){}
+}
+
+/* ================= お届けエリア判定（郵便番号）＝仮登録フローとエリア確認モーダルの共通ロジック =================
+   本番は郵便番号＋町名で判定するため、判定データ（下記2種）とロジック（judgeZip）を分離して保持する。
+   AREA_ZIP_EXACT … 7桁完全一致。同一郵便番号内で可否が分かれるケース（towns）もここで表現する
+   AREA_ZIPS      … 先頭3桁の前方一致（既存デモの郵便番号をそのまま活かすための簡易判定） */
+const AREA_ZIP_EXACT={
+  '9300000':{region:'toyama',  office:'富山営業所'},
+  '9200000':{region:'ishikawa',office:'金沢営業所'},
+  '5000000':{region:'gifu',    office:'岐阜営業所'},
+  '9391000':{region:'toyama',  office:'富山営業所',towns:[
+    {name:'婦中町添島',ok:true},{name:'婦中町上轡田',ok:true},{name:'山田数納',ok:false}
+  ]},
+};
+const AREA_ZIPS=[
+  {prefix:'000',office:'富山営業所',   region:'toyama'}, // デモ用：0000000＝エリア内（1111111などはエリア外）
+  {prefix:'930',office:'富山営業所',   region:'toyama'},
+  {prefix:'933',office:'高岡営業所',   region:'toyama'},
+  {prefix:'920',office:'金沢営業所',   region:'ishikawa'},
+  {prefix:'921',office:'金沢南営業所', region:'ishikawa'},
+  {prefix:'500',office:'岐阜営業所',   region:'gifu'},
+  {prefix:'501',office:'岐阜西営業所', region:'gifu'},
+];
+function findArea(zip){return AREA_ZIPS.find(a=>zip.indexOf(a.prefix)===0)||null;}
+/* 郵便番号1件の判定結果を返す（type: ok=配達可／split=町名で分かれる／ng=エリア外） */
+function judgeZip(zip){
+  const z=(zip||'').replace(/[^0-9]/g,'');
+  const ex=AREA_ZIP_EXACT[z];
+  if(ex){
+    const base={pref:REGION_MASTER[ex.region].label,region:ex.region,office:ex.office};
+    return ex.towns?{...base,type:'split',towns:ex.towns}:{...base,type:'ok'};
+  }
+  const a=findArea(z);
+  if(a)return {type:'ok',pref:REGION_MASTER[a.region].label,region:a.region,office:a.office};
+  return {type:'ng',pref:null,region:null,office:null};
 }
 /* 問い合わせ表示（フリーダイヤル）：地域が確定していれば県名を添える */
 function regionTelHTML(sp){
@@ -791,6 +912,9 @@ const A={
   },
   setCut(v){S.cut=v;render();},
   addToCart(){
+    /* 未ログイン（ゲスト/新規）がカートに入れる操作をした瞬間、エリア未確認ならまず確認モーダルを出す。
+       確認できたらそのままカート投入を続ける（商品モーダル・カートの中身は保持される）。確認済みなら出さない。 */
+    if(!S.loggedIn&&!Area.checked()){Area.open(function(){A.addToCart();});return;}
     const p=S.product||{};
     const t=S.qty,n=p.special?t.s2:(t.s2+t.s3+t.s4);
     if(n<=0){S.productOpen=false;render();return;}
@@ -1167,6 +1291,12 @@ function specialPageContentHTML(sp){
         :emptyFilterHTML(sp))
       +'</div>';
   }).join('');
+}
+/* 常設「お届けエリアを確認する」バー（未ログインの注文TOPのみ・SP/PC共通）
+   SPはボトムナビ（66px）の上に重ねる。サブページはオーバーレイ表示のため出さない。 */
+function areaBarHTML(){
+  if(S.loggedIn||S.page!==null)return '';
+  return '<div class="ac-bar"><button onclick="Area.open()" class="ac-bar-btn">お届けエリアを確認する</button></div>';
 }
 /* デモ用：特別販売の表示案A/B切替ボタン（控えめ・画面右上に固定） */
 function demoToggleHTML(){
@@ -2310,6 +2440,7 @@ function spHTML(){
   h+=profileSavedHTML();
   h+=howtoHTML();
   h+=filterPanelHTML(true);
+  h+=areaBarHTML();       /* 常設：お届けエリアを確認する（未ログインのみ） */
   h+=demoToggleHTML();
 
   return h;
@@ -2788,6 +2919,7 @@ function pcHTML(){
   h+=profileSavedHTML();
   h+=howtoHTML();
   h+=filterPanelHTML(false);
+  h+=areaBarHTML();       /* 常設：お届けエリアを確認する（未ログインのみ） */
   h+=demoToggleHTML();
 
   return h;
@@ -2802,6 +2934,8 @@ function render(){
   });
   document.getElementById('sp-root').innerHTML=spHTML();
   document.getElementById('pc-root').innerHTML=pcHTML();
+  /* エリア確認バーの分だけ下端に余白を作る（デモ用トグルの退避位置も合わせる） */
+  document.body.classList.toggle('has-areabar',!S.loggedIn&&S.page===null);
   document.querySelectorAll('[data-sc]').forEach(el=>{
     const s=saved[el.getAttribute('data-sc')];
     if(s){el.scrollTop=s.top;el.scrollLeft=s.left;}
@@ -2824,17 +2958,7 @@ const Login=(function(){
   const ALLERGEN_MAP={'えび・かに':['えび','かに'],'卵':['卵'],'乳':['乳'],'小麦':['小麦']};
   const GENRE_MAP={'和食':'和風','洋食':'洋風','中華':'中華'};
 
-  // お届けエリア判定用ダミーデータ（本番は郵便番号＋町名で判定するため、町名粒度に差し替えられるよう判定ロジックと分離して保持）
-  const AREA_ZIPS=[
-    {prefix:'000',office:'富山営業所',   region:'toyama'}, // デモ用：0000000＝エリア内（1111111などはエリア外）
-    {prefix:'930',office:'富山営業所',   region:'toyama'},
-    {prefix:'933',office:'高岡営業所',   region:'toyama'},
-    {prefix:'920',office:'金沢営業所',   region:'ishikawa'},
-    {prefix:'921',office:'金沢南営業所', region:'ishikawa'},
-    {prefix:'500',office:'岐阜営業所',   region:'gifu'},
-    {prefix:'501',office:'岐阜西営業所', region:'gifu'},
-  ];
-  const findArea=(zip)=>AREA_ZIPS.find(a=>zip.indexOf(a.prefix)===0)||null;
+  // お届けエリア判定は共通ロジック（judgeZip / AREA_ZIP_EXACT / AREA_ZIPS）を使う＝モーダルと同じ判定になる
   // 判定結果の保持（後続画面から window.area_state で参照できる）
   const area_state={zip:null,office:null,region:null};
   window.area_state=area_state;
@@ -3190,6 +3314,148 @@ const Search=(function(){
   document.querySelector('[data-search-input]').addEventListener('input',e=>renderResults(e.target.value));
   ov().addEventListener('click',e=>{if(e.target===ov()||e.target.closest('[data-search-close]'))close();});
   return {open,close,pick};
+})();
+
+/* ================= お届けエリア確認モーダル（乖離No.2・デザイン原本 docs/snippets/AreaCheckModal.dc.html） =================
+   1つのモーダルを2つの動線から開く：
+     (1) 未ログインでカートに入れる操作をした瞬間（エリア未確認のときだけ／確認済みなら二度と出さない）
+     (2) 未ログイン時の画面下部固定バー「お届けエリアを確認する」
+   状態は A 郵便番号入力 → B 配達可 ／ C 町名確認 → B or D ／ D エリア外 の4つ。
+   確認結果は localStorage（rk_area_checked / rk_area_zip）に保持し、確定した県は setRegion() へ渡して
+   フッター・問い合わせ等の地域表示と連動させる。オーバーレイは静的DOMなので商品選択・カートの中身は保持される。 */
+const Area=(function(){
+  const $=(s)=>document.querySelector(s);
+  const ov=()=>$('[data-area-overlay]');
+  const CHEV_DOWN='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5l6 6 6-6"></path></svg>';
+  const CHEV_RIGHT='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"></path></svg>';
+
+  let step='A',zip='',town='',pref='',region=null,towns=[],error='',pending=null;
+
+  /* 確認済みか（一度「進む」まで到達したら以後カート投入では出さない） */
+  function checked(){try{return localStorage.getItem('rk_area_checked')==='1';}catch(e){return false;}}
+  function markChecked(z){try{localStorage.setItem('rk_area_checked','1');localStorage.setItem('rk_area_zip',z||'');}catch(e){}}
+
+  function paneA(){
+    return '<div class="ac-pane'+(error?' ac-err':'')+'">'
+      +'<h2 class="ac-title">お届けエリアを<br>確認します</h2>'
+      +'<p class="ac-lead">郵便番号（ハイフンなしの7桁）を<br>入力して、配達エリアを確認してください。</p>'
+      +'<div class="ac-field">'
+      +'<label class="ac-label" for="ac-zip">郵便番号（ハイフンなし）</label>'
+      +'<input id="ac-zip" data-area-zip class="ac-input" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="7" placeholder="例）9300000" value="'+zip+'">'
+      +'<span class="ac-errmsg">'+error+'</span>'
+      +'</div></div>';
+  }
+  function paneB(){
+    return '<div class="ac-pane">'
+      +'<h2 class="ac-title ac-title-ok">お届け可能地域です</h2>'
+      +'<div class="ac-okbox"><span class="ac-oklabel">お届けエリア</span><span class="ac-okpref">'+pref+'</span></div>'
+      +'<p class="ac-lead">ご入力の郵便番号は、<br>ヨシケイの配達エリアです。</p>'
+      +'</div>';
+  }
+  function paneC(){
+    return '<div class="ac-pane'+(error?' ac-err':'')+'">'
+      +'<h2 class="ac-title">お住まいの町名を<br>お選びください</h2>'
+      +'<p class="ac-lead">ご入力の郵便番号は、同じ郵便番号内で<br>配達エリアが分かれています。</p>'
+      +'<div class="ac-field">'
+      +'<label class="ac-label" for="ac-town">町名の選択</label>'
+      +'<div class="ac-selwrap">'
+      +'<select id="ac-town" data-area-town class="ac-select"><option value="">町名を選択してください</option>'
+      +towns.map(t=>'<option value="'+t.name+'"'+(t.name===town?' selected':'')+'>'+t.name+'</option>').join('')
+      +'</select><span class="ac-caret">'+CHEV_DOWN+'</span></div>'
+      +'<span class="ac-errmsg">'+error+'</span>'
+      +'</div></div>';
+  }
+  function paneD(){
+    return '<div class="ac-pane">'
+      +'<h2 class="ac-title">申し訳ございません</h2>'
+      +'<p class="ac-lead">ご入力の郵便番号は、<br>現在ヨシケイの配達エリア外です。</p>'
+      +'<a href="https://www.yoshikei-dvlp.co.jp/" target="_blank" rel="noopener" class="ac-outbtn">'
+      +'<span class="ac-outbtn-text">お近くのヨシケイを<br>探す（ヨシケイ本部サイトへ）</span>'
+      +'<span class="ac-outbtn-arrow">'+CHEV_RIGHT+'</span></a>'
+      +'<p class="ac-tellead">エリアについてのお問い合わせはこちら</p>'
+      +'<div class="ac-telblock"><span class="ac-telarea">富山・石川</span><a href="tel:0120253711" class="ac-telnum">0120-25-3711</a></div>'
+      +'<span class="ac-teldiv"></span>'
+      +'<div class="ac-telblock"><span class="ac-telarea">岐阜</span><a href="tel:0120854441" class="ac-telnum">0120-85-4441</a></div>'
+      +'</div>';
+  }
+  function paint(){
+    const body=$('[data-area-body]');
+    if(!body)return;
+    body.innerHTML=step==='B'?paneB():step==='C'?paneC():step==='D'?paneD():paneA();
+    $('[data-area-mascot]').src=step==='D'?'assets/mascot-bow.png':'assets/mascot-wave.png';
+    $('[data-area-primary]').textContent=step==='B'?'進む':step==='D'?'別の郵便番号を入力する':'確認する';
+  }
+
+  function submitZip(){
+    const inp=$('[data-area-zip]');
+    const z=((inp&&inp.value)||zip).replace(/[^0-9]/g,'').slice(0,7);
+    zip=z;
+    if(z.length!==7){error='郵便番号は数字7桁で入力してください。';paint();return;}
+    const j=judgeZip(z);
+    error='';
+    if(j.type==='ng'){step='D';region=null;pref='';paint();return;}
+    if(j.type==='split'){step='C';pref=j.pref;region=j.region;towns=j.towns;town='';paint();return;}
+    step='B';pref=j.pref;region=j.region;paint();
+  }
+  function submitTown(){
+    const sel=$('[data-area-town]');
+    if(sel)town=sel.value;
+    const t=towns.find(x=>x.name===town);
+    if(!t){error='町名を選択してください。';paint();return;}
+    error='';
+    step=t.ok?'B':'D';
+    paint();
+  }
+  /* 状態Bの「進む」：県を確定して閉じ、カート投入起点なら続けて投入を完了させる */
+  function proceed(){
+    setRegion(region);
+    markChecked(zip);
+    const next=pending;
+    close();
+    render();
+    if(next)next();
+  }
+  function primary(){
+    if(step==='A'){submitZip();return;}
+    if(step==='C'){submitTown();return;}
+    if(step==='B'){proceed();return;}
+    step='A';zip='';town='';error='';paint();   /* D：別の郵便番号を入力する（入力クリアでAへ） */
+  }
+  function close(){
+    ov().style.display='none';
+    step='A';zip='';town='';error='';pending=null;
+  }
+  /* after … 確認完了（状態Bの「進む」）後に続けて実行する処理（カート投入など） */
+  function open(after){
+    pending=typeof after==='function'?after:null;
+    step='A';zip='';town='';error='';
+    paint();
+    ov().style.display='flex';
+    const inp=$('[data-area-zip]');
+    if(inp)setTimeout(()=>inp.focus(),60);
+  }
+
+  ov().addEventListener('click',e=>{
+    if(e.target===ov()||e.target.closest('[data-area-close]')){close();return;}
+    if(e.target.closest('[data-area-primary]')){primary();return;}
+  });
+  /* 郵便番号：数字以外は除去し7桁まで（再描画せず値だけ整形＝フォーカス維持） */
+  ov().addEventListener('input',e=>{
+    const z=e.target.closest('[data-area-zip]');
+    if(!z)return;
+    const v=z.value.replace(/[^0-9]/g,'').slice(0,7);
+    if(z.value!==v)z.value=v;
+    zip=v;
+    if(error){error='';const p=z.closest('.ac-pane');if(p)p.classList.remove('ac-err');}
+  });
+  ov().addEventListener('change',e=>{
+    const s=e.target.closest('[data-area-town]');
+    if(!s)return;
+    town=s.value;
+    if(error){error='';const p=s.closest('.ac-pane');if(p)p.classList.remove('ac-err');}
+  });
+
+  return {open,close,checked};
 })();
 
 /* ================= 確定お忘れリマインド（カート放置30秒ごとに表示） =================
