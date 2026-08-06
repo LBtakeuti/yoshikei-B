@@ -102,13 +102,13 @@
   /* バナーカルーセル（未ログインのゲストトップ・ヒーロー直下）
      将来は管理画面から入稿した横長画像（縦1:横2）を .bnr-img に差し替える。img 未設定の間は
      テーマ色のグラデーション帯＋破線フレームで「画像入稿エリア」を明示する。
-     切り替えは左右スライドではなくフェード式：全スライドを2:1のステージに重ね、
-     .on の1枚だけを不透明にする（opacity のクロスフェード）。 */
-  .bnr-wrap{position:relative;background:#fff;padding:14px 14px 4px}
-  .bnr-box{position:relative}
-  .bnr-stage{position:relative;aspect-ratio:2/1;border-radius:14px;overflow:hidden}
-  .bnr-item{position:absolute;inset:0;width:100%;height:100%;display:block;text-align:left;padding:0;opacity:0;transition:opacity .7s ease;pointer-events:none;z-index:1}
-  .bnr-item.on{opacity:1;pointer-events:auto;z-index:2}
+     切り替え式ではなくスライドが横に並ぶカルーセル：SP=1枚表示／PC=1枚目＋2枚目が半分ほど見える
+     （先頭スナップ・スワイプ/矢印/自動送り）。 */
+  .bnr-wrap{position:relative;background:#fff;padding:14px 0 4px}
+  .bnr-stage{position:relative}
+  .bnr-track{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 14px;scroll-padding:0 14px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .bnr-track::-webkit-scrollbar{display:none}
+  .bnr-item{position:relative;flex:0 0 100%;scroll-snap-align:start;aspect-ratio:2/1;border-radius:14px;overflow:hidden;display:block;text-align:left;padding:0}
   .bnr-img{width:100%;height:100%;object-fit:cover;display:block}
   .bnr-frame{position:absolute;inset:6px;border:1.5px dashed rgba(255,255,255,.55);border-radius:10px;pointer-events:none}
   .bnr-note{position:absolute;top:8px;right:10px;font-size:9.5px;font-weight:700;color:rgba(255,255,255,.94);background:rgba(0,0,0,.22);border-radius:6px;padding:2px 8px;letter-spacing:.02em}
@@ -118,22 +118,21 @@
   .bnr-dots{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 0 2px}
   .bnr-dot{height:7px;border-radius:4px;transition:width .2s ease,background .2s ease}
   .bnr-arrow{display:none}
-  /* PC：2:1のまま幅720pxに縮めて中央寄せ（コンテンツ幅いっぱいだと高くなりすぎるため）。
-     矢印はステージの左右外側のガターに置く。 */
+  /* PC：スライド幅60%（=2:1のまま約720px）で先頭スナップ。1枚目の右に2枚目が半分ほど見える。
+     矢印はトラックの左右端に重ねる。 */
   @media (min-width:1024px){
     .bnr-wrap{padding:20px 0 6px;max-width:1200px;margin:0 auto}
-    .bnr-box{width:720px;margin:0 auto}
-    .bnr-stage{border-radius:16px}
+    .bnr-track{gap:16px;padding:0 24px;scroll-padding:0 24px}
+    .bnr-item{flex:0 0 60%;border-radius:16px}
     .bnr-frame{inset:9px;border-radius:12px}
     .bnr-body{padding:0 40px;gap:9px}
     .bnr-label{font-size:26px}
     .bnr-sub{font-size:14px}
     .bnr-note{font-size:11px;top:12px;right:14px;padding:3px 9px}
-    /* 矢印はステージの左右外・上下中央（.bnr-box は overflow を切らないのではみ出し配置できる） */
     .bnr-arrow{display:flex;position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:50%;background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.18);align-items:center;justify-content:center;color:#3E3A34;z-index:3}
     .bnr-arrow:hover{background:#FCEBEC;color:#E50012}
-    .bnr-prev{left:-56px}
-    .bnr-next{right:-56px}
+    .bnr-prev{left:10px}
+    .bnr-next{right:10px}
   }
   /* PC / SP 切り替え（1024px） */
   #pc-root{display:none;}
@@ -1822,45 +1821,74 @@ function bannerHTML(sp){
     :'<button class="bnr-arrow bnr-prev" onclick="Banner.nav(\'pc\',-1)" aria-label="前のバナー">'+IC.back(20)+'</button>'
      +'<button class="bnr-arrow bnr-next" onclick="Banner.nav(\'pc\',1)" aria-label="次のバナー">'+IC.chevR(20,'#3E3A34')+'</button>';
   const wrap='<div class="bnr-wrap" data-section="guest-banners">'
-    +'<div class="bnr-box">'
-    +'<div class="bnr-stage" data-banner="'+key+'">'+items+'</div>'
+    +'<div class="bnr-stage">'
+    +'<div class="bnr-track hs" data-banner="'+key+'" data-sc="bnr-'+key+'">'+items+'</div>'
     +arrows
     +'</div>'
     +'<div class="bnr-dots" data-dots="'+key+'">'+dots+'</div>'
     +'</div>';
-  /* .on（表示中スライド）は Banner.mount() が描画後に付け直す（差分更新で巻き戻らないようJS側で一元管理）。
-     PC の最大幅・中央寄せは .bnr-wrap 側（CSS）で一元管理する。ここは白背景の全幅帯だけ担う。 */
+  /* PC の最大幅・中央寄せは .bnr-wrap 側（CSS）で一元管理する。ここは白背景の全幅帯だけ担う。 */
   return sp?wrap:'<div style="background:#fff;">'+wrap+'</div>';
 }
 
-/* カルーセルの挙動（フェード切り替え・ドット・自動送り・矢印・スワイプ・ディープリンク）。
-   スライドは2:1ステージに重ね置きし、表示中の1枚だけ .on を付ける（opacityクロスフェード）。
-   現在位置 cur はモジュール側で一元管理し、差分更新でDOMが作り直されても
-   render() の最後の mount() が .on とドットを付け直すので巻き戻らない。 */
+/* カルーセルの挙動（先頭スナップ位置・ドット・自動送り・矢印・ディープリンク）。
+   スライドは横に並び、SP=1枚／PC=1枚目＋2枚目が半分ほど見える。
+   差分更新でトラックが作り直された場合に備え、render() の最後に mount() を呼ぶ
+   （使い回されたトラックには __bnrBound が残るので二重バインドされない）。 */
 const Banner=(function(){
-  let paused=false, timer=null, cur=0;
-  const stages=()=>Array.prototype.slice.call(document.querySelectorAll('[data-banner]'));
+  let paused=false, timer=null;
+  const list=(key)=>Array.prototype.slice.call(document.querySelectorAll('[data-banner="'+key+'"]'));
+  const shown=(el)=>!!el&&el.offsetParent!==null&&el.clientWidth>0;
   const items=(t)=>Array.prototype.slice.call(t.querySelectorAll('.bnr-item'));
-  /* i番目を表示（SP/PC両ルートに同時反映。枚数が変わっていたら丸める） */
-  function show(i){
-    stages().forEach(function(t){
-      const its=items(t), n=its.length;
-      if(!n)return;
-      cur=((i%n)+n)%n;
-      its.forEach(function(it,j){it.classList.toggle('on',j===cur);});
-      const key=t.getAttribute('data-banner');
-      document.querySelectorAll('[data-dots="'+key+'"] [data-dot]').forEach(function(d){
-        const on=Number(d.getAttribute('data-dot'))===cur;
-        d.style.width=on?'18px':'7px';
-        d.style.background=on?'#E50012':'#D8D4CC';
-      });
+  /* いま先頭スナップ位置にいるバナー（実測ベース。CSSの幅指定に依存しない） */
+  function index(t){
+    const its=items(t);
+    if(!its.length)return 0;
+    const base=its[0].offsetLeft;
+    let best=0, bd=Infinity;
+    its.forEach(function(it,i){
+      const d=Math.abs((it.offsetLeft-base)-t.scrollLeft);
+      if(d<bd){bd=d;best=i;}
     });
+    return best;
+  }
+  /* i番目のバナーを先頭スナップ位置に置くスクロール量 */
+  function pos(t,i){
+    const its=items(t), n=its.length;
+    if(!n)return 0;
+    const it=its[((i%n)+n)%n];
+    return Math.min(it.offsetLeft-its[0].offsetLeft, t.scrollWidth-t.clientWidth);
+  }
+  /* ドットインジケーターの現在位置ハイライト */
+  function paint(key){
+    const t=list(key)[0];
+    if(!t)return;
+    const i=index(t);
+    document.querySelectorAll('[data-dots="'+key+'"] [data-dot]').forEach(function(d){
+      const on=Number(d.getAttribute('data-dot'))===i;
+      d.style.width=on?'18px':'7px';
+      d.style.background=on?'#E50012':'#D8D4CC';
+    });
+  }
+  function move(key,i){
+    list(key).forEach(function(t){t.scrollTo({left:pos(t,i),behavior:'smooth'});});
+    setTimeout(function(){paint(key);},420);
   }
   /* ユーザー操作（スワイプ・タップ・矢印）で自動送りを停止 */
   function stop(){paused=true;}
-  function to(key,i){stop();show(i);}
-  function nav(key,d){stop();show(cur+d);}
-  function tick(){if(!paused)show(cur+1);}
+  function to(key,i){stop();move(key,i);}
+  function nav(key,d){
+    stop();
+    const t=list(key)[0];
+    if(t)move(key,index(t)+d);
+  }
+  function tick(){
+    if(paused)return;
+    ['sp','pc'].forEach(function(key){
+      const t=list(key)[0];
+      if(shown(t))move(key,index(t)+1);
+    });
+  }
   /* ページ内アンカー：SP/PC 両ルートに同じ節が存在するため、表示中の方だけに id を付ける */
   function anchors(){
     document.querySelectorAll('[data-anchor]').forEach(function(el){
@@ -1896,26 +1924,34 @@ const Banner=(function(){
     }
     location.href=href;
   }
-  /* フェード式でも左右フリックで送れるようにする（40px以上の横移動をスワイプとみなす） */
-  let sx=null;
-  function onTS(e){sx=(e.touches?e.touches[0]:e).clientX;}
-  function onTE(e){
-    if(sx===null)return;
-    const x=(e.changedTouches?e.changedTouches[0]:e).clientX, dx=x-sx;
-    sx=null;
-    if(Math.abs(dx)>40){stop();show(cur+(dx<0?1:-1));}
+  /* 横方向のホイール／トラックパッド操作だけを「スワイプ」とみなす（縦スクロールでは止めない） */
+  function onWheel(e){if(Math.abs(e.deltaX)>Math.abs(e.deltaY))stop();}
+  /* ウィンドウ幅が変わるとバナー幅も変わりスクロール位置がずれるため、現在のバナーを先頭へ再スナップする */
+  let rzTimer=null, bound=false;
+  function relayout(){
+    ['sp','pc'].forEach(function(key){
+      const t=list(key)[0];
+      if(shown(t))t.scrollTo({left:pos(t,index(t)),behavior:'auto'});
+      paint(key);
+    });
   }
+  function onResize(){clearTimeout(rzTimer);rzTimer=setTimeout(relayout,120);}
   function mount(){
     anchors();
-    stages().forEach(function(t){
-      /* 差分更新ではステージのDOMが使い回されるため、二重バインドを防ぐ */
-      if(t.__bnrBound)return;
-      t.__bnrBound=true;
-      t.addEventListener('touchstart',onTS,{passive:true});
-      t.addEventListener('touchend',onTE,{passive:true});
+    if(!bound){window.addEventListener('resize',onResize);bound=true;}
+    ['sp','pc'].forEach(function(key){
+      list(key).forEach(function(t){
+        /* 差分更新ではトラックのDOMが使い回されるため、二重バインドを防ぐ */
+        if(t.__bnrBound)return;
+        t.__bnrBound=true;
+        t.addEventListener('scroll',function(){paint(key);},{passive:true});
+        t.addEventListener('pointerdown',stop,{passive:true});
+        t.addEventListener('touchstart',stop,{passive:true});
+        t.addEventListener('wheel',onWheel,{passive:true});
+      });
+      paint(key);
     });
-    show(cur);   /* 差分更新後に .on とドットを付け直す（枚数減にも追従） */
-    if(!timer)timer=setInterval(tick,5000);   /* 5秒で自動送り（フェード切り替え） */
+    if(!timer)timer=setInterval(tick,5000);   /* 5秒で自動送り */
   }
   return {mount:mount,to:to,nav:nav,go:go,jump:jump,stop:stop};
 })();
