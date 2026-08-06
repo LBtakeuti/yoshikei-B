@@ -369,11 +369,12 @@ const WEEKS=[{label:'5/11'},{label:'5/18'}].map(w=>({label:w.label,deadline:orde
    img … 入稿画像のURL（null の間はテーマ色のプレースホルダー帯を描画）
    href … '#xxx' はページ内アンカーへスムーズスクロール（ディープリンク）／'#' 単体はダミー／それ以外は通常遷移 */
 const BANNERS=[
-  /* 先頭：エリア確認バナー（試験的に開発側でハードコードした入稿画像。area:true はクリックで
-     モーダル起動＋エリア確認済み（rk_area_checked）になったらカルーセルから除外される特別扱い） */
-  {id:'areachk',img:'assets/area-banner-sp.png', imgPc:'assets/area-banner-pc.png',
+  /* 先頭：エリア確認バナー（試験的に開発側でハードコードした入稿画像＝余白なしのフチまで使う版。
+     area:true はクリックでモーダル起動＋エリア確認済み（rk_area_checked）になったら
+     カルーセルから除外される特別扱い） */
+  {id:'areachk',img:'assets/area-banner.png',
    label:'お届け対象エリア内か確認する', sub:'', href:'#', theme:'red', area:true},
-  {id:'trial',  img:null, label:'初回限定 お試しキャンペーン実施中', sub:'対象コースが最大50%OFF', href:'#campaign',              theme:'red'},
+  {id:'trial',  img:'assets/banner-campaign.png', label:'はじめての方限定 1食あたり最大50%OFF 毎週開催中', sub:'', href:'#campaign', theme:'red'},
   {id:'shelf',  img:null, label:'今週のメニューをのぞいてみる',     sub:'管理栄養士監修の献立',   href:'#guest-shelf',           theme:'green'},
   {id:'coin',   img:null, label:'eコインでおトクに続ける',          sub:'週2,160円以上で貯まる',  href:'#',                      theme:'gold'}
 ];
