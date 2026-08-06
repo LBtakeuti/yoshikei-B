@@ -870,8 +870,18 @@ const A={
   areaBnClose(){try{sessionStorage.setItem(AREA_BN_MINKEY,'1');}catch(e){}render();},
 
   /* 未ログイントップ（雑誌型）⇄ フルメニューの切り替え（リロードなし・再描画のみ） */
-  guestShowAll(){anim();S.guestFull=true;S.page=null;render();Banner.jump('guest-full');},
-  guestBackTop(){anim();S.guestFull=false;S.page=null;render();window.scrollTo({top:0,behavior:'smooth'});},
+  /* 「すべて見る」＝別ページ（#menu）への遷移として扱う。URLにハッシュを積むので
+     ブラウザの戻るでもトップに帰れる（本番では /menu 等の別ルートになる想定） */
+  guestShowAll(){
+    anim();S.guestFull=true;S.page=null;
+    try{if(location.hash!=='#menu')location.hash='menu';}catch(e){}
+    render();window.scrollTo({top:0,behavior:'auto'});
+  },
+  guestBackTop(){
+    anim();S.guestFull=false;S.page=null;
+    try{if(location.hash==='#menu')history.replaceState(null,'',location.pathname);}catch(e){}
+    render();window.scrollTo({top:0,behavior:'smooth'});
+  },
 
   /* テレビCM：サムネイル（ファサード）を押したら同じ枠を YouTube iframe に差し替えて再生する。
      再生状態は S.cmPlay に持たせるので、カート反映などの再描画でもサムネイルに巻き戻らない
@@ -2209,9 +2219,9 @@ function spHTML(){
   /* 審査状況の更新通知（新規のみ・画面上部に1行） */
   h+=reviewNoticeHTML(true);
 
-  /* ECヒーロー＋エリア確認バナー＋バナーカルーセル（未ログインのゲスト閲覧時のみ・ヘッダー直下）
-     フルメニューに切り替えた後もヒーローとカルーセルは上部に残す */
-  if(!S.loggedIn){h+=heroHTML();h+=bannerHTML(true);}
+  /* ECヒーロー＋バナーカルーセル（未ログインの雑誌型トップのみ・ヘッダー直下）
+     「すべて見る」で開くメニューページ（#menu）は別ページ扱いなのでヒーローは出さない */
+  if(!S.loggedIn&&!S.guestFull){h+=heroHTML();h+=bannerHTML(true);}
 
   /* 未ログイントップ（雑誌型）：今週のメニュー棚 → すべて見る → ご利用の流れ → CM
      （商品=閲覧・比較の起点を最上段に。流れ・CMは検討段階の補足として後段） */
@@ -2684,9 +2694,9 @@ function pcHTML(){
   /* 審査状況の更新通知（新規のみ・画面上部に1行） */
   h+=reviewNoticeHTML(false);
 
-  /* ECヒーロー＋エリア確認バナー＋バナーカルーセル（未ログインのゲスト閲覧時のみ・ヘッダー直下）
-     フルメニューに切り替えた後もヒーローとカルーセルは上部に残す */
-  if(pg===null&&!S.loggedIn){h+=heroHTML();h+=bannerHTML(false);}
+  /* ECヒーロー＋バナーカルーセル（未ログインの雑誌型トップのみ・ヘッダー直下）
+     「すべて見る」で開くメニューページ（#menu）は別ページ扱いなのでヒーローは出さない */
+  if(pg===null&&!S.loggedIn&&!S.guestFull){h+=heroHTML();h+=bannerHTML(false);}
 
   /* 未ログイントップ（雑誌型）：今週のメニュー棚 → すべて見る → ご利用の流れ → エリア確認 → CM
      （商品=閲覧・比較の起点を最上段に。流れを読んだ直後にエリア確認=申込動線、CMは信頼の補強で最下段） */
@@ -3776,6 +3786,15 @@ setInterval(()=>{
     anim();S.remindOpen=true;touchCart();render();
   }
 },3000);
+
+/* ================= メニューページ（#menu）の擬似ルーティング =================
+   「すべて見る」で開く注文メニューページは別ページ扱い（本番では /menu 等の別ルート想定）。
+   ハッシュをURLに積むことでブラウザの戻る/進むと直リンクに対応する。 */
+window.addEventListener('hashchange',function(){
+  const m=location.hash==='#menu';
+  if(!S.loggedIn&&S.guestFull!==m){anim();S.guestFull=m;S.page=null;render();window.scrollTo(0,0);}
+});
+if(location.hash==='#menu'&&!S.loggedIn)S.guestFull=true;   /* 直リンクで開いた場合 */
 
 render();
 
