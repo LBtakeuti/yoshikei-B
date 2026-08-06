@@ -308,6 +308,8 @@
     <button data-login-submit class="tk-btn" style="width:100%;border:none;background:#E50012;color:#fff;font-size:15px;font-weight:700;padding:14px;border-radius:12px;"><span>ログイン</span></button>
     <div style="display:flex;align-items:center;gap:12px;margin:22px 0 16px;"><span style="flex:1;height:1px;background:#eee;"></span><span style="font-size:12px;color:#999;font-weight:700;">はじめての方</span><span style="flex:1;height:1px;background:#eee;"></span></div>
     <button data-onboard-start style="width:100%;border:2px solid #E50012;background:#fff;color:#E50012;font-size:15px;font-weight:700;padding:13px;border-radius:12px;">無料ではじめる（かんたん7つの質問）</button>
+    <!-- 質問をスキップして顧客情報フォームへ直行する入口（注文確定→未ログイン時の暫定導線） -->
+    <button data-register-start style="width:100%;border:none;background:transparent;color:#E50012;font-size:13.5px;font-weight:700;padding:12px 0 2px;text-decoration:underline;">お客様情報の登録に進む</button>
   </div>
 </div>
 
@@ -3284,7 +3286,25 @@ const Login=(function(){
 
   function open(){$('[data-login-overlay]').style.display='flex';}
   function close(){$('[data-login-overlay]').style.display='none';}
-  function startOnboard(){step=0;answers={};phase='zip';zipValue='';regName='';$('[data-onboard-overlay]').style.display='flex';renderStep();}
+  let direct=false;   /* true=質問をスキップして顧客情報フォームへ直行するモード */
+  function startOnboard(){direct=false;step=0;answers={};phase='zip';zipValue='';regName='';$('[data-onboard-overlay]').style.display='flex';renderStep();}
+  /* 「お客様情報の登録に進む」：7つの質問を通らず、エリア確認→顧客情報フォーム→仮審査中の最短ルート。
+     エリア確認モーダルで確認済み（rk_area_checked）なら郵便番号入力も飛ばしてフォームから始める */
+  function startRegister(){
+    direct=true;step=0;answers={};regName='';
+    let z='';
+    try{if(localStorage.getItem('rk_area_checked')==='1')z=(localStorage.getItem('rk_area_zip')||'').replace(/[^0-9]/g,'');}catch(e){}
+    const j=z.length===7?judgeZip(z):null;
+    if(j&&j.type!=='ng'){
+      zipValue=z;
+      area_state.zip=z;area_state.office=j.office;area_state.region=j.region;
+      S.office=j.office;setRegion(j.region);
+      phase='signup';
+    }else{
+      zipValue='';phase='zip';
+    }
+    $('[data-onboard-overlay]').style.display='flex';renderStep();
+  }
 
   /* ステップ0：お住まいの地域（郵便番号）確認 */
   function renderZip(){
@@ -3311,7 +3331,7 @@ const Login=(function(){
         +'<div style="font-size:16px;font-weight:700;color:#3a3a3a;line-height:1.6;">お住まいの地域はお届けエリア内です</div>'
         +(REGION?'<div style="font-size:12.5px;color:#8a5b60;font-weight:700;margin-top:8px;">担当：'+regionInfo().label+'（'+(area_state.office||'')+'）</div>':'')
       +'</div>'
-      +'<button data-zip-next style="width:100%;border:none;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:12px;">質問に進む</button>'
+      +'<button data-zip-next style="width:100%;border:none;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:12px;">'+(direct?'お客様情報の入力に進む':'質問に進む')+'</button>'
       +'<div style="text-align:center;margin-top:18px;"><button data-zip-retry style="border:none;background:transparent;color:#999;font-size:13px;font-weight:700;text-decoration:underline;">郵便番号を入力し直す</button></div>'
       +'</div>';
   }
@@ -3350,6 +3370,7 @@ const Login=(function(){
     if(phase==='zip'){renderZip();return;}
     if(phase==='zipOk'){renderZipOk();return;}
     if(phase==='zipNg'){renderZipNg();return;}
+    if(phase==='signup'){renderSignup();return;}
     if(phase==='done'){renderDone();return;}
     const body=$('[data-onboard-body]'),bar=$('[data-onboard-bar]'),lbl=$('[data-onboard-step]');
     if(step<7){
@@ -3378,6 +3399,7 @@ const Login=(function(){
   /* 家族人数の初期値：質問1（何人分）から転記 */
   function familyDefault(){
     const sv=answers.serving;
+    if(!sv)return {adult:2,child:0};   /* 質問スキップ（直行モード）時の既定値 */
     if(sv==='2人分')return {adult:2,child:0};
     if(sv==='3人分')return {adult:2,child:1};
     return {adult:2,child:2};
@@ -3409,7 +3431,7 @@ const Login=(function(){
       +'</div>'
       +lab('ご紹介者コード',false)+'<input data-su-ref type="text" inputmode="numeric" maxlength="6" placeholder="6桁" style="'+ist+'">'
       +'<button data-su-submit style="width:100%;border:none;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:12px;margin-top:22px;">仮登録する</button>'
-      +'<div style="text-align:center;margin-top:16px;"><button data-su-back style="border:none;background:transparent;color:#999;font-size:13px;font-weight:700;">← 前の質問に戻る</button></div>'
+      +'<div style="text-align:center;margin-top:16px;"><button data-su-back style="border:none;background:transparent;color:#999;font-size:13px;font-weight:700;">'+(direct?'← 郵便番号の確認に戻る':'← 前の質問に戻る')+'</button></div>'
       +'</div>';
   }
 
@@ -3426,17 +3448,21 @@ const Login=(function(){
     phase='done';renderStep();
   }
 
-  /* C. 受付番号発行完了画面 */
+  /* C. 受付番号発行完了画面（仮審査中の案内） */
   function renderDone(){
     const body=$('[data-onboard-body]'),bar=$('[data-onboard-bar]'),lbl=$('[data-onboard-step]');
     bar.style.width='100%';
     lbl.textContent='仮登録完了';
     body.innerHTML='<div style="max-width:460px;margin:0 auto;text-align:center;">'
       +'<div style="width:56px;height:56px;margin:8px auto 18px;border-radius:50%;background:#E50012;display:flex;align-items:center;justify-content:center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l5 5 10-11" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
-      +'<div style="font-size:22px;font-weight:800;color:#3a3a3a;margin-bottom:22px;">仮登録が完了しました</div>'
+      +'<div style="font-size:22px;font-weight:800;color:#3a3a3a;margin-bottom:10px;">仮登録が完了しました</div>'
+      +'<div style="display:inline-block;background:#FCEBEC;color:#E50012;font-size:13px;font-weight:800;padding:6px 16px;border-radius:16px;margin-bottom:22px;">ただいま仮審査中です</div>'
+      +'<div style="border:1.5px solid #F3C6CC;border-radius:14px;padding:16px 14px;margin-bottom:20px;">'
       +'<div style="font-size:13px;color:#888;margin-bottom:6px;">受付番号</div>'
-      +'<div style="font-size:30px;font-weight:800;color:#E50012;letter-spacing:.06em;margin-bottom:24px;">'+(S.receiptNo||'R-260730-001')+'</div>'
-      +'<p style="font-size:13.5px;color:#666;line-height:1.95;margin:0 0 26px;">担当営業所で確認後、本登録のご案内をお送りします<br>いまから仮のご注文が可能です。お届けは本登録完了後に確定します</p>'
+      +'<div style="font-size:30px;font-weight:800;color:#E50012;letter-spacing:.06em;">'+(S.receiptNo||'R-260730-001')+'</div>'
+      +'</div>'
+      +'<p style="font-size:13.5px;color:#666;line-height:1.95;margin:0 0 18px;">審査が通りましたら、メールにてお知らせいたします。<br><b>目安は2〜3営業日です。</b><br>いまから仮のご注文が可能です。お届けは本登録完了後に確定します</p>'
+      +'<div style="text-align:left;margin-bottom:24px;">'+regionTelHTML(false)+'</div>'
       +'<button data-su-menu style="width:100%;border:none;background:#E50012;color:#fff;font-size:16px;font-weight:700;padding:15px;border-radius:12px;">メニューを見る</button>'
       +'</div>';
   }
@@ -3541,6 +3567,7 @@ const Login=(function(){
     if(e.target===lo||e.target.closest('[data-login-close]')){close();return;}
     if(e.target.closest('[data-login-submit]')){doEmailLogin();return;}
     if(e.target.closest('[data-onboard-start]')){close();startOnboard();return;}
+    if(e.target.closest('[data-register-start]')){close();startRegister();return;}
   });
   const ob=$('[data-onboard-overlay]');
   // 郵便番号入力：ハイフン等は自動除去し数字7桁に整形（再描画せず値だけ整形＝フォーカス維持）
@@ -3562,7 +3589,7 @@ const Login=(function(){
     /* 仮登録フローを閉じたらゲスト閲覧に戻る（ログイン導線はヘッダーから再度たどれる） */
     if(e.target.closest('[data-onboard-close]')){ob.style.display='none';return;}
     if(e.target.closest('[data-zip-check]')){checkZip();return;}
-    if(e.target.closest('[data-zip-next]')){phase='questions';step=0;renderStep();return;}
+    if(e.target.closest('[data-zip-next]')){if(direct){phase='signup';}else{phase='questions';step=0;}renderStep();return;}
     if(e.target.closest('[data-zip-retry]')){phase='zip';renderStep();return;}
     if(e.target.closest('[data-zip-find]')){e.preventDefault();return;}
     const opt=e.target.closest('[data-opt]');
@@ -3570,13 +3597,14 @@ const Login=(function(){
     if(e.target.closest('[data-onboard-next]')){next();return;}
     if(e.target.closest('[data-onboard-skip]')){step++;renderStep();return;}
     if(e.target.closest('[data-onboard-back]')){back();return;}
-    if(e.target.closest('[data-su-back]')){phase='questions';step=6;renderStep();return;}
+    if(e.target.closest('[data-su-back]')){if(direct){phase='zip';}else{phase='questions';step=6;}renderStep();return;}
     if(e.target.closest('[data-su-submit]')){submitSignup();return;}
     if(e.target.closest('[data-su-menu]')){finish();return;}
   });
 
-  // signup：ヘッダーの「はじめての方」から仮登録フローを直接起動する
-  return {open,signup:startOnboard};
+  // signup：ヘッダーの「はじめての方」から仮登録フロー（7つの質問つき）を直接起動する
+  // register：質問をスキップして顧客情報フォームへ直行（注文確定→未ログイン時の暫定導線）
+  return {open,signup:startOnboard,register:startRegister};
 })();
 
 /* ================= 検索（商品名・カテゴリ） ================= */
