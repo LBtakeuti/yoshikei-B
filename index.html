@@ -2164,13 +2164,14 @@ function spHTML(){
      フルメニューに切り替えた後もヒーローとカルーセルは上部に残す */
   if(!S.loggedIn){h+=heroHTML();h+=bannerHTML(true);}
 
-  /* 未ログイントップ（雑誌型）：流れ → 今週のメニュー棚 → すべて見る */
+  /* 未ログイントップ（雑誌型）：今週のメニュー棚 → すべて見る → ご利用の流れ → CM
+     （商品=閲覧・比較の起点を最上段に。流れ・CMは検討段階の補足として後段） */
   const guestMag=!S.loggedIn&&!S.guestFull;
   if(guestMag){
-    h+=guestFlowHTML(true);
-    h+=cmSectionHTML(true);   /* テレビCM（ご利用の流れ直後） */
     h+=guestShelfHTML(true);
     h+=guestSeeAllHTML(true);
+    h+=guestFlowHTML(true);
+    h+=cmSectionHTML(true);   /* テレビCM（最下段・信頼の補強） */
   }else{
   /* 以下はフルメニュー表示（ログイン後 or ゲストが「すべて見る」を押した後）。既存構成のまま */
   if(!S.loggedIn)h+=guestBackHTML(true);
@@ -2638,14 +2639,15 @@ function pcHTML(){
      フルメニューに切り替えた後もヒーローとカルーセルは上部に残す */
   if(pg===null&&!S.loggedIn){h+=heroHTML();h+=bannerHTML(false);}
 
-  /* 未ログイントップ（雑誌型）：流れ → 今週のメニュー棚 → すべて見る */
+  /* 未ログイントップ（雑誌型）：今週のメニュー棚 → すべて見る → ご利用の流れ → エリア確認 → CM
+     （商品=閲覧・比較の起点を最上段に。流れを読んだ直後にエリア確認=申込動線、CMは信頼の補強で最下段） */
   const guestMag=!S.loggedIn&&!S.guestFull;
   if(pg===null&&guestMag){
-    h+=guestFlowHTML(false);
-    h+=cmSectionHTML(false);  /* テレビCM（ご利用の流れ直後） */
-    h+=areaBannerPCHTML();   /* エリア確認バナー（ご利用の流れ直後・メニュー棚の手前） */
     h+=guestShelfHTML(false);
     h+=guestSeeAllHTML(false);
+    h+=guestFlowHTML(false);
+    h+=areaBannerPCHTML();   /* エリア確認バナー（ご利用の流れ直後） */
+    h+=cmSectionHTML(false);  /* テレビCM（最下段・信頼の補強） */
   }
   if(pg===null&&!guestMag&&!S.loggedIn)h+=guestBackHTML(false);
 
