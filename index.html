@@ -1803,7 +1803,9 @@ function toast(msg){
 function bannerHTML(sp){
   const key=sp?'sp':'pc';
   const vis=visBanners();
-  const items=vis.map(function(b){
+  /* 無限ループ用にスライド一式を3周分並べる。ユーザーは常に中央の1周に居るよう
+     Banner側がスクロール停止後に瞬間巻き戻しする（終わりのないカルーセル） */
+  const slide=function(b,c){
     const th=BANNER_THEME[b.theme]||BANNER_THEME.red;
     const src=b.img?(sp?b.img:(b.imgPc||b.img)):null;
     const inner=src
@@ -1813,9 +1815,10 @@ function bannerHTML(sp){
        +'<span class="bnr-body"><span class="bnr-label" style="color:'+th.fg+';">'+b.label+'</span>'
        +'<span class="bnr-sub" style="color:'+th.sub+';">'+b.sub+'</span></span>';
     /* data-mk：エリア確認済みで先頭スライドが消えても隣が巻き添え再生成されないようにする */
-    return '<button class="bnr-item" data-mk="bnr-'+key+'-'+b.id+'" onclick="Banner.go(\''+b.id+'\')" aria-label="'+b.label+'" '
+    return '<button class="bnr-item" data-mk="bnr-'+key+'-'+b.id+'-'+c+'" onclick="Banner.go(\''+b.id+'\')" aria-label="'+b.label+'" '
       +'style="background:linear-gradient(100deg,'+th.from+' 0%,'+th.to+' 100%);">'+inner+'</button>';
-  }).join('');
+  };
+  const items=[0,1,2].map(function(c){return vis.map(function(b){return slide(b,c);}).join('');}).join('');
   const dots=vis.map(function(b,i){
     return '<button class="bnr-dot" data-dot="'+i+'" onclick="Banner.to(\''+key+'\','+i+')" aria-label="'+(i+1)+'枚目のバナーを表示" '
       +'style="width:7px;background:#D8D4CC;"></button>';
@@ -1834,16 +1837,20 @@ function bannerHTML(sp){
   return sp?wrap:'<div style="background:#fff;">'+wrap+'</div>';
 }
 
-/* カルーセルの挙動（先頭スナップ位置・ドット・自動送り・矢印・ディープリンク）。
+/* カルーセルの挙動（先頭スナップ位置・ドット・自動送り・矢印・ディープリンク・無限ループ）。
    スライドは横に並び、SP=1枚／PC=1枚目＋2枚目が半分ほど見える。
+   トラックには同じスライド一式が3周分並び、ユーザーは常に中央の1周に居る。
+   端に近づいたらスクロール停止後に同じ見た目の中央位置へ瞬間巻き戻しする＝終わりがない。
    差分更新でトラックが作り直された場合に備え、render() の最後に mount() を呼ぶ
    （使い回されたトラックには __bnrBound が残るので二重バインドされない）。 */
 const Banner=(function(){
   let paused=false, timer=null;
+  const COPIES=3;
   const list=(key)=>Array.prototype.slice.call(document.querySelectorAll('[data-banner="'+key+'"]'));
   const shown=(el)=>!!el&&el.offsetParent!==null&&el.clientWidth>0;
   const items=(t)=>Array.prototype.slice.call(t.querySelectorAll('.bnr-item'));
-  /* いま先頭スナップ位置にいるバナー（実測ベース。CSSの幅指定に依存しない） */
+  const nReal=(t)=>Math.max(1,Math.round(items(t).length/COPIES));
+  /* いま先頭スナップ位置にいるスライドの物理位置（3周分の通し番号。実測ベース） */
   function index(t){
     const its=items(t);
     if(!its.length)return 0;
@@ -1855,18 +1862,30 @@ const Banner=(function(){
     });
     return best;
   }
-  /* i番目のバナーを先頭スナップ位置に置くスクロール量 */
+  /* i番目（物理）のスライドを先頭スナップ位置に置くスクロール量 */
   function pos(t,i){
     const its=items(t), n=its.length;
     if(!n)return 0;
-    const it=its[((i%n)+n)%n];
+    const it=its[Math.max(0,Math.min(n-1,i))];
     return Math.min(it.offsetLeft-its[0].offsetLeft, t.scrollWidth-t.clientWidth);
   }
-  /* ドットインジケーターの現在位置ハイライト */
+  /* 初期位置は中央の1周の先頭（前後どちらへも回れるように） */
+  function ensureInit(t){
+    if(t.__bnrInit||!shown(t))return;
+    t.__bnrInit=true;
+    t.scrollLeft=pos(t,nReal(t));
+  }
+  /* 中央の1周から外れていたら、同じ見た目の中央位置へ瞬間ジャンプ（スクロール停止後に呼ぶ） */
+  function normalize(t){
+    if(!shown(t))return;
+    const n=nReal(t), i=index(t);
+    if(i<n||i>=2*n)t.scrollLeft=pos(t,n+((i%n)+n)%n);
+  }
+  /* ドットインジケーターの現在位置ハイライト（物理位置→論理位置に丸めて表示） */
   function paint(key){
     const t=list(key)[0];
     if(!t)return;
-    const i=index(t);
+    const i=index(t)%nReal(t);
     document.querySelectorAll('[data-dots="'+key+'"] [data-dot]').forEach(function(d){
       const on=Number(d.getAttribute('data-dot'))===i;
       d.style.width=on?'18px':'7px';
@@ -1879,7 +1898,16 @@ const Banner=(function(){
   }
   /* ユーザー操作（スワイプ・タップ・矢印）で自動送りを停止 */
   function stop(){paused=true;}
-  function to(key,i){stop();move(key,i);}
+  /* ドットから：論理位置 i に一番近い物理位置へ動かす */
+  function to(key,i){
+    stop();
+    const t=list(key)[0];
+    if(!t)return;
+    const n=nReal(t), cur=index(t);
+    let best=n+i, bd=Infinity;
+    [i,n+i,2*n+i].forEach(function(p){const d=Math.abs(p-cur);if(d<bd){bd=d;best=p;}});
+    move(key,best);
+  }
   function nav(key,d){
     stop();
     const t=list(key)[0];
@@ -1934,7 +1962,10 @@ const Banner=(function(){
   function relayout(){
     ['sp','pc'].forEach(function(key){
       const t=list(key)[0];
-      if(shown(t))t.scrollTo({left:pos(t,index(t)),behavior:'auto'});
+      if(shown(t)){
+        ensureInit(t);
+        t.scrollTo({left:pos(t,index(t)),behavior:'auto'});
+      }
       paint(key);
     });
   }
@@ -1944,10 +1975,16 @@ const Banner=(function(){
     if(!bound){window.addEventListener('resize',onResize);bound=true;}
     ['sp','pc'].forEach(function(key){
       list(key).forEach(function(t){
+        ensureInit(t);
         /* 差分更新ではトラックのDOMが使い回されるため、二重バインドを防ぐ */
         if(t.__bnrBound)return;
         t.__bnrBound=true;
-        t.addEventListener('scroll',function(){paint(key);},{passive:true});
+        t.addEventListener('scroll',function(){
+          paint(key);
+          /* スクロールが止まったら中央の1周へ巻き戻す（見た目は同じ位置なので気づかれない） */
+          clearTimeout(t.__bnrNrm);
+          t.__bnrNrm=setTimeout(function(){normalize(t);},160);
+        },{passive:true});
         t.addEventListener('pointerdown',stop,{passive:true});
         t.addEventListener('touchstart',stop,{passive:true});
         t.addEventListener('wheel',onWheel,{passive:true});
