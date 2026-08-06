@@ -233,6 +233,26 @@
     .abn-hero{padding:18px 24px 2px;}
     .abn-hero .abn-btn{width:600px;margin:0 auto;border-radius:14px;}
   }
+  /* テレビCM（YouTube・ファサード方式）
+     SP・PCとも2本を上下に縦積み。SP＝コンテンツ幅いっぱい／PC＝幅640pxで中央寄せ。
+     枠は16:9固定。初期はサムネイル画像＋再生ボタン、クリックで同じ枠が iframe に差し替わる。 */
+  .cm-sec{background:#fff;padding:20px 16px 4px;}
+  .cm-list{display:flex;flex-direction:column;gap:18px;}
+  .cm-box{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000;
+    box-shadow:0 2px 10px rgba(0,0,0,.10);}
+  .cm-facade{display:block;width:100%;height:100%;cursor:pointer;background:#000;}
+  .cm-facade img{display:block;width:100%;height:100%;object-fit:cover;}
+  .cm-frame{display:block;width:100%;height:100%;border:0;}
+  .cm-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;
+    filter:drop-shadow(0 2px 8px rgba(0,0,0,.35));transition:transform .15s ease;pointer-events:none;}
+  .cm-facade:hover .cm-play{transform:translate(-50%,-50%) scale(1.07);}
+  .cm-cap{margin-top:7px;font-size:12px;color:#6f6f6f;line-height:1.6;}
+  @media (min-width:1024px){
+    .cm-sec{padding:30px 24px 6px;}
+    .cm-inner{max-width:1200px;margin:0 auto;}
+    .cm-list{gap:24px;max-width:640px;margin:0 auto;}
+    .cm-cap{font-size:13px;}
+  }
   @media (min-width:1024px){
     .ac-ov{padding:20px;}
     .ac-modal{width:480px;height:614px;padding:20px 26px 22px;}
@@ -686,6 +706,7 @@ let S={
   reviewNotice:false,               // 審査状況の更新通知バナー
   campaignExcluded:false,           // 新規特典の対象外（二重登録パターン②想定・デモ切替）
   guestFull:false,                  // 未ログイントップ：false=雑誌型トップ / true=フルメニュー（週タブ＋一覧）
+  cmPlay:{},                        // テレビCM：再生に切り替えたプレーヤー（キー 'sp:動画ID' / 'pc:動画ID'）
   coins:3240,                       // eコイン残高（モック初期値：使用UIの500刻み・地域別上限を確認できる値）
   coinUse:0,                        // 支払いで使用するeコイン（0=使用しない／1000から500刻み）
   week:0,                           // 選択中の注文週（WEEKS のindex）
@@ -845,6 +866,12 @@ const A={
   /* 未ログイントップ（雑誌型）⇄ フルメニューの切り替え（リロードなし・再描画のみ） */
   guestShowAll(){anim();S.guestFull=true;S.page=null;render();Banner.jump('guest-full');},
   guestBackTop(){anim();S.guestFull=false;S.page=null;render();window.scrollTo({top:0,behavior:'smooth'});},
+
+  /* テレビCM：サムネイル（ファサード）を押したら同じ枠を YouTube iframe に差し替えて再生する。
+     再生状態は S.cmPlay に持たせるので、カート反映などの再描画でもサムネイルに巻き戻らない
+     （差分更新は src が同じ iframe ノードを使い回すため、再生も途切れない）。
+     キーに sp/pc を含めるのは、表示されていない側の root（display:none）で音だけ鳴るのを防ぐため。 */
+  cmPlay(key){S.cmPlay[key]=true;render();},
 
   /* 週の切り替え（複数週にわたり同一画面で注文可能） */
   setWeek(i){S.week=i;render();},
@@ -1954,6 +1981,39 @@ function guestFlowHTML(sp){
     +(sp?inner:'<div style="max-width:1200px;margin:0 auto;">'+inner+'</div>')
     +'</section>';
 }
+/* ================= テレビCM（YouTube・ファサード方式） =================
+   初期表示ではサムネイル画像だけを置き、YouTube のスクリプトは読み込まない（モックの軽さを維持）。
+   クリックされたときに初めて同じ枠を iframe（autoplay）へ差し替える。 */
+const CM_VIDEOS=[
+  {id:'7azaw2Z1oww',title:'ヨシケイ2025秋新CM「登場」篇 30秒'},
+  {id:'rT8QMYh5BDI',title:'ヨシケイ2025秋新CM「献立決め」篇 15秒'},
+];
+/* YouTube風の再生ボタン（角丸長方形＋白い三角） */
+function cmPlayIcon(){
+  return '<svg width="62" height="44" viewBox="0 0 68 48" fill="none" aria-hidden="true">'
+    +'<path d="M66.52 7.74a8.55 8.55 0 0 0-6.03-6.05C55.15.24 34 .24 34 .24S12.85.24 7.51 1.69a8.55 8.55 0 0 0-6.03 6.05A89.4 89.4 0 0 0 0 24a89.4 89.4 0 0 0 1.48 16.26 8.55 8.55 0 0 0 6.03 6.05C12.85 47.76 34 47.76 34 47.76s21.15 0 26.49-1.45a8.55 8.55 0 0 0 6.03-6.05A89.4 89.4 0 0 0 68 24a89.4 89.4 0 0 0-1.48-16.26z" fill="#E50012"/>'
+    +'<path d="M27.2 34.29 45.02 24 27.2 13.71z" fill="#fff"/></svg>';
+}
+function cmPlayerHTML(v,sp){
+  const key=(sp?'sp':'pc')+':'+v.id;
+  const inner=S.cmPlay[key]
+    ? '<iframe class="cm-frame" src="https://www.youtube.com/embed/'+v.id+'?autoplay=1" title="'+v.title+'"'
+      +' allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>'
+    : '<button class="cm-facade" onclick="A.cmPlay(\''+key+'\')" aria-label="'+v.title+' を再生">'
+      +'<img src="https://i.ytimg.com/vi/'+v.id+'/hqdefault.jpg" alt="'+v.title+'" loading="lazy">'
+      +'<span class="cm-play">'+cmPlayIcon()+'</span></button>';
+  return '<div data-mk="cm-'+v.id+'">'
+    +'<div class="cm-box">'+inner+'</div>'
+    +'<div class="cm-cap">'+v.title+'</div>'
+    +'</div>';
+}
+function cmSectionHTML(sp){
+  const inner=guestH2(sp,'テレビCM放映中')
+    +'<div class="cm-list">'+CM_VIDEOS.map(function(v){return cmPlayerHTML(v,sp);}).join('')+'</div>';
+  return '<section class="cm-sec" data-mk="cmsec" data-section="guest-cm">'
+    +(sp?inner:'<div class="cm-inner">'+inner+'</div>')
+    +'</section>';
+}
 /* 今週のメニュー棚：現在週から6品を横スクロール。価格は見せる／ボタンは「詳しく見る」のみ（カート投入UIは置かない） */
 function guestShelfItems(){
   const cs=SERIES[S.sub.smile]||SERIES[0];
@@ -2110,6 +2170,7 @@ function spHTML(){
   const guestMag=!S.loggedIn&&!S.guestFull;
   if(guestMag){
     h+=guestFlowHTML(true);
+    h+=cmSectionHTML(true);   /* テレビCM（ご利用の流れ直後） */
     h+=guestShelfHTML(true);
     h+=guestSeeAllHTML(true);
   }else{
@@ -2583,6 +2644,7 @@ function pcHTML(){
   const guestMag=!S.loggedIn&&!S.guestFull;
   if(pg===null&&guestMag){
     h+=guestFlowHTML(false);
+    h+=cmSectionHTML(false);  /* テレビCM（ご利用の流れ直後） */
     h+=areaBannerPCHTML();   /* エリア確認バナー（ご利用の流れ直後・メニュー棚の手前） */
     h+=guestShelfHTML(false);
     h+=guestSeeAllHTML(false);
