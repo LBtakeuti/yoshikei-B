@@ -227,7 +227,7 @@
     min-height:40px;padding:0 16px;border-radius:999px;background:#E50012;color:#fff;
     font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:13.5px;box-shadow:0 3px 12px rgba(229,0,18,.34);}
   /* テレビCM（YouTube・ファサード方式）
-     SP・PCとも2本を上下に縦積み。SP＝コンテンツ幅いっぱい／PC＝幅640pxで中央寄せ。
+     SP＝2本を上下に縦積み（コンテンツ幅いっぱい）／PC＝2本を横並び。
      枠は16:9固定。初期はサムネイル画像＋再生ボタン、クリックで同じ枠が iframe に差し替わる。 */
   .cm-sec{background:#fff;padding:20px 16px 4px;}
   .cm-list{display:flex;flex-direction:column;gap:18px;}
@@ -243,7 +243,7 @@
   @media (min-width:1024px){
     .cm-sec{padding:30px 24px 6px;}
     .cm-inner{max-width:1200px;margin:0 auto;}
-    .cm-list{gap:24px;max-width:640px;margin:0 auto;}
+    .cm-list{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1000px;margin:0 auto;align-items:start;}
     .cm-cap{font-size:13px;}
   }
   @media (min-width:1024px){
