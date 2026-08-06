@@ -58,7 +58,9 @@
   /* ECトップ ヒーローセクション（未ログインのゲスト閲覧時のみ表示）
      フルブリード写真型：写真をヒーロー全面（SP・PC共通）に敷き、下部の暗いグラデーションの上に
      白抜きの文字とCTAを左下へ置く。左クリーム＋右写真パネルの旧構造は廃止した。 */
-  .echero{position:relative;height:218px;background:#2B2B2B;overflow:hidden}
+  /* ヒーローは全幅ベタ置きではなく、白地の上に角丸カードとしてマスクして載せる（参考：メディア・ワーク社サイト） */
+  .echero-wrap{background:#fff;padding:10px 12px 0}
+  .echero{position:relative;height:218px;background:#2B2B2B;overflow:hidden;border-radius:18px}
   /* ヒーロー写真：実写4枚を重ね、CSSキーフレームだけで24秒かけて一巡させる
      （1枚あたり約6秒表示・切り替わりは約1秒）。JSタイマーを使わないのは、描画がDOM差分更新（morph）で
      ノードを使い回すため、CSSアニメーションなら再描画（カートに反映など）の影響を受けず動き続けるから。
@@ -91,7 +93,8 @@
   .echero-cta{display:inline-flex;align-items:center;gap:2px;margin-top:3px;background:#E50012;color:#fff;font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:13px;border-radius:999px;padding:10px 14px 10px 20px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
   .echero-deadline{font-size:11px;font-weight:500;color:rgba(255,255,255,.85);text-shadow:0 1px 8px rgba(0,0,0,.55)}
   @media (min-width:1024px){
-    .echero{height:360px}
+    .echero-wrap{padding:16px 24px 0}
+    .echero{height:360px;max-width:1200px;margin:0 auto;border-radius:22px}
     .echero-inner{left:56px;right:56px;bottom:30px;gap:9px}
     .echero-badge{font-size:12.5px;padding:5px 13px}
     .echero-catch{font-size:34px}
@@ -1762,7 +1765,7 @@ function calendarHTML(sp){
 function heroHTML(){
   const wk=WEEKS[S.week]||{label:''};
   const dl=orderDeadline(wk.label);
-  return '<section class="echero" data-section="ec-hero">'
+  return '<div class="echero-wrap"><section class="echero" data-section="ec-hero">'
     +'<img class="hero-slide hero-slide-1" src="assets/hero-1.png" alt="" decoding="async">'
     +'<img class="hero-slide hero-slide-2" src="assets/hero-2.png" alt="" decoding="async">'
     +'<img class="hero-slide hero-slide-3" src="assets/hero-3.png" alt="" decoding="async">'
@@ -1774,7 +1777,7 @@ function heroHTML(){
     +'<p class="echero-sub">管理栄養士監修の献立と食材を、毎日ご自宅へ。</p>'
     +'<button class="echero-cta" onclick="A.guestShowAll()">今週のメニューを見る'+IC.chevR(17,'#fff')+'</button>'
     +'<span class="echero-deadline">ご注文締切：'+dl+' 23:59</span>'
-    +'</div></section>';
+    +'</div></section></div>';
 }
 
 /* ================= 簡易トースト（ダミー導線の案内用・ルート再描画の影響を受けないよう body 直下） ================= */
