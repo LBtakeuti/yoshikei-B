@@ -100,12 +100,15 @@
     .echero-deadline{font-size:13px}
   }
   /* バナーカルーセル（未ログインのゲストトップ・ヒーロー直下）
-     将来は管理画面から入稿した横長画像を .bnr-img に差し替える。img 未設定の間は
-     テーマ色のグラデーション帯＋破線フレームで「画像入稿エリア」を明示する。 */
-  .bnr-wrap{position:relative;background:#fff;padding:14px 0 4px}
-  .bnr-stage{position:relative}
-  .bnr-track{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 7%;-webkit-overflow-scrolling:touch}
-  .bnr-item{position:relative;flex:0 0 86%;scroll-snap-align:center;aspect-ratio:21/9;border-radius:14px;overflow:hidden;display:block;text-align:left;padding:0}
+     将来は管理画面から入稿した横長画像（縦1:横2）を .bnr-img に差し替える。img 未設定の間は
+     テーマ色のグラデーション帯＋破線フレームで「画像入稿エリア」を明示する。
+     切り替えは左右スライドではなくフェード式：全スライドを2:1のステージに重ね、
+     .on の1枚だけを不透明にする（opacity のクロスフェード）。 */
+  .bnr-wrap{position:relative;background:#fff;padding:14px 14px 4px}
+  .bnr-box{position:relative}
+  .bnr-stage{position:relative;aspect-ratio:2/1;border-radius:14px;overflow:hidden}
+  .bnr-item{position:absolute;inset:0;width:100%;height:100%;display:block;text-align:left;padding:0;opacity:0;transition:opacity .7s ease;pointer-events:none;z-index:1}
+  .bnr-item.on{opacity:1;pointer-events:auto;z-index:2}
   .bnr-img{width:100%;height:100%;object-fit:cover;display:block}
   .bnr-frame{position:absolute;inset:6px;border:1.5px dashed rgba(255,255,255,.55);border-radius:10px;pointer-events:none}
   .bnr-note{position:absolute;top:8px;right:10px;font-size:9.5px;font-weight:700;color:rgba(255,255,255,.94);background:rgba(0,0,0,.22);border-radius:6px;padding:2px 8px;letter-spacing:.02em}
@@ -115,23 +118,22 @@
   .bnr-dots{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 0 2px}
   .bnr-dot{height:7px;border-radius:4px;transition:width .2s ease,background .2s ease}
   .bnr-arrow{display:none}
-  /* PC：カルーセル全体をコンテンツ幅（1200px）で中央寄せし、peek なしの1枚表示にする
-     （隣がちら見えする peek 演出は SP のみ）。左右 56px のガターを空けてそこに矢印を置くため、
-     ワイド画面でもバナーが巨大化せず、矢印がキャッチコピーに重ならない。 */
+  /* PC：2:1のまま幅720pxに縮めて中央寄せ（コンテンツ幅いっぱいだと高くなりすぎるため）。
+     矢印はステージの左右外側のガターに置く。 */
   @media (min-width:1024px){
     .bnr-wrap{padding:20px 0 6px;max-width:1200px;margin:0 auto}
-    .bnr-track{gap:24px;padding:0 56px;scroll-padding:0 56px}
-    .bnr-item{flex:0 0 100%;aspect-ratio:4/1;border-radius:16px}
+    .bnr-box{width:720px;margin:0 auto}
+    .bnr-stage{border-radius:16px}
     .bnr-frame{inset:9px;border-radius:12px}
     .bnr-body{padding:0 40px;gap:9px}
     .bnr-label{font-size:26px}
     .bnr-sub{font-size:14px}
     .bnr-note{font-size:11px;top:12px;right:14px;padding:3px 9px}
-    /* 矢印はカルーセルの左右端・上下中央に固定（バナーの外側 56px ガター内） */
+    /* 矢印はステージの左右外・上下中央（.bnr-box は overflow を切らないのではみ出し配置できる） */
     .bnr-arrow{display:flex;position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:50%;background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.18);align-items:center;justify-content:center;color:#3E3A34;z-index:3}
     .bnr-arrow:hover{background:#FCEBEC;color:#E50012}
-    .bnr-prev{left:7px}
-    .bnr-next{right:7px}
+    .bnr-prev{left:-56px}
+    .bnr-next{right:-56px}
   }
   /* PC / SP 切り替え（1024px） */
   #pc-root{display:none;}
@@ -210,7 +212,7 @@
   .ac-telarea{font-size:12px;color:#4A443C;}
   .ac-telnum{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:21px;color:#E50012;line-height:1.25;}
   .ac-teldiv{width:100%;height:0;border-top:1px solid #EDE6DA;margin-top:9px;}
-  /* エリア確認バナー（ヒーロー直下＝SP/PC共通／PC＝雑誌型トップのページ内／SP＝画面下部の追従バナー）
+  /* エリア確認バナー（カルーセル先頭スライド＝SP/PC共通／PC＝雑誌型トップのページ内／SP＝画面下部の追従バナー）
      画像は 1774×887＝高さは幅のちょうど半分。エリア確認済み・ログイン済みでは出さない。 */
   .abn-pc{background:#fff;padding:6px 24px 26px;}
   .abn-pc-inner{max-width:1200px;margin:0 auto;}
@@ -224,15 +226,6 @@
   .abn-pill{position:fixed;right:12px;bottom:76px;z-index:36;display:inline-flex;align-items:center;gap:6px;
     min-height:40px;padding:0 16px;border-radius:999px;background:#E50012;color:#fff;
     font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:13.5px;box-shadow:0 3px 12px rgba(229,0,18,.34);}
-  /* ヒーロー直下のエリア確認バナー（SP・PC共通・アスペクト比2:1のまま1/2サイズで表示）
-     SP＝コンテンツ幅いっぱい（左右14pxの既存padding内）／PC＝幅600pxで中央寄せ。 */
-  .abn-hero{background:#fff;padding:12px 14px 2px;}
-  .abn-hero .abn-btn{border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.10);}
-  .abn-hero .abn-btn img{aspect-ratio:2/1;object-fit:cover;}
-  @media (min-width:1024px){
-    .abn-hero{padding:18px 24px 2px;}
-    .abn-hero .abn-btn{width:600px;margin:0 auto;border-radius:14px;}
-  }
   /* テレビCM（YouTube・ファサード方式）
      SP・PCとも2本を上下に縦積み。SP＝コンテンツ幅いっぱい／PC＝幅640pxで中央寄せ。
      枠は16:9固定。初期はサムネイル画像＋再生ボタン、クリックで同じ枠が iframe に差し替わる。 */
@@ -374,10 +367,16 @@ const WEEKS=[{label:'5/11'},{label:'5/18'}].map(w=>({label:w.label,deadline:orde
    img … 入稿画像のURL（null の間はテーマ色のプレースホルダー帯を描画）
    href … '#xxx' はページ内アンカーへスムーズスクロール（ディープリンク）／'#' 単体はダミー／それ以外は通常遷移 */
 const BANNERS=[
+  /* 先頭：エリア確認バナー（試験的に開発側でハードコードした入稿画像。area:true はクリックで
+     モーダル起動＋エリア確認済み（rk_area_checked）になったらカルーセルから除外される特別扱い） */
+  {id:'areachk',img:'assets/area-banner-sp.png', imgPc:'assets/area-banner-pc.png',
+   label:'お届け対象エリア内か確認する', sub:'', href:'#', theme:'red', area:true},
   {id:'trial',  img:null, label:'初回限定 お試しキャンペーン実施中', sub:'対象コースが最大50%OFF', href:'#campaign',              theme:'red'},
   {id:'shelf',  img:null, label:'今週のメニューをのぞいてみる',     sub:'管理栄養士監修の献立',   href:'#guest-shelf',           theme:'green'},
   {id:'coin',   img:null, label:'eコインでおトクに続ける',          sub:'週2,160円以上で貯まる',  href:'#',                      theme:'gold'}
 ];
+/* 表示対象のバナー（エリア確認済みなら areachk を除外） */
+function visBanners(){return BANNERS.filter(function(b){return !(b.area&&areaChecked());});}
 /* バナーのテーマ色（プレースホルダー帯のグラデーションと文字色） */
 const BANNER_THEME={
   red:  {from:'#E50012',to:'#B10010',fg:'#fff',sub:'rgba(255,255,255,.90)'},
@@ -1380,7 +1379,7 @@ function specialsGridHTML(sp){
       :emptyFilterHTML(sp));
 }
 /* ================= エリア確認バナー（エリア確認モーダルへの入口） =================
-   ヒーロー直下＝SP/PC共通のページ内配置（1/2サイズ・2:1）／PC＝雑誌型トップの「ご利用の流れ」直後にも配置／
+   カルーセルの先頭スライド（BANNERS の areachk・SP/PC共通）／PC＝雑誌型トップの「ご利用の流れ」直後にも配置／
    SP＝画面下部の追従バナー。
    未ログイン かつ エリア未確認（rk_area_checked）のときだけ出す。
    SPは×で閉じるとピル型ボタンに縮小し、その状態はセッション中だけ保持する。 */
@@ -1399,16 +1398,6 @@ function areaBannerPCHTML(){
     +'<div class="abn-btn" role="button" tabindex="0" onclick="Area.open()" title="'+AREA_BN_ALT+'">'
     +'<img src="assets/area-banner-pc.png" alt="'+AREA_BN_ALT+'">'
     +'</div></div></section>';
-}
-/* SP・PC共通：雑誌型トップのヒーロー直下バナー（バナーカルーセルの手前）
-   表示サイズは1/2（PC=幅600px中央寄せ／SP=コンテンツ幅いっぱい）でアスペクト比2:1を維持する。
-   出現/消滅で隣のセクションが巻き添えにならないよう data-mk を付ける。 */
-function areaBannerHeroHTML(sp){
-  if(!areaBnVisible())return '';
-  return '<section class="abn-hero" data-mk="abnhero">'
-    +'<div class="abn-btn" role="button" tabindex="0" onclick="Area.open()" title="'+AREA_BN_ALT+'">'
-    +'<img src="assets/area-banner-'+(sp?'sp':'pc')+'.png" alt="'+AREA_BN_ALT+'">'
-    +'</div></section>';
 }
 /* SP：画面下部の追従バナー（ボトムナビ66pxの上）。×で閉じたらピル型ボタンに縮小 */
 function areaBannerSPHTML(){
@@ -1811,91 +1800,67 @@ function toast(msg){
    プレースホルダー帯（＝管理画面から入稿する横長画像の位置）を表示する。 */
 function bannerHTML(sp){
   const key=sp?'sp':'pc';
-  const items=BANNERS.map(function(b){
+  const vis=visBanners();
+  const items=vis.map(function(b){
     const th=BANNER_THEME[b.theme]||BANNER_THEME.red;
-    const inner=b.img
-      ?'<img class="bnr-img" src="'+b.img+'" alt="'+b.label+'">'
+    const src=b.img?(sp?b.img:(b.imgPc||b.img)):null;
+    const inner=src
+      ?'<img class="bnr-img" src="'+src+'" alt="'+b.label+'">'
       :'<span class="bnr-frame"></span>'
        +'<span class="bnr-note">管理画面から入稿する横長画像</span>'
        +'<span class="bnr-body"><span class="bnr-label" style="color:'+th.fg+';">'+b.label+'</span>'
        +'<span class="bnr-sub" style="color:'+th.sub+';">'+b.sub+'</span></span>';
-    return '<button class="bnr-item" onclick="Banner.go(\''+b.id+'\')" aria-label="'+b.label+'" '
+    /* data-mk：エリア確認済みで先頭スライドが消えても隣が巻き添え再生成されないようにする */
+    return '<button class="bnr-item" data-mk="bnr-'+key+'-'+b.id+'" onclick="Banner.go(\''+b.id+'\')" aria-label="'+b.label+'" '
       +'style="background:linear-gradient(100deg,'+th.from+' 0%,'+th.to+' 100%);">'+inner+'</button>';
   }).join('');
-  const dots=BANNERS.map(function(b,i){
+  const dots=vis.map(function(b,i){
     return '<button class="bnr-dot" data-dot="'+i+'" onclick="Banner.to(\''+key+'\','+i+')" aria-label="'+(i+1)+'枚目のバナーを表示" '
-      +'style="width:'+(i===0?'18px':'7px')+';background:'+(i===0?'#E50012':'#D8D4CC')+';"></button>';
+      +'style="width:7px;background:#D8D4CC;"></button>';
   }).join('');
   const arrows=sp?''
     :'<button class="bnr-arrow bnr-prev" onclick="Banner.nav(\'pc\',-1)" aria-label="前のバナー">'+IC.back(20)+'</button>'
      +'<button class="bnr-arrow bnr-next" onclick="Banner.nav(\'pc\',1)" aria-label="次のバナー">'+IC.chevR(20,'#3E3A34')+'</button>';
   const wrap='<div class="bnr-wrap" data-section="guest-banners">'
-    +'<div class="bnr-stage">'
-    +'<div class="bnr-track hs" data-banner="'+key+'" data-sc="bnr-'+key+'">'+items+'</div>'
+    +'<div class="bnr-box">'
+    +'<div class="bnr-stage" data-banner="'+key+'">'+items+'</div>'
     +arrows
     +'</div>'
     +'<div class="bnr-dots" data-dots="'+key+'">'+dots+'</div>'
     +'</div>';
-  /* PC の最大幅・中央寄せは .bnr-wrap 側（CSS）で一元管理する。ここは白背景の全幅帯だけ担う。 */
+  /* .on（表示中スライド）は Banner.mount() が描画後に付け直す（差分更新で巻き戻らないようJS側で一元管理）。
+     PC の最大幅・中央寄せは .bnr-wrap 側（CSS）で一元管理する。ここは白背景の全幅帯だけ担う。 */
   return sp?wrap:'<div style="background:#fff;">'+wrap+'</div>';
 }
 
-/* カルーセルの挙動（スナップ位置・ドット・自動送り・矢印・ディープリンク）。
-   差分更新でトラックが作り直された場合に備え、render() の最後に mount() を呼ぶ
-   （使い回されたトラックには __bnrBound が残るので二重バインドされない）。 */
+/* カルーセルの挙動（フェード切り替え・ドット・自動送り・矢印・スワイプ・ディープリンク）。
+   スライドは2:1ステージに重ね置きし、表示中の1枚だけ .on を付ける（opacityクロスフェード）。
+   現在位置 cur はモジュール側で一元管理し、差分更新でDOMが作り直されても
+   render() の最後の mount() が .on とドットを付け直すので巻き戻らない。 */
 const Banner=(function(){
-  let paused=false, timer=null;
-  const list=(key)=>Array.prototype.slice.call(document.querySelectorAll('[data-banner="'+key+'"]'));
-  const shown=(el)=>!!el&&el.offsetParent!==null&&el.clientWidth>0;
+  let paused=false, timer=null, cur=0;
+  const stages=()=>Array.prototype.slice.call(document.querySelectorAll('[data-banner]'));
   const items=(t)=>Array.prototype.slice.call(t.querySelectorAll('.bnr-item'));
-  /* いま中央に見えているバナーの位置（実測ベース。CSSの幅指定に依存しない） */
-  function index(t){
-    const tr=t.getBoundingClientRect(), c=tr.left+tr.width/2;
-    let best=0, bd=Infinity;
-    items(t).forEach(function(it,i){
-      const r=it.getBoundingClientRect(), d=Math.abs(r.left+r.width/2-c);
-      if(d<bd){bd=d;best=i;}
+  /* i番目を表示（SP/PC両ルートに同時反映。枚数が変わっていたら丸める） */
+  function show(i){
+    stages().forEach(function(t){
+      const its=items(t), n=its.length;
+      if(!n)return;
+      cur=((i%n)+n)%n;
+      its.forEach(function(it,j){it.classList.toggle('on',j===cur);});
+      const key=t.getAttribute('data-banner');
+      document.querySelectorAll('[data-dots="'+key+'"] [data-dot]').forEach(function(d){
+        const on=Number(d.getAttribute('data-dot'))===cur;
+        d.style.width=on?'18px':'7px';
+        d.style.background=on?'#E50012':'#D8D4CC';
+      });
     });
-    return best;
-  }
-  /* i番目のバナーを中央に寄せるスクロール位置 */
-  function pos(t,i){
-    const its=items(t), n=its.length;
-    if(!n)return 0;
-    const it=its[((i%n)+n)%n];
-    const tr=t.getBoundingClientRect(), r=it.getBoundingClientRect();
-    return Math.max(0,t.scrollLeft+(r.left-tr.left)-(t.clientWidth-r.width)/2);
-  }
-  /* ドットインジケーターの現在位置ハイライト */
-  function paint(key){
-    const t=list(key)[0];
-    if(!t)return;
-    const i=index(t);
-    document.querySelectorAll('[data-dots="'+key+'"] [data-dot]').forEach(function(d){
-      const on=Number(d.getAttribute('data-dot'))===i;
-      d.style.width=on?'18px':'7px';
-      d.style.background=on?'#E50012':'#D8D4CC';
-    });
-  }
-  function move(key,i){
-    list(key).forEach(function(t){t.scrollTo({left:pos(t,i),behavior:'smooth'});});
-    setTimeout(function(){paint(key);},420);
   }
   /* ユーザー操作（スワイプ・タップ・矢印）で自動送りを停止 */
   function stop(){paused=true;}
-  function to(key,i){stop();move(key,i);}
-  function nav(key,d){
-    stop();
-    const t=list(key)[0];
-    if(t)move(key,index(t)+d);
-  }
-  function tick(){
-    if(paused)return;
-    ['sp','pc'].forEach(function(key){
-      const t=list(key)[0];
-      if(shown(t))move(key,index(t)+1);
-    });
-  }
+  function to(key,i){stop();show(i);}
+  function nav(key,d){stop();show(cur+d);}
+  function tick(){if(!paused)show(cur+1);}
   /* ページ内アンカー：SP/PC 両ルートに同じ節が存在するため、表示中の方だけに id を付ける */
   function anchors(){
     document.querySelectorAll('[data-anchor]').forEach(function(el){
@@ -1912,11 +1877,13 @@ const Banner=(function(){
     window.scrollTo({top:Math.max(0,y),behavior:'smooth'});
     return true;
   }
-  /* バナーの遷移：'#' 単体＝ダミー／'#xxx'＝ページ内ディープリンク／それ以外＝通常遷移 */
+  /* バナーの遷移：area:true＝エリア確認モーダル起動／'#' 単体＝ダミー／
+     '#xxx'＝ページ内ディープリンク／それ以外＝通常遷移 */
   function go(id){
     const b=BANNERS.filter(function(x){return x.id===id;})[0];
     if(!b)return;
     stop();
+    if(b.area){Area.open();return;}
     const href=b.href||'#';
     if(href==='#'){toast('準備中のコンテンツです');return;}
     if(href.charAt(0)==='#'){
@@ -1929,34 +1896,26 @@ const Banner=(function(){
     }
     location.href=href;
   }
-  /* 横方向のホイール／トラックパッド操作だけを「スワイプ」とみなす（縦スクロールでは止めない） */
-  function onWheel(e){if(Math.abs(e.deltaX)>Math.abs(e.deltaY))stop();}
-  /* ウィンドウ幅が変わるとバナー幅も変わりスクロール位置がずれるため、現在のバナーを中央へ再スナップする */
-  let rzTimer=null, bound=false;
-  function relayout(){
-    ['sp','pc'].forEach(function(key){
-      const t=list(key)[0];
-      if(shown(t))t.scrollTo({left:pos(t,index(t)),behavior:'auto'});
-      paint(key);
-    });
+  /* フェード式でも左右フリックで送れるようにする（40px以上の横移動をスワイプとみなす） */
+  let sx=null;
+  function onTS(e){sx=(e.touches?e.touches[0]:e).clientX;}
+  function onTE(e){
+    if(sx===null)return;
+    const x=(e.changedTouches?e.changedTouches[0]:e).clientX, dx=x-sx;
+    sx=null;
+    if(Math.abs(dx)>40){stop();show(cur+(dx<0?1:-1));}
   }
-  function onResize(){clearTimeout(rzTimer);rzTimer=setTimeout(relayout,120);}
   function mount(){
     anchors();
-    if(!bound){window.addEventListener('resize',onResize);bound=true;}
-    ['sp','pc'].forEach(function(key){
-      list(key).forEach(function(t){
-        /* 差分更新ではトラックのDOMが使い回されるため、二重バインドを防ぐ */
-        if(t.__bnrBound)return;
-        t.__bnrBound=true;
-        t.addEventListener('scroll',function(){paint(key);},{passive:true});
-        t.addEventListener('pointerdown',stop,{passive:true});
-        t.addEventListener('touchstart',stop,{passive:true});
-        t.addEventListener('wheel',onWheel,{passive:true});
-      });
-      paint(key);
+    stages().forEach(function(t){
+      /* 差分更新ではステージのDOMが使い回されるため、二重バインドを防ぐ */
+      if(t.__bnrBound)return;
+      t.__bnrBound=true;
+      t.addEventListener('touchstart',onTS,{passive:true});
+      t.addEventListener('touchend',onTE,{passive:true});
     });
-    if(!timer)timer=setInterval(tick,5000);   /* 5秒で自動送り */
+    show(cur);   /* 差分更新後に .on とドットを付け直す（枚数減にも追従） */
+    if(!timer)timer=setInterval(tick,5000);   /* 5秒で自動送り（フェード切り替え） */
   }
   return {mount:mount,to:to,nav:nav,go:go,jump:jump,stop:stop};
 })();
@@ -2164,7 +2123,7 @@ function spHTML(){
 
   /* ECヒーロー＋エリア確認バナー＋バナーカルーセル（未ログインのゲスト閲覧時のみ・ヘッダー直下）
      フルメニューに切り替えた後もヒーローとカルーセルは上部に残す */
-  if(!S.loggedIn){h+=heroHTML();h+=areaBannerHeroHTML(true);h+=bannerHTML(true);}
+  if(!S.loggedIn){h+=heroHTML();h+=bannerHTML(true);}
 
   /* 未ログイントップ（雑誌型）：流れ → 今週のメニュー棚 → すべて見る */
   const guestMag=!S.loggedIn&&!S.guestFull;
@@ -2638,7 +2597,7 @@ function pcHTML(){
 
   /* ECヒーロー＋エリア確認バナー＋バナーカルーセル（未ログインのゲスト閲覧時のみ・ヘッダー直下）
      フルメニューに切り替えた後もヒーローとカルーセルは上部に残す */
-  if(pg===null&&!S.loggedIn){h+=heroHTML();h+=areaBannerHeroHTML(false);h+=bannerHTML(false);}
+  if(pg===null&&!S.loggedIn){h+=heroHTML();h+=bannerHTML(false);}
 
   /* 未ログイントップ（雑誌型）：流れ → 今週のメニュー棚 → すべて見る */
   const guestMag=!S.loggedIn&&!S.guestFull;
